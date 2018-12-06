@@ -7,10 +7,10 @@ const output = [{
         exports:"named"
     },{
         name: "css_cjs",
-        file: "./build/css-cjs.js",
+        file: "./build/css.node.js",
         format: "cjs",
         exports:"named"
-    }]
+    }];
 
 export default {
     input: "./source/css.mjs",

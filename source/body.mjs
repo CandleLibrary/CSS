@@ -1,21 +1,15 @@
+import whind from "@candlefw/whind";
 import ll from "@candlefw/ll";
+
 import {
     property_definitions,
     media_feature_definitions,
     types
 } from "./properties/property_and_type_definitions";
-import whind from "@candlefw/whind";
-import {
-    CSSRule as R,
-    CSSSelector as S
-} from "./nodes";
-import {
-    getPropertyParser
-} from "./properties/parser";
+import { CSSRule as R, CSSSelector as S } from "./nodes";
+import { getPropertyParser } from "./properties/parser";
 
-export {
-    R as CSSRule, S as CSSSelector
-};
+export { R as CSSRule, S as CSSSelector };
 
 /**
  * Checks to make sure token is an Identifier.
@@ -128,12 +122,12 @@ export class CSSRuleBody {
         return true;
     }
 
-    matchMedia(win = window){
+    matchMedia(win = window) {
 
         if (this.media_selector) {
-            for(let i = 0; i < this.media_selector.length; i++){
+            for (let i = 0; i < this.media_selector.length; i++) {
                 let m = this.media_selector[i];
-                   let props = m.props;
+                let props = m.props;
                 for (let a in props) {
                     let prop = props[a];
                     if (!prop(win))
@@ -145,14 +139,14 @@ export class CSSRuleBody {
         return true;
     }
 
-        /**
+    /**
      * Retrieves the set of rules from all matching selectors for an element.
      * @param      {HTMLElement}  element - An element to retrieve CSS rules.
      * @public
      */
     getApplicableRules(element, rule = new R(), win = window) {
 
-        if(!this.matchMedia(win)) return;
+        if (!this.matchMedia(win)) return;
 
         let gen = this.getApplicableSelectors(element),
             sel = null;
@@ -467,22 +461,22 @@ export class CSSRuleBody {
 
             return res(this);
         });
-        
+
     }
 
-    isSame(inCSSRuleBody){
-        if(inCSSRuleBody instanceof CSSRuleBody){
-            if(this.media_selector){
-                if(inCSSRuleBody.media_selector){
+    isSame(inCSSRuleBody) {
+        if (inCSSRuleBody instanceof CSSRuleBody) {
+            if (this.media_selector) {
+                if (inCSSRuleBody.media_selector) {
                     //TODO compare media selectors;
                 }
-            }else if(!inCSSRuleBody.media_selector)
-                    return true;
+            } else if (!inCSSRuleBody.media_selector)
+                return true;
         }
         return false;
     }
 
-    merge(inCSSRuleBody){
+    merge(inCSSRuleBody) {
         this.parse(whind(inCSSRuleBody + ""));
     }
 
@@ -540,11 +534,4 @@ export class CSSRuleBody {
     }
 }
 
-/**
- * CSSRuleBody implements all of ll
- * @extends ll
- * @memberof  module:wick~internals.html.CSSRuleBody
- * @private
- */
-Object.assign(CSSRuleBody.prototype, ll.props.defaults, ll.props.children, ll.props.parent, ll.methods.defaults, ll.methods.parent_child);
-ll.setGettersAndSetters(CSSRuleBody.prototype);
+ll.mixinTree(CSSRuleBody);

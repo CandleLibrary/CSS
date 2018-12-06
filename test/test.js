@@ -1,6 +1,6 @@
-import css from "../source/css.mjs"
+import css from "../source/css.mjs";
 
-const chai = require("chai")
+const chai = require("chai");
 
 chai.should();
 

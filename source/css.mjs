@@ -1,5 +1,6 @@
 import  ll  from "@candlefw/ll";
 import  whind from "@candlefw/whind";
+
 import { CSSRule as R, CSSSelector as S } from "./nodes";
 import { types } from "./properties/property_and_type_definitions";
 import { CSSRuleBody } from "./body";
@@ -25,7 +26,7 @@ class CSSRootNode {
         this.res = null;
         this.observers = [];
         
-        this.addC(new CSSRuleBody());
+        this.addChild(new CSSRuleBody());
     }
 
     _resolveReady_(res, rej) {
@@ -60,12 +61,12 @@ class CSSRootNode {
 
     * getApplicableSelectors(element, win = window) {
 
-        for (let node = this.fch; node; node = this.getN(node)) {
+        for (let node = this.fch; node; node = this.getNextChild(node)) {
 
             if(node.matchMedia(win)){
                 let gen = node.getApplicableSelectors(element, win);
                 let v = null;
-                while (v = gen.next().value)
+                while ((v = gen.next().value))
                     yield v;
             }
         }
@@ -77,7 +78,7 @@ class CSSRootNode {
      * @public
      */
     getApplicableRules(element, rule = new R(), win = window) {
-        for (let node = this.fch; node; node = this.getN(node))
+        for (let node = this.fch; node; node = this.getNextChild(node))
             node.getApplicableRules(element, rule, win);
         return rule;
     }
@@ -89,14 +90,14 @@ class CSSRootNode {
      */
     getRule(string) {
         let r = null;
-        for (let node = this.fch; node; node = this.getN(node))
+        for (let node = this.fch; node; node = this.getNextChild(node))
             r = node.getRule(string, r);
         return r;
     }
 
     toString(off = 0) {
         let str = "";
-        for (let node = this.fch; node; node = this.getN(node))
+        for (let node = this.fch; node; node = this.getNextChild(node))
             str += node.toString(off);
         return str;
     }
@@ -160,8 +161,7 @@ class CSSRootNode {
  * @memberof  module:wick~internals.html.CSSRootNode
  * @private
  */
-Object.assign(CSSRootNode.prototype, ll.props.defaults, ll.props.children, ll.props.parent, ll.methods.defaults, ll.methods.parent_child);
-ll.setGettersAndSetters(CSSRootNode.prototype);
+ll.mixinTree(CSSRootNode);
 
 export { CSSRootNode };
 /*
