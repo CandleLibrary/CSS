@@ -3085,6 +3085,508 @@ function CSS_Media_handle(type, prefix) {
     };
 }
 
+function getValue(lex, attribute) {
+    let v = lex.tx,
+        mult = 1;
+
+    if (v == "-")
+        v = lex.n.tx, mult = -1;
+
+    let n = parseFloat(v) * mult;
+
+    lex.n;
+
+    if (lex.ch !== ")" && lex.ch !== ",") {
+        switch (lex.tx) {
+            case "%":
+                break;
+
+            /* Rotational Values */
+            case "grad":
+                n *= Math.PI / 200;
+                break;
+            case "deg":
+                n *= Math.PI / 180;
+                break;
+            case "turn":
+                n *= Math.PI * 2;
+                break;
+            case "px":
+                break;
+            case "em":
+                break;
+        }
+        lex.n;
+    }
+    return n;
+}
+
+function ParseString(string, transform) {
+    var lex = whind$1(string);
+    
+    while (!lex.END) {
+        let tx = lex.tx;
+        lex.n;
+        switch (tx) {
+            case "matrix":
+
+                let a = getValue(lex.a("(")),
+                    b = getValue(lex.a(",")),
+                    c = getValue(lex.a(",")),
+                    d = getValue(lex.a(",")),
+                    r = -Math.atan2(b, a),
+                    sx1 = (a / Math.cos(r)) || 0,
+                    sx2 = (b / -Math.sin(r)) || 0,
+                    sy1 = (c / Math.sin(r)) || 0,
+                    sy2 = (d / Math.cos(r)) || 0;
+                
+                if(sx2 !== 0)
+                    transform.sx = (sx1 + sx2) * 0.5;
+                else
+                    transform.sx = sx1;
+
+                if(sy1 !== 0)
+                    transform.sy = (sy1 + sy2) * 0.5;
+                else
+                    transform.sy = sy2;
+
+                transform.px = getValue(lex.a(","));
+                transform.py = getValue(lex.a(","));
+                transform.r = r;
+                lex.a(")");
+                break;
+            case "matrix3d":
+                break;
+            case "translate":
+                transform.px = getValue(lex.a("("), "left");
+                lex.a(",");
+                transform.py = getValue(lex, "left");
+                lex.a(")");
+                continue;
+            case "translateX":
+                transform.px = getValue(lex.a("("), "left");
+                lex.a(")");
+                continue;
+            case "translateY":
+                transform.py = getValue(lex.a("("), "left");
+                lex.a(")");
+                continue;
+            case "scale":
+                transform.sx = getValue(lex.a("("), "left");
+                if(lex.ch ==","){
+                    lex.a(",");
+                    transform.sy = getValue(lex, "left");
+                }
+                else transform.sy = transform.sx;
+                lex.a(")");
+                continue;
+            case "scaleX":
+                transform.sx = getValue(lex.a("("), "left");
+                lex.a(")");
+                continue;
+            case "scaleY":
+                transform.sy = getValue(lex.a("("), "left");
+                lex.a(")");
+                continue;
+            case "scaleZ":
+                break;
+            case "rotate":
+                transform.r = getValue(lex.a("("));
+                lex.a(")");
+                continue;
+            case "rotateX":
+                break;
+            case "rotateY":
+                break;
+            case "rotateZ":
+                break;
+            case "rotate3d":
+                break;
+            case "perspective":
+                break;
+        }
+        lex.n;
+    }
+}
+// A 2D transform compisition of 2D position, 2D scale, and 1D rotation.
+class CSS_Transform2D extends Float64Array {
+    static ToString(pos = [0, 0], scl = [1, 1], rot = 0) {
+        var px = 0,
+            py = 0,
+            sx = 1,
+            sy = 1,
+            r = 0, cos = 1, sin = 0;
+        if (pos.length == 5) {
+            px = pos[0];
+            py = pos[1];
+            sx = pos[2];
+            sy = pos[3];
+            r = pos[4];
+        } else {
+            px = pos[0];
+            py = pos[1];
+            sx = scl[0];
+            sy = scl[1];
+            r = rot;
+        }
+        
+        if(r !== 0){
+            cos = Math.cos(r);
+            sin = Math.sin(r);
+        }
+
+        return `matrix(${cos * sx}, ${-sin * sx}, ${sy * sin}, ${sy * cos}, ${px}, ${py})`;
+    }
+
+
+    constructor(px, py, sx, sy, r) {
+        super(5);
+        this.sx = 1;
+        this.sy = 1;
+        if (px) {
+            if (px instanceof CSS_Transform2D) {
+                this[0] = px[0];
+                this[1] = px[1];
+                this[2] = px[2];
+                this[3] = px[3];
+                this[4] = px[4];
+            } else if (typeof(px) == "string") ParseString(px, this);
+            else {
+                this[0] = px;
+                this[1] = py;
+                this[2] = sx;
+                this[3] = sy;
+                this[4] = r;
+            }
+        }
+    }
+    get px() {
+        return this[0];
+    }
+    set px(v) {
+        this[0] = v;
+    }
+    get py() {
+        return this[1];
+    }
+    set py(v) {
+        this[1] = v;
+    }
+    get sx() {
+        return this[2];
+    }
+    set sx(v) {
+        this[2] = v;
+    }
+    get sy() {
+        return this[3];
+    }
+    set sy(v) {
+        this[3] = v;
+    }
+    get r() {
+        return this[4];
+    }
+    set r(v) {
+        this[4] = v;
+    }
+
+    set scale(s){
+        this.sx = s;
+        this.sy = s;
+    }
+
+    get scale(){
+        return this.sx;
+    }
+    
+    lerp(to, t) {
+        let out = new CSS_Transform2D();
+        for (let i = 0; i < 5; i++) out[i] = this[i] + (to[i] - this[i]) * t;
+        return out;
+    }
+    toString() {
+        return CSS_Transform2D.ToString(this);
+    }
+
+    copy(v) {
+        let copy = new CSS_Transform2D(this);
+
+
+        if (typeof(v) == "string")
+            ParseString(v, copy);
+
+        return copy;
+    }
+
+    /**
+     * Sets the transform value of a canvas 2D context;
+     */
+    setCTX(ctx){       
+        let cos = 1, sin = 0;
+        if(this[4] != 0){
+            cos = Math.cos(this[4]);
+            sin = Math.sin(this[4]);
+        }
+        ctx.transform(cos * this[2], -sin * this[2], this[3] * sin, this[3] * cos, this[0], this[1]);
+    }
+
+    getLocalX(X){
+        return (X - this.px) / this.sx;
+    }
+
+    getLocalY(Y){
+        return (Y - this.py) / this.sy;
+    }
+}
+
+/**
+ * @brief Path Info
+ * @details Path syntax information for reference
+ * 
+ * MoveTo: M, m
+ * LineTo: L, l, H, h, V, v
+ * Cubic Bézier Curve: C, c, S, s
+ * Quadratic Bézier Curve: Q, q, T, t
+ * Elliptical Arc Curve: A, a
+ * ClosePath: Z, z
+ * 
+ * Capital symbols represent absolute positioning, lowercase is relative
+ */
+const PathSym = {
+    M: 0,
+    m: 1,
+    L: 2,
+    l: 3,
+    h: 4,
+    H: 5,
+    V: 6,
+    v: 7,
+    C: 8,
+    c: 9,
+    S: 10,
+    s: 11,
+    Q: 12,
+    q: 13,
+    T: 14,
+    t: 15,
+    A: 16,
+    a: 17,
+    Z: 18,
+    z: 19,
+    pairs: 20
+};
+
+function getSignedNumber(lex) {
+    let mult = 1,
+        tx = lex.tx;
+    if (tx == "-") {
+        mult = -1;
+        tx = lex.n.tx;
+    }
+    lex.n;
+    return parseFloat(tx) * mult;
+}
+
+function getNumberPair(lex, array) {
+    let x = getSignedNumber(lex);
+    if (lex.ch == ',') lex.n;
+    let y = getSignedNumber(lex);
+    array.push(x, y);
+}
+
+function parseNumberPairs(lex, array) {
+    while ((lex.ty == lex.types.num || lex.ch == "-") && !lex.END) {    	
+    	array.push(PathSym.pairs);
+        getNumberPair(lex, array);
+    }
+}
+/**
+ * @brief An array store of path data in numerical form
+ */
+class CSS_Path extends Array {
+    static FromString(string, array) {
+        let lex = whind(string);
+        while (!lex.END) {
+            let relative = false,
+                x = 0,
+                y = 0;
+            switch (lex.ch) {
+                //Move to
+                case "m":
+                    relative = true;
+                case "M":
+                    lex.n; //
+                    array.push((relative) ? PathSym.m : PathSym.M);
+                    getNumberPair(lex, array);
+                    parseNumberPairs(lex, array);
+                    continue;
+                    //Line to
+                case "h":
+                    relative = true;
+                case "H":
+                    lex.n;
+                    x = getSignedNumber(lex);
+                    array.push((relative) ? PathSym.h : PathSym.H, x);
+                    continue;
+                case "v":
+                    relative = true;
+                case "V":
+                    lex.n;
+                    y = getSignedNumber(lex);
+                    array.push((relative) ? PathSym.v : PathSym.V, y);
+                    continue;
+                case "l":
+                    relative = true;
+                case "L":
+                    lex.n;
+                    array.push((relative) ? PathSym.l : PathSym.L);
+                    getNumberPair(lex, array);
+                    parseNumberPairs(lex, array);
+                    continue;
+                    //Cubic Curve
+                case "c":
+                    relative = true;
+                case "C":
+                    array.push((relative) ? PathSym.c : PathSym.C);
+                    getNumberPair(lex, array);
+                    getNumberPair(lex, array);
+                    getNumberPair(lex, array);
+                    parseNumberPairs(lex, array);
+                    continue;
+                case "s":
+                    relative = true;
+                case "S":
+                    array.push((relative) ? PathSym.s : PathSym.S);
+                    getNumberPair(lex, array);
+                    getNumberPair(lex, array);
+                    parseNumberPairs(lex, array);
+                    continue;
+                    //Quadratic Curve0
+                case "q":
+                    relative = true;
+                case "Q":
+                    array.push((relative) ? PathSym.q : PathSym.Q);
+                    getNumberPair(lex, array);
+                    getNumberPair(lex, array);
+                    parseNumberPairs(lex, array);
+                    continue;
+                case "t":
+                    relative = true;
+                case "T":
+                    array.push((relative) ? PathSym.t : PathSym.T);
+                    getNumberPair(lex, array);
+                    parseNumberPairs(lex, array);
+                    continue;
+                    //Elliptical Arc
+                    //Close path:
+                case "z":
+                    relative = true;
+                case "Z":
+                    array.push((relative) ? PathSym.z : PathSym.Z);
+            }
+            lex.n;
+        }
+    }
+
+    static ToString(array) {
+    	let string = [], l = array.length, i = 0;
+    	while(i < l){
+    		switch(array[i++]){
+    			case PathSym.M:
+    				string.push("M", array[i++], array[i++]);
+    				break;
+			    case PathSym.m:
+			    	string.push("m", array[i++], array[i++]);
+			    	break;
+			    case PathSym.L:
+			    	string.push("L", array[i++], array[i++]);
+			    	break;
+			    case PathSym.l:
+			    	string.push("l", array[i++], array[i++]);
+			    	break;
+			    case PathSym.h:
+			    	string.push("h", array[i++]);
+			    	break;
+			    case PathSym.H:
+			    	string.push("H", array[i++]);
+			    	break;
+			    case PathSym.V:
+			    	string.push("V", array[i++]);
+			    	break;
+			    case PathSym.v:
+			    	string.push("v", array[i++]);
+			    	break;
+			    case PathSym.C:
+			    	string.push("C", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
+			    	break;
+			    case PathSym.c:
+			    	string.push("c", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
+			    	break;
+			    case PathSym.S:
+			    	string.push("S", array[i++], array[i++], array[i++], array[i++]);
+			    	break;
+			    case PathSym.s:
+			    	string.push("s", array[i++], array[i++], array[i++], array[i++]);
+			    	break;
+			    case PathSym.Q:
+			    	string.push("Q", array[i++], array[i++], array[i++], array[i++]);
+			    	break;
+			    case PathSym.q:
+			    	string.push("q", array[i++], array[i++], array[i++], array[i++]);
+			    	break;
+			    case PathSym.T:
+			    	string.push("T", array[i++], array[i++]);
+			    	break;
+			    case PathSym.t:
+			    	string.push("t", array[i++], array[i++]);
+			    	break;
+			    case PathSym.Z:
+			    	string.push("Z");
+			    	break;
+			    case PathSym.z:
+			    	string.push("z");
+			    	break;
+			    case PathSym.pairs:
+			    	string.push(array[i++], array[i++]);
+			    	break;
+			 	case PathSym.A:
+			    case PathSym.a:
+			    default:
+			    	i++;
+    		}
+    	}
+
+    	return string.join(" ");
+    }
+
+    
+    constructor(data) {
+        super();	
+
+    	if(typeof(data) == "string"){
+    		Path.FromString(data, this);
+    	}else if(Array.isArray(data)){
+    		for(let i = 0; i < data.length;i++){
+    			this.push(parseFloat(data[i]));
+    		}
+    	}
+    }
+
+    toString(){
+    	return Path.ToString(this);
+    }
+
+    lerp(to, t, array = new Path){
+    	let l = Math.min(this.length, to.length);
+
+    	for(let i = 0; i < l; i++)
+    		array[i] = this[i] + (to[i] - this[i]) * t;
+
+    	return array;
+    }	
+}
+
 /**
  * CSS Type constructors
  * @alias module:wick~internals.css.types.
@@ -3108,6 +3610,8 @@ const types$1 = {
     cubic_bezier: CSS_Bezier,
     integer: CSS_Number,
     gradient: CSS_Gradient,
+    transform2D : CSS_Transform2D,
+    path: CSS_Path,
 
     /* Media parsers */
     m_width: CSS_Media_handle("w", 0),

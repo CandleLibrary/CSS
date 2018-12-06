@@ -9,6 +9,8 @@ import CSS_Number from "../types/number";
 import CSS_Bezier from "../types/cubic_bezier";
 import CSS_Gradient from "../types/gradient";
 import CSS_Media_handle from "../types/media";
+import CSS_Transform2D from "../types/transform";
+import CSS_Path from "../types/path";
 
 /**
  * CSS Type constructors
@@ -33,6 +35,8 @@ export const types = {
     cubic_bezier: CSS_Bezier,
     integer: CSS_Number,
     gradient: CSS_Gradient,
+    transform2D : CSS_Transform2D,
+    path: CSS_Path,
 
     /* Media parsers */
     m_width: CSS_Media_handle("w", 0),

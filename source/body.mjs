@@ -1,4 +1,4 @@
-import ll  from "@candlefw/ll";
+import ll from "@candlefw/ll";
 import {
     property_definitions,
     media_feature_definitions,
