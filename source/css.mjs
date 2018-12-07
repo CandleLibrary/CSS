@@ -178,7 +178,7 @@ const _err_ = "Expecting Identifier";
  * @memberof module:wick.core
  * @alias css
  */
-export const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root.parse(whind(css_string, true)));
+export const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root.parse(whind(css_string)));
 
 CSSParser.types = types;
 

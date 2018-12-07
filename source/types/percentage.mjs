@@ -10,11 +10,11 @@ export default class CSS_Percentage extends Number {
             if (l.ch == "-") {
                 mult = -1;
                 tx = l.p.tx;
-                l.p.n();
+                l.p.next();
             }
 
             if (l.p.ch == "%") {
-                l.sync().n();
+                l.sync().next();
                 return new CSS_Percentage(parseFloat(tx) * mult);
             }
         }

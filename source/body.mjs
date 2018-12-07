@@ -17,7 +17,7 @@ export { R as CSSRule, S as CSSSelector };
  * @alias module:wick~internals.css.elementIsIdentifier
  */
 function _eID_(lexer) {
-    if (lexer.ty != lexer.types.id) lexer.throw(_err_);
+    if (lexer.ty != lexer.types.id) lexer.throw("Expecting Identifier");
 }
 
 /**
@@ -56,7 +56,7 @@ export class CSSRuleBody {
 
     _applyProperties_(lexer, rule) {
         while (!lexer.END && lexer.tx !== "}") this.parseProperty(lexer, rule, property_definitions);
-        lexer.n();
+        lexer.next();
     }
 
     /**
@@ -100,8 +100,8 @@ export class CSSRuleBody {
                         let id = lex.sync().tx;
                         let attrib = ele.getAttribute(id);
                         if (!attrib) return;
-                        if (lex.n().ch == "=") {
-                            let value = lex.n().tx;
+                        if (lex.next().ch == "=") {
+                            let value = lex.next().tx;
                             if (attrib !== value) return false;
                         }
                     }
@@ -204,13 +204,12 @@ export class CSSRuleBody {
             lexer.comment(true);
             return this.parseProperty(lexer, rule, definitions);
         }
-
-        lexer.n().a(":");
+        lexer.next().a(":");
         //allow for short circuit < | > | =
         const p = lexer.pk;
         while ((p.ch !== "}" && p.ch !== ";") && !p.END) {
             //look for end of property;
-            p.n();
+            p.next();
         }
         const out_lex = lexer.copy();
         lexer.sync();
@@ -231,7 +230,7 @@ export class CSSRuleBody {
                 console.log(e);
             }
         }
-        if (lexer.ch == ";") lexer.n();
+        if (lexer.ch == ";") lexer.next();
     }
 
     /** 
@@ -267,12 +266,12 @@ export class CSSRuleBody {
                     selectors.push(lexer.s(start).trim().slice(0));
                     sel = new _selectorPart_();
                     if (RETURN) return new S(selectors, selectors_array, this);
-                    lexer.n();
+                    lexer.next();
                     start = lexer.pos;
                     break;
                 case "[":
                     let p = lexer.pk;
-                    while (!p.END && p.n().tx !== "]") {};
+                    while (!p.END && p.next().tx !== "]") {};
                     p.a("]");
                     if (p.END) throw new _Error_("Unexpected end of input.");
                     sel.ss.push({
@@ -284,47 +283,47 @@ export class CSSRuleBody {
                 case ":":
                     sel.ss.push({
                         t: "pseudo",
-                        v: lexer.n().tx
+                        v: lexer.next().tx
                     });
                     _eID_(lexer);
-                    lexer.n();
+                    lexer.next();
                     break;
                 case ".":
                     sel.ss.push({
                         t: "class",
-                        v: lexer.n().tx
+                        v: lexer.next().tx
                     });
                     _eID_(lexer);
-                    lexer.n();
+                    lexer.next();
                     break;
                 case "#":
                     sel.ss.push({
                         t: "id",
-                        v: lexer.n().tx
+                        v: lexer.next().tx
                     });
                     _eID_(lexer);
-                    lexer.n();
+                    lexer.next();
                     break;
                 case "*":
-                    lexer.n();
+                    lexer.next();
                     break;
                 case ">":
                     sel.c = "child";
                     selector_array.unshift(sel);
                     sel = null;
-                    lexer.n();
+                    lexer.next();
                     break;
                 case "~":
                     sel.c = "preceded";
                     selector_array.unshift(sel);
                     sel = null;
-                    lexer.n();
+                    lexer.next();
                     break;
                 case "+":
                     sel.c = "immediately preceded";
                     selector_array.unshift(sel);
                     sel = null;
-                    lexer.n();
+                    lexer.next();
                     break;
                 default:
                     if (sel.e) {
@@ -333,8 +332,9 @@ export class CSSRuleBody {
                         sel = null;
                     } else {
                         sel.e = lexer.tx;
+
                         _eID_(lexer);
-                        lexer.n();
+                        lexer.next();
                     }
                     break;
             }
@@ -362,29 +362,29 @@ export class CSSRuleBody {
             while (!lexer.END) {
                 switch (lexer.ch) {
                     case "@":
-                        lexer.n();
+                        lexer.next();
                         switch (lexer.tx) {
                             case "media": //Ignored at this iteration /* https://drafts.csswg.org/mediaqueries/ */
                                 //create media query selectors
                                 let _med_ = [],
                                     sel = null;
-                                while (!lexer.END && lexer.n().ch !== "{") {
+                                while (!lexer.END && lexer.next().ch !== "{") {
                                     if (!sel) sel = new _mediaSelectorPart_();
                                     if (lexer.ch == ",") _med_.push(sel), sel = null;
                                     else if (lexer.ch == "(") {
-                                        let start = lexer.n().off;
-                                        while (!lexer.END && lexer.ch !== ")") lexer.n();
+                                        let start = lexer.next().off;
+                                        while (!lexer.END && lexer.ch !== ")") lexer.next();
                                         let out_lex = lexer.copy();
                                         out_lex.off = start;
                                         out_lex.tl = 0;
-                                        out_lex.n().fence(lexer);
+                                        out_lex.next().fence(lexer);
                                         this.parseProperty(out_lex, sel, media_feature_definitions);
                                         if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
                                     } else {
                                         let id = lexer.tx.toLowerCase(),
                                             condition = "";
                                         if (id === "only" || id === "not")
-                                            (condition = id, id = lexer.n().tx);
+                                            (condition = id, id = lexer.next().tx);
                                         sel.c = condition;
                                         sel.id = id;
                                         if (lexer.pk.tx.toLowerCase() == "and") lexer.sync();
@@ -409,7 +409,7 @@ export class CSSRuleBody {
                             case "import":
                                 /* https://drafts.csswg.org/css-cascade/#at-ruledef-import */
                                 let type;
-                                if (type = types.url.parse(lexer.n())) {
+                                if (type = types.url.parse(lexer.next())) {
                                     lexer.a(";");
                                     /**
                                      * The {@link CSS_URL} incorporates a fetch mechanism that returns a Promise instance.
@@ -421,14 +421,14 @@ export class CSSRuleBody {
                                     return type.fetchText().then((str) =>
                                         //Successfully fetched content, proceed to parse in the current root.
                                         //let import_lexer = ;
-                                        res(this.parse(whind(str, true), this).then((r) => this.parse(lexer, r)))
+                                        res(this.parse(whind(str), this).then((r) => this.parse(lexer, r)))
                                         //parse returns Promise. 
                                         // return;
                                     ).catch((e) => res(this.parse(lexer)));
                                 } else {
                                     //Failed to fetch resource, attempt to find the end to of the import clause.
-                                    while (!lexer.END && lexer.n().tx !== ";") {};
-                                    lexer.n();
+                                    while (!lexer.END && lexer.next().tx !== ";") {};
+                                    lexer.next();
                                 }
                         }
                         break;
@@ -436,11 +436,11 @@ export class CSSRuleBody {
                         lexer.comment(true);
                         break;
                     case "}":
-                        lexer.n();
+                        lexer.next();
                         return res(this);
                     case "{":
                         let rule = new R(this);
-                        this._applyProperties_(lexer.n(), rule);
+                        this._applyProperties_(lexer.next(), rule);
                         for (let i = -1, sel = null; sel = selectors[++i];)
                             if (sel.r) sel.r.merge(rule);
                             else sel.r = rule;

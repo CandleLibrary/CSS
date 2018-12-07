@@ -29,14 +29,14 @@ export default  class CSS_Gradient{
         if (l.ty == l.types.id) {
         	switch(l.tx){
         		case "linear-gradient":
-        		l.n().a("(");
+        		l.next().a("(");
         		let dir,num,type ="deg";
         		if(l.tx == "to"){
 
         		}else if(l.ty == l.types.num){
         			num = parseFloat(l.ty);
-        			type = l.n().tx;
-        			l.n().a(',');
+        			type = l.next().tx;
+        			l.next().a(',');
         		}
         		let stops = [];
         		while(!l.END && l.ch != ")"){
@@ -52,7 +52,7 @@ export default  class CSS_Gradient{
 	        			if(!(len = CSS_Length.parse(l, rule, r)))
 	        				len = CSS_Percentage.parse(l,rule,r);
         			}else{
-        				l.n();
+        				l.next();
         			}
 
         			stops.push(new Stop(v, len));

@@ -59,7 +59,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                     throw new Error("Expected to have term before \"]\"");
             case "[":
                 if (term) return term;
-                term = d(l.n(), definitions);
+                term = d(l.next(), definitions);
                 l.a("]");
                 break;
             case "&":
@@ -71,7 +71,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
 
                     nt._terms_.push(term);
 
-                    l.sync().n();
+                    l.sync().next();
 
                     while (!l.END) {
                         nt._terms_.push(d(l, definitions, super_term, group, need_group, true, important));
@@ -92,7 +92,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
 
                         nt._terms_.push(term);
 
-                        l.sync().n();
+                        l.sync().next();
 
                         while (!l.END) {
                             nt._terms_.push(d(l, definitions, super_term, group, true, and_group, important));
@@ -111,7 +111,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
 
                         nt._terms_.push(term);
 
-                        l.n();
+                        l.next();
 
                         while (!l.END) {
                             nt._terms_.push(d(l, definitions, super_term, true, need_group, and_group, important));
@@ -125,14 +125,14 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                 break;
             case "{":
                 term = _Jux_(term);
-                term.r[0] = parseInt(l.n().tx);
-                if (l.n().ch == ",") {
-                    l.n();
-                    if (l.n().ch == "}")
+                term.r[0] = parseInt(l.next().tx);
+                if (l.next().ch == ",") {
+                    l.next();
+                    if (l.next().ch == "}")
                         term.r[1] = Infinity;
                     else {
                         term.r[1] = parseInt(l.tx);
-                        l.n();
+                        l.next();
                     }
                 } else
                     term.r[1] = term.r[0];
@@ -143,21 +143,21 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                 term = _Jux_(term);
                 term.r[0] = 0;
                 term.r[1] = Infinity;
-                l.n();
+                l.next();
                 if (super_term) return term;
                 break;
             case "+":
                 term = _Jux_(term);
                 term.r[0] = 1;
                 term.r[1] = Infinity;
-                l.n();
+                l.next();
                 if (super_term) return term;
                 break;
             case "?":
                 term = _Jux_(term);
                 term.r[0] = 0;
                 term.r[1] = 1;
-                l.n();
+                l.next();
                 if (super_term) return term;
                 break;
             case "#":
@@ -165,11 +165,11 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                 term._terms_.push(new SymbolTerm(","));
                 term.r[0] = 1;
                 term.r[1] = Infinity;
-                l.n();
+                l.next();
                 if (l.ch == "{") {
-                    term.r[0] = parseInt(l.n().tx);
-                    term.r[1] = parseInt(l.n().a(",").tx);
-                    l.n().a("}");
+                    term.r[0] = parseInt(l.next().tx);
+                    term.r[1] = parseInt(l.next().a(",").tx);
+                    l.next().a("}");
                 }
                 if (super_term) return term;
                 break;
@@ -181,15 +181,15 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                     let v = d(l, definitions, true);
                     term = _Jux_(term, v);
                 } else {
-                    let v = new ValueTerm(l.n().tx, getPropertyParser, definitions);
-                    l.n().a(">");
+                    let v = new ValueTerm(l.next().tx, getPropertyParser, definitions);
+                    l.next().a(">");
                     term = v;
                 }
                 break;
             case "!":
                 /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
 
-                l.n().a("important");
+                l.next().a("important");
                 important.is = true;
                 break;
             default:
@@ -199,7 +199,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                     term = _Jux_(term, v);
                 } else {
                     let v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx);
-                    l.n();
+                    l.next();
                     term = v;
                 }
         }

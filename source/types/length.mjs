@@ -11,11 +11,11 @@ export default class CSS_Length extends Number {
             if (l.ch == "-") {
                 mult = -1;
                 tx = l.p.tx;
-                l.p.n();
+                l.p.next();
             }
             if (l.p.ty == l.types.id) {
                 let id = l.sync().tx;
-                l.n();
+                l.next();
                 return new CSS_Length(parseFloat(tx) * mult, id);
             }
         }

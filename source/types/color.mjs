@@ -25,7 +25,7 @@ export default class CSS_Color extends Color {
         let c = CSS_Color._fs_(l);
 
         if (c) {
-            l.n();
+            l.next();
 
             let color = new CSS_Color();
 
@@ -56,7 +56,7 @@ export default class CSS_Color extends Color {
 
         switch (l.ch) {
             case "#":
-                var value = l.n().tx;
+                var value = l.next().tx;
                 let num = parseInt(value,16);
                 
                 out = { r: 0, g: 0, b: 0, a: 1 };
@@ -76,33 +76,33 @@ export default class CSS_Color extends Color {
                         out.a = ((num) & 0xFF);
                     }
                 }
-                l.n();
+                l.next();
                 break;
             case "r":
                 let tx = l.tx;
                 if (tx == "rgba") {
                     out = { r: 0, g: 0, b: 0, a: 1 };
-                    l.n(); // (
-                    out.r = parseInt(l.n().tx);
-                    l.n(); // ,
-                    out.g = parseInt(l.n().tx);
-                    l.n(); // ,
-                    out.b = parseInt(l.n().tx);
-                    l.n(); // ,
-                    out.a = parseFloat(l.n().tx);
-                    l.n().n();
+                    l.next(); // (
+                    out.r = parseInt(l.next().tx);
+                    l.next(); // ,
+                    out.g = parseInt(l.next().tx);
+                    l.next(); // ,
+                    out.b = parseInt(l.next().tx);
+                    l.next(); // ,
+                    out.a = parseFloat(l.next().tx);
+                    l.next().next();
                     c = new CSS_Color();
                     c.set(out);
                     break;
                 } else if (tx == "rgb") {
                     out = { r: 0, g: 0, b: 0, a: 1 };
-                    l.n(); // (
-                    out.r = parseInt(l.n().tx);
-                    l.n(); // ,
-                    out.g = parseInt(l.n().tx);
-                    l.n(); // ,
-                    out.b = parseInt(l.n().tx);
-                    l.n();
+                    l.next(); // (
+                    out.r = parseInt(l.next().tx);
+                    l.next(); // ,
+                    out.g = parseInt(l.next().tx);
+                    l.next(); // ,
+                    out.b = parseInt(l.next().tx);
+                    l.next();
                     break;
                 }
             default:

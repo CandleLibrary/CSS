@@ -87,7 +87,7 @@ class LiteralTerm {
 
         let v = l.tx;
         if (v == this._value_) {
-            l.n();
+            l.next();
 
             if (r)
                 if (r.v) {
@@ -115,7 +115,7 @@ class SymbolTerm extends LiteralTerm {
             l = whind(l);
 
         if (l.tx == this._value_) {
-            l.n();
+            l.next();
             return true;
         }
 

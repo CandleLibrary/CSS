@@ -2,14 +2,14 @@
 export default  class CSS_Shape extends Array {
     static parse(l, rule, r) {
         if (l.tx == "inset" || l.tx == "circle" || l.tx == "ellipse" || l.tx == "polygon") {
-            l.n().a("(");
+            l.next().a("(");
             let v = "";
             if (l.ty == l.types.str) {
                 v = l.tx.slice(1,-1);
-                l.n().a(")");
+                l.next().a(")");
             } else {
                 let p = l.p;
-                while (!p.END && p.n().tx !== ")") { /* NO OP */ }
+                while (!p.END && p.next().tx !== ")") { /* NO OP */ }
                 v = p.slice(l);
                 l.sync().a(")");
             }
