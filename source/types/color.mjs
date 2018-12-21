@@ -52,7 +52,7 @@ export default class CSS_Color extends Color {
         if (typeof(l) == "string")
             l = whind(l);
 
-        let out = null;
+        let out = { r: 0, g: 0, b: 0, a: 1 };
 
         switch (l.ch) {
             case "#":
@@ -90,10 +90,10 @@ export default class CSS_Color extends Color {
                     out.b = parseInt(l.next().tx);
                     l.next(); // ,
                     out.a = parseFloat(l.next().tx);
-                    l.next().next();
+                    l.next();
                     c = new CSS_Color();
                     c.set(out);
-                    break;
+                    return c;
                 } else if (tx == "rgb") {
                     out = { r: 0, g: 0, b: 0, a: 1 };
                     l.next(); // (
@@ -103,8 +103,10 @@ export default class CSS_Color extends Color {
                     l.next(); // ,
                     out.b = parseInt(l.next().tx);
                     l.next();
-                    break;
-                }
+                    c = new CSS_Color();
+                    c.set(out);
+                    return c;
+                } // intentional
             default:
                 let string = l.tx;
 
@@ -117,6 +119,7 @@ export default class CSS_Color extends Color {
         return out;
     }
 } {
+
     let _$ = (r = 0, g = 0, b = 0, a = 1) => ({ r, g, b, a });
     let c = _$(0, 255, 25);
     CSS_Color.colors = {
