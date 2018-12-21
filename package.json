@@ -1,13 +1,13 @@
 {
   "name": "@candlefw/css",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "CSS Parser",
   "main": "source/css.mjs",
   "scripts": {
     "test": "mocha test/test.js -r esm",
     "build": "rollup --config ./build/config/config.js",
     "build.watch": "rollup --config  ./build/config/config.js --watch",
-    "prepare": "npm run build"
+    "prepare": "npm run build && npm test"
   },
   "repository": {
     "type": "git",
