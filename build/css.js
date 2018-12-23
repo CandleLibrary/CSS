@@ -1523,7 +1523,7 @@ var css = (function (exports) {
             if (typeof(l) == "string")
                 l = whind$1(l);
 
-            let out = null;
+            let out = { r: 0, g: 0, b: 0, a: 1 };
 
             switch (l.ch) {
                 case "#":
@@ -1561,7 +1561,10 @@ var css = (function (exports) {
                         out.b = parseInt(l.next().tx);
                         l.next(); // ,
                         out.a = parseFloat(l.next().tx);
-                        break;
+                        l.next();
+                        c = new CSS_Color();
+                        c.set(out);
+                        return c;
                     } else if (tx == "rgb") {
                         out = { r: 0, g: 0, b: 0, a: 1 };
                         l.next(); // (
@@ -1571,10 +1574,10 @@ var css = (function (exports) {
                         l.next(); // ,
                         out.b = parseInt(l.next().tx);
                         l.next();
-                    }
-                    c = new CSS_Color();
-                    c.set(out);
-                    return c;
+                        c = new CSS_Color();
+                        c.set(out);
+                        return c;
+                    } // intentional
                 default:
                     let string = l.tx;
 
@@ -1587,6 +1590,7 @@ var css = (function (exports) {
             return out;
         }
     } {
+
         let _$ = (r = 0, g = 0, b = 0, a = 1) => ({ r, g, b, a });
         let c = _$(0, 255, 25);
         CSS_Color.colors = {
@@ -6132,7 +6136,7 @@ var css = (function (exports) {
             }
         }
 
-        _READY_() {
+        READY() {
             if (!this.res) this.res = this._resolveReady_.bind(this);
             return new Promise(this.res);
         }

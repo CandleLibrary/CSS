@@ -42,7 +42,7 @@ class CSSRootNode {
         }
     }
 
-    _READY_() {
+    READY() {
         if (!this.res) this.res = this._resolveReady_.bind(this);
         return new Promise(this.res);
     }
