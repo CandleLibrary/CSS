@@ -11,7 +11,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/galactrax/cfw-css.git"
+    "url": "git+https://github.com/candlefw/css.git"
   },
   "keywords": [
     "CSS",
@@ -20,9 +20,9 @@
   "author": "Anthony Weathersby",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/galactrax/cfw-css/issues"
+    "url": "https://github.com/candlefw/css/issues"
   },
-  "homepage": "https://github.com/galactrax/cfw-css#readme",
+  "homepage": "https://github.com/candlefw/css#readme",
   "dependencies": {
     "@candlefw/color": "^1.0.0",
     "@candlefw/ll": "^0.1.2",
