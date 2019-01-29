@@ -1,6 +1,6 @@
 {
   "name": "@candlefw/css",
-  "version": "0.0.6",
+  "version": "0.0.8",
   "description": "CSS Parser",
   "main": "source/css.mjs",
   "scripts": {
@@ -24,11 +24,11 @@
   },
   "homepage": "https://github.com/candlefw/css#readme",
   "dependencies": {
-    "@candlefw/color": "^1.0.0",
-    "@candlefw/ll": "^0.1.2",
-    "@candlefw/math": "0.0.1",
-    "@candlefw/url": "0.0.2",
-    "@candlefw/whind": "^0.2.5-a"
+    "@candlefw/color": "latest",
+    "@candlefw/ll": "latest",
+    "@candlefw/math": "latest",
+    "@candlefw/url": "latest",
+    "@candlefw/whind": "latest"
   },
   "devDependencies": {
     "chai": "^4.2.0",
