@@ -190,6 +190,19 @@ export const property_definitions = {
     line_height: `normal|<number>|<length>|<percentage>|inherit`,
     overflow: 'visible|hidden|scroll|auto|inherit',
 
+    /* Flex Box https://www.w3.org/TR/css-flexbox-1/ */
+    align_items: `flex-start | flex-end | center | baseline | stretch`,
+    align_self: `auto | flex-start | flex-end | center | baseline | stretch`,
+    align_content: `flex-start | flex-end | center | space-between | space-around | stretch`,
+    flex_direction:`row | row-reverse | column | column-reverse`,
+    flex_flow:`<flex-direction>||<flex-wrap>`,
+    flex_wrap:`nowrap|wrap|wrap-reverse`,
+    order:`<integer>`,
+    flex:`none|[<flex-grow> <flex-shrink>?||<flex-basis>]`,
+    flex_grow:`<number>`,
+    flex_shrink:`<number>`,
+    flex_basis:`content|<width>`,
+    width:`<length>|<percentage>|auto|inherit`,
 
     box_sizing: `content-box | border-box`,
 
@@ -220,11 +233,16 @@ export const property_definitions = {
     transition_duration: `<time>#`,
     transition_timing_function: `<timing_function>#`,
     transition_delay: `<time>#`,
+
+    
+    /* https://www.w3.org/TR/SVG11/interact.html#PointerEventsProperty */
+    pointer_events : `visiblePainted|visibleFill|visibleStroke|visible|painted|fill|stroke|all|none|inherit|auto`,
 };
 
 /* Properties that are not directly accessible by CSS prop creator */
 
 export const virtual_property_definitions = {
+
 
     alphavalue: '<number>',
 
