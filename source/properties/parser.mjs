@@ -3,14 +3,17 @@ import { NR, AND, OR, ONE_OF } from "./productions";
 import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms";
 import {  virtual_property_definitions } from "./property_and_type_definitions";
 
-export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null) {
+const standard_productions = {
+    NR, AND, OR, ONE_OF
+}
+export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null, productions = standard_productions) {
 
     let prop = definitions[property_name];
 
     if (prop) {
 
         if (typeof(prop) == "string")
-            prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions);
+            prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
 
         return prop;
     }
@@ -22,7 +25,7 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
         IS_VIRTUAL.is = true;
 
         if (typeof(prop) == "string")
-            prop = virtual_property_definitions[property_name] = CreatePropertyParser(prop, "", definitions);
+            prop = virtual_property_definitions[property_name] = CreatePropertyParser(prop, "", definitions, productions);
 
         return prop;
     }
@@ -31,13 +34,13 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 }
 
 
-function CreatePropertyParser(notation, name, definitions) {
+function CreatePropertyParser(notation, name, definitions, productions) {
 
     const l = whind(notation);
 
     const important = { is: false };
 
-    let n = d(l, definitions);
+    let n = d(l, definitions, productions);
 
     if (n instanceof NR && n._terms_.length == 1)
         n = n._terms_[0];
@@ -48,7 +51,7 @@ function CreatePropertyParser(notation, name, definitions) {
     return n;
 }
 
-function d(l, definitions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
+function d(l, definitions, productions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
     let term, nt;
 
     while (!l.END) {
@@ -59,7 +62,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                     throw new Error("Expected to have term before \"]\"");
             case "[":
                 if (term) return term;
-                term = d(l.next(), definitions);
+                term = d(l.next(), definitions, productions);
                 l.a("]");
                 break;
             case "&":
@@ -67,14 +70,14 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                     if (and_group)
                         return term;
 
-                    nt = new AND();
+                    nt = new productions.AND();
 
                     nt._terms_.push(term);
 
                     l.sync().next();
 
                     while (!l.END) {
-                        nt._terms_.push(d(l, definitions, super_term, group, need_group, true, important));
+                        nt._terms_.push(d(l, definitions,productions, super_term, group, need_group, true, important));
                         if (l.ch !== "&" || l.pk.ch !== "&") break;
                         l.a("&").a("&");
                     }
@@ -88,14 +91,14 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                         if (need_group)
                             return term;
 
-                        nt = new OR();
+                        nt = new productions.OR();
 
                         nt._terms_.push(term);
 
                         l.sync().next();
 
                         while (!l.END) {
-                            nt._terms_.push(d(l, definitions, super_term, group, true, and_group, important));
+                            nt._terms_.push(d(l, definitions,productions,  super_term, group, true, and_group, important));
                             if (l.ch !== "|" || l.pk.ch !== "|") break;
                             l.a("|").a("|");
                         }
@@ -107,14 +110,14 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                             return term;
                         }
 
-                        nt = new ONE_OF();
+                        nt = new productions.ONE_OF();
 
                         nt._terms_.push(term);
 
                         l.next();
 
                         while (!l.END) {
-                            nt._terms_.push(d(l, definitions, super_term, true, need_group, and_group, important));
+                            nt._terms_.push(d(l, definitions, productions, super_term, true, need_group, and_group, important));
                             if (l.ch !== "|") break;
                             l.a("|");
                         }
@@ -124,7 +127,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                 }
                 break;
             case "{":
-                term = _Jux_(term);
+                term = _Jux_(term, null, productions);
                 term.r[0] = parseInt(l.next().tx);
                 if (l.next().ch == ",") {
                     l.next();
@@ -140,28 +143,28 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                 if (super_term) return term;
                 break;
             case "*":
-                term = _Jux_(term);
+                term = _Jux_(term, null, productions);
                 term.r[0] = 0;
                 term.r[1] = Infinity;
                 l.next();
                 if (super_term) return term;
                 break;
             case "+":
-                term = _Jux_(term);
+                term = _Jux_(term, null, productions);
                 term.r[0] = 1;
                 term.r[1] = Infinity;
                 l.next();
                 if (super_term) return term;
                 break;
             case "?":
-                term = _Jux_(term);
+                term = _Jux_(term, null, productions);
                 term.r[0] = 0;
                 term.r[1] = 1;
                 l.next();
                 if (super_term) return term;
                 break;
             case "#":
-                term = _Jux_(term);
+                term = _Jux_(term, null, productions);
                 term._terms_.push(new SymbolTerm(","));
                 term.r[0] = 1;
                 term.r[1] = Infinity;
@@ -177,9 +180,9 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                 let v;
 
                 if (term) {
-                    if (term instanceof NR && term.isRepeating()) term = _Jux_(new NR, term);
-                    let v = d(l, definitions, true);
-                    term = _Jux_(term, v);
+                    if (term instanceof productions.NR && term.isRepeating()) term = _Jux_(new productions.NR, term);
+                    let v = d(l, definitions, productions, true);
+                    term = _Jux_(term, v, productions);
                 } else {
                     let v = new ValueTerm(l.next().tx, getPropertyParser, definitions);
                     l.next().a(">");
@@ -194,7 +197,7 @@ function d(l, definitions, super_term = false, group = false, need_group = false
                 break;
             default:
                 if (term) {
-                    if (term instanceof NR && term.isRepeating()) term = _Jux_(new NR, term);
+                    if (term instanceof NR && term.isRepeating()) term = _Jux_(new productions.NR, term);
                     let v = d(l, definitions, true);
                     term = _Jux_(term, v);
                 } else {
@@ -207,10 +210,10 @@ function d(l, definitions, super_term = false, group = false, need_group = false
     return term;
 }
 
-function _Jux_(term, new_term = null) {
+function _Jux_(term, new_term = null, productions) {
     if (term) {
-        if (!(term instanceof NR)) {
-            let nr = new NR();
+        if (!(term instanceof productions.NR)) {
+            let nr = new productions.NR();
             nr._terms_.push(term);
             term = nr;
         }

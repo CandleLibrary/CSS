@@ -1,4 +1,4 @@
-import whind from "@candlefw/whind";
+//import whind from "@candlefw/whind";
 
 function getValue(lex, attribute) {
     let v = lex.tx,
@@ -37,7 +37,7 @@ function getValue(lex, attribute) {
 }
 
 function ParseString(string, transform) {
-    var lex = whind(string);
+    //var lex = whind(string);
     
     while (!lex.END) {
         let tx = lex.tx;
