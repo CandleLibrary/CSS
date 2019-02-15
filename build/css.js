@@ -2038,41 +2038,38 @@ ${is_iws}`;
     const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
     const STOCK_LOCATION = {
-        protocol :"",
-        host :"",
-        port :"",
-        path :"",
-        hash :"",
-        query :"",
-        search:""
+        protocol: "",
+        host: "",
+        port: "",
+        path: "",
+        hash: "",
+        query: "",
+        search: ""
     };
 
     /** Implement Basic Fetch Mechanism for NodeJS **/
-    if(typeof(fetch) == "undefined" && typeof(global) !== "undefined" ){
-
-        
-        import("fs").then(fs=>{
-
-
-         global.fetch = (url, data) =>
-            new Promise((res, rej) => {
-                let p = path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
-                fs.readFile(p, "utf8", (err, data) => {
-                    if (err) {
-                        rej(err);
-                    } else {
-                        res({
+    if (typeof(fetch) == "undefined" && typeof(global) !== "undefined") {
+        (async () => {
+            const fs = (await import("fs")).default.promises;
+            const path = (await import("path")).default;
+            global.fetch = (url, data) =>
+                new Promise(async (res, rej) => {
+                    let p = await path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
+                    try {
+                        let data = await fs.readFile(p, "utf8");
+                        return res({
                             status: 200,
                             text: () => {
                                 return {
                                     then: (f) => f(data)
                                 }
                             }
-                        });
+                        })
+                    } catch (err) {
+                        return rej(err);
                     }
                 });
-            });
-        });
+        })();
     }
 
     function fetchLocalText(URL, m = "same-origin") {
@@ -2164,7 +2161,7 @@ ${is_iws}`;
     class URL {
 
         static resolveRelative(URL_or_url_original, URL_or_url_new) {
-            
+
             let URL_old = (URL_or_url_original instanceof URL) ? URL_or_url_original : new URL(URL_or_url_original);
             let URL_new = (URL_or_url_new instanceof URL) ? URL_or_url_new : new URL(URL_or_url_new);
 
@@ -2195,13 +2192,20 @@ ${is_iws}`;
 
         constructor(url = "", USE_LOCATION = false) {
 
-            let IS_STRING = true;
-            
+            let IS_STRING = true,
+                IS_LOCATION = false;
 
-            const location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION;
 
+            let location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION;
+
+            if (url instanceof Location) {
+                location = url;
+                url = "";
+                IS_LOCATION = true;
+            }
             if (!url || typeof(url) != "string") {
                 IS_STRING = false;
+                IS_LOCATION = true;
                 if (URL.GLOBAL && USE_LOCATION)
                     return URL.GLOBAL;
             }
@@ -2271,11 +2275,10 @@ ${is_iws}`;
                     this.path = part[8] || ((USE_LOCATION) ? location.pathname : "");
                     this.query = part[9] || ((USE_LOCATION) ? location.search.slice(1) : "");
                     this.hash = part[10] || ((USE_LOCATION) ? location.hash.slice(1) : "");
-                }
-            } else if (USE_LOCATION) {
 
-                URL.G = this;
-                this.protocol = location.protocol;
+                }
+            } else if (IS_LOCATION) {
+                this.protocol = location.protocol.replace(/\:/g,"");
                 this.host = location.hostname;
                 this.port = location.port;
                 this.path = location.pathname;
@@ -2283,7 +2286,10 @@ ${is_iws}`;
                 this.query = location.search.slice(1);
                 this._getQuery_(this.query);
 
-                return URL.R;
+                if (USE_LOCATION) {
+                    URL.G = this;
+                    return URL.R;
+                }
             }
             this._getQuery_(this.query);
         }
@@ -2365,11 +2371,13 @@ ${is_iws}`;
         toString() {
             let str = [];
 
-            if (this.protocol && this.host)
-                str.push(`${this.protocol}://`);
+            if (this.host) {
 
-            if (this.host)
+                if (this.protocol)
+                    str.push(`${this.protocol}://`);
+
                 str.push(`${this.host}`);
+            }
 
             if (this.port)
                 str.push(`:${this.port}`);
@@ -2378,7 +2386,11 @@ ${is_iws}`;
                 str.push(`${this.path[0] == "/" ? "" : "/"}${this.path}`);
 
             if (this.query)
-                str.push(this.query);
+                str.push(((this.query[0] == "?" ? "" : "?") + this.query));
+
+            if (this.hash)
+                str.push("#"+this.hash);
+
 
             return str.join("");
         }
@@ -2521,11 +2533,11 @@ ${is_iws}`;
         }
 
         submitJSON(json_data) {
-                return submitJSON(this.toString(), json_data);
-            }
-            /**
-             * Goes to the current URL.
-             */
+            return submitJSON(this.toString(), json_data);
+        }
+        /**
+         * Goes to the current URL.
+         */
         goto() {
             return;
             let url = this.toString();
@@ -4076,6 +4088,19 @@ ${is_iws}`;
         line_height: `normal|<number>|<length>|<percentage>|inherit`,
         overflow: 'visible|hidden|scroll|auto|inherit',
 
+        /* Flex Box https://www.w3.org/TR/css-flexbox-1/ */
+        align_items: `flex-start | flex-end | center | baseline | stretch`,
+        align_self: `auto | flex-start | flex-end | center | baseline | stretch`,
+        align_content: `flex-start | flex-end | center | space-between | space-around | stretch`,
+        flex_direction:`row | row-reverse | column | column-reverse`,
+        flex_flow:`<flex-direction>||<flex-wrap>`,
+        flex_wrap:`nowrap|wrap|wrap-reverse`,
+        order:`<integer>`,
+        flex:`none|[<flex-grow> <flex-shrink>?||<flex-basis>]`,
+        flex_grow:`<number>`,
+        flex_shrink:`<number>`,
+        flex_basis:`content|<width>`,
+        width:`<length>|<percentage>|auto|inherit`,
 
         box_sizing: `content-box | border-box`,
 
@@ -4106,11 +4131,16 @@ ${is_iws}`;
         transition_duration: `<time>#`,
         transition_timing_function: `<timing_function>#`,
         transition_delay: `<time>#`,
+
+        
+        /* https://www.w3.org/TR/SVG11/interact.html#PointerEventsProperty */
+        pointer_events : `visiblePainted|visibleFill|visibleStroke|visible|painted|fill|stroke|all|none|inherit|auto`,
     };
 
     /* Properties that are not directly accessible by CSS prop creator */
 
     const virtual_property_definitions = {
+
 
         alphavalue: '<number>',
 
