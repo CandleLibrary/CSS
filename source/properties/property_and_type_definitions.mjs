@@ -16,6 +16,7 @@ import CSS_Path from "../types/path.mjs";
  * CSS Type constructors
  * @alias module:wick~internals.css.types.
  * @enum {object}
+ * https://www.w3.org/TR/CSS2/about.html#property-defs
  */
 export const types = {
     color: CSS_Color,
@@ -80,10 +81,8 @@ export const property_definitions = {
 
     /* Font https://www.w3.org/TR/css-fonts-4*/
     font_family: `[[<family_name>|<generic_family>],]*[<family_name>|<generic_family>]`,
-    family_name: `<id>||<string>`,
-    generic_name: `serif|sans_serif|cursive|fantasy|monospace`,
     font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
-    font_variant: `normal|small_caps`,
+    font_variant: `normal|small-caps`,
     font_style: `normal | italic | oblique <angle>?`,
     font_kerning: ` auto | normal | none`,
     font_variant_ligatures:`normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values> ]`,
@@ -260,9 +259,13 @@ export const virtual_property_definitions = {
     attachment: `scroll|fixed|local`,
     line_style: `none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset`,
     line_width: `thin|medium|thick|<length>`,
-
     shadow: `inset?&&<length>{2,4}&&<color>?`,
 
+    /* Font https://www.w3.org/TR/css-fonts-4/#family-name-value */
+    
+    family_name: `<id>||<string>`,
+    generic_family: `serif|sans-serif|cursive|fantasy|monospace`,
+    
     /* Identifier https://drafts.csswg.org/css-values-4/ */
 
     identifier: `<id>`,

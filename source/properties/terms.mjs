@@ -8,21 +8,23 @@ class ValueTerm {
 
     constructor(value, getPropertyParser, definitions) {
 
-        this._value_ = null;
+        this.value = null;
 
         const IS_VIRTUAL = { is: false };
 
-        if (!(this._value_ = types[value]))
-            this._value_ = getPropertyParser(value, IS_VIRTUAL, definitions);
+        if (!(this.value = types[value]))
+            this.value = getPropertyParser(value, IS_VIRTUAL, definitions);
 
-        this._prop_ = "";
+        this.prop = "";
 
-        if (!this._value_)
+        if (!this.value)
             return new LiteralTerm(value);
 
-        if (this._value_ instanceof NR && IS_VIRTUAL.is)
-            this._virtual_ = true;
+        if (this.value instanceof NR && IS_VIRTUAL.is)
+            this.virtual = true;
     }
+
+    seal(){}
 
     parse(l, rule, r) {
         if (typeof(l) == "string")
@@ -30,27 +32,27 @@ class ValueTerm {
 
         let rn = { v: null };
 
-        let v = this._value_.parse(l, rule, rn);
+        let v = this.value.parse(l, rule, rn);
 
         if (rn.v) {
             if (r)
                 if (r.v) {
                     if (Array.isArray(r.v)) {
-                        if (Array.isArray(rn.v) && !this._virtual_)
+                        if (Array.isArray(rn.v) && !this.virtual)
                             r.v = r.v.concat(rn.v);
                         else
                             r.v.push(rn.v);
                     } else {
-                        if (Array.isArray(rn.v) && !this._virtual_)
+                        if (Array.isArray(rn.v) && !this.virtual)
                             r.v = ([r.v]).concat(rn.v);
                         else
                             r.v = [r.v, rn.v];
                     }
                 } else
-                    r.v = (this._virtual_) ? [rn.v] : rn.v;
+                    r.v = (this.virtual) ? [rn.v] : rn.v;
 
-            if (this._prop_)
-                rule[this._prop_] = rn.v;
+            if (this.prop)
+                rule[this.prop] = rn.v;
 
             return true;
 
@@ -64,8 +66,8 @@ class ValueTerm {
                 } else
                     r.v = v;
 
-            if (this._prop_)
-                rule[this._prop_] = v;
+            if (this.prop)
+                rule[this.prop] = v;
 
             return true;
         } else
@@ -76,9 +78,11 @@ class ValueTerm {
 class LiteralTerm {
 
     constructor(value) {
-        this._value_ = value;
-        this._prop_ = null;
+        this.value = value;
+        this.prop = null;
     }
+
+    seal(){}
 
     parse(l, rule, r) {
 
@@ -86,7 +90,7 @@ class LiteralTerm {
             l = whind(l);
 
         let v = l.tx;
-        if (v == this._value_) {
+        if (v == this.value) {
             l.next();
 
             if (r)
@@ -100,8 +104,8 @@ class LiteralTerm {
                 } else
                     r.v = v;
 
-            if (this._prop_)
-                rule[this._prop_] = v;
+            if (this.prop)
+                rule[this.prop] = v;
 
             return true;
         }
@@ -114,7 +118,7 @@ class SymbolTerm extends LiteralTerm {
         if (typeof(l) == "string")
             l = whind(l);
 
-        if (l.tx == this._value_) {
+        if (l.tx == this.value) {
             l.next();
             return true;
         }

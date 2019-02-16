@@ -3,6 +3,18 @@ import CSS_Percentage from "./percentage";
 import whind from "@candlefw/whind";
 
 export default class CSS_Length extends Number {
+
+    static setInput(input, value){
+        input.type = "number";
+        input.value = value;
+    }
+
+    static buildInput(){
+        let ele = document.createElement("input")
+        ele.type = "number";
+        return ele;
+    }
+
     static parse(l, rule, r) {
         let tx = l.tx,
             pky = l.pk.ty;

@@ -84,16 +84,28 @@ class CSSRule {
             this.props[prop.name] = prop.value;
     }
 
-    toString(off = 0) {
+
+
+    toString(off = 0, rule = "") {
         let str = [],
             offset = ("    ").repeat(off);
 
-        for (let a in this.props) {
-            if (this.props[a] !== null) {
-                if (Array.isArray(this.props[a]))
-                    str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
+        if (rule) {
+            if (this.props[rule]) {
+                if (Array.isArray(this.props[rule]))
+                    str.push(this.props[rule].join(" "));
                 else
-                    str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";\n");
+                    str.push(this.props[rule].toString());
+            }else
+                return "";
+        } else {
+            for (let a in this.props) {
+                if (this.props[a] !== null) {
+                    if (Array.isArray(this.props[a]))
+                        str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
+                    else
+                        str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";\n");
+                }
             }
         }
 

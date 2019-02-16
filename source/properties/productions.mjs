@@ -9,18 +9,22 @@ class NR { //Notation Rule
     constructor() {
 
         this.r = [NaN, NaN];
-        this._terms_ = [];
-        this._prop_ = null;
-        this._virtual_ = false;
+        this.terms = [];
+        this.prop = null;
+        this.virtual = false;
+    }
+
+    seal(){
+
     }
 
     sp(value, rule) { //Set Property
-        if (this._prop_){
+        if (this.prop){
             if (value)
                 if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
-                    rule[this._prop_] = value[0];
+                    rule[this.prop] = value[0];
                 else
-                    rule[this._prop_] = value;
+                    rule[this.prop] = value;
         }
     }
 
@@ -43,9 +47,9 @@ class NR { //Notation Rule
         let bool = true;
         for (let j = 0; j < end && !lx.END; j++) {
 
-            for (let i = 0, l = this._terms_.length; i < l; i++) {
-                bool = this._terms_[i].parse(lx, rule, r);
-                if (!bool) break;
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                bool = this.terms[i].parse(lx, rule, r);
+                if (bool) break;
             }
 
             if (!bool) {
@@ -70,8 +74,8 @@ class AND extends NR {
 
         outer:
             for (let j = 0; j < end && !lx.END; j++) {
-                for (let i = 0, l = this._terms_.length; i < l; i++)
-                    if (!this._terms_[i].parse(lx, rule, r)) return false;
+                for (let i = 0, l = this.terms.length; i < l; i++)
+                    if (!this.terms[i].parse(lx, rule, r)) return false;
             }
 
         this.sp(r.v, rule);
@@ -87,8 +91,8 @@ class OR extends NR {
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
 
-            for (let i = 0, l = this._terms_.length; i < l; i++)
-                if (this._terms_[i].parse(lx, rule, r)) bool = true;
+            for (let i = 0, l = this.terms.length; i < l; i++)
+                if (this.terms[i].parse(lx, rule, r)) bool = true;
 
             if (!bool && j < start) {
                 this.sp(r.v, rule);
@@ -109,8 +113,8 @@ class ONE_OF extends NR {
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
 
-            for (let i = 0, l = this._terms_.length; i < l; i++) {
-                bool = this._terms_[i].parse(lx, rule, r);
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                bool = this.terms[i].parse(lx, rule, r);
                 if (bool) break;
             }
 

@@ -62,7 +62,7 @@ class UIRuleSet{
 		this.rule_body = rule_body;
 
 		for(let a in rule_body.props){
-			let rule = new UIRule(a, rule_body.props[a], this);
+			let rule = new UIRule(a, rule_body.toString(0, a), this);
 		}
 	}
 
@@ -78,7 +78,7 @@ class UIRule{
 		this.parent = parent;
 		this.setupElement();
 
-		this.element.innerHTML = `${type}`
+		this.element.innerHTML = `${type}: ${value}`
 		
 		this.value = new UIValue(type, value, this);
 

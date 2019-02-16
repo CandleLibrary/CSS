@@ -1,34 +1,88 @@
 import whind from "@candlefw/whind";
-import { NR, AND, OR, ONE_OF } from "../properties/productions.mjs";
+import * as prod from "../properties/productions.mjs";
+import { LiteralTerm, ValueTerm, SymbolTerm } from "../properties/terms.mjs";
+
+
+class literalHolder {
+
+    constructor(values) {
+        this.values = values;
+    }
+
+    parse(lex) {
+        let v = lex.tx;
+
+        for (let i = 0; i < this.values.length; i++) {
+            if (this.values[i].includes(v)) {
+                return v;
+            }
+        }
+
+        return "";
+    }
+
+    setInput(input, value) {
+        input.type = "";
+        input.value = value;
+    }
+}
+
+function input(e) {
+    let v = e.target.value;
+    let lex = whind(v);
+    let dispatch = this.dispatch;
+
+    if (v === "") {
+        e.target.type = ""
+        return;
+    }
+
+    e.target.style.color = "red";
+
+    let val = null;
+
+    for (let i = 0; i < dispatch.length; i++) {
+        if ((val = dispatch[i].parse(lex.copy()))) {
+            dispatch[i].setInput(e.target, val)
+            e.target.style.color = "black";
+        };
+    }
+}
+
+function button(e){
+    const repeat = e.target.repeat;
+    e.target.style.display = "none";
+    e.target.parentElement.appendChild(this.buildInput(repeat + 1))
+}
 /**
  * wick internals.
  * @class      NR (name)
  */
-class NR { //Notation Rule
+class NR extends prod.NR {
+    seal() {
+        //Create Element
+        let literals = [];
+        this.dispatch = [];
+        const dispatch = this.dispatch;
 
-    constructor() {
+        for (let i = 0; i < this.terms.length; i++) {
 
-        this.r = [NaN, NaN];
-        this._terms_ = [];
-        this._prop_ = null;
-        this._virtual_ = false;
-    }
+            let term = this.terms[i];
+            if (term instanceof LiteralTerm)
+                literals.push(term.value);
+            else
+                dispatch.push(term.value);
 
-    sp(value, rule) { //Set Property
-        if (this._prop_){
-            if (value)
-                if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
-                    rule[this._prop_] = value[0];
-                else
-                    rule[this._prop_] = value;
         }
+
+        this.input = input.bind(this);
+        this.button = button.bind(this);
+
+        if (literals.length > 0)
+            dispatch.push(new literalHolder(literals));
     }
 
-    isRepeating() {
-        return !(isNaN(this.r[0]) && isNaN(this.r[1]));
-    }
-
-    parse(lx, rule, out_val) {
+    parseInput(lx, ele, out_val) {
         if (typeof(lx) == "string")
             lx = whind(lx);
 
@@ -36,16 +90,22 @@ class NR { //Notation Rule
             start = isNaN(this.r[0]) ? 1 : this.r[0],
             end = isNaN(this.r[1]) ? 1 : this.r[1];
 
-        return this.___(lx, rule, out_val, r, start, end);
+        let result = this.pi(lx, ele, out_val, r, start, end);
     }
 
-    ___(lx, rule, out_val, r, start, end) {
+    pi(lx, ele, out_val, r, start, end) {
+        let element_selector = document.createElement("input");
+        element_selector.addEventListener("input", this.input);
+        ele.appendChild(element_selector);
+
         let bool = true;
+
         for (let j = 0; j < end && !lx.END; j++) {
 
-            for (let i = 0, l = this._terms_.length; i < l; i++) {
-                bool = this._terms_[i].parse(lx, rule, r);
-                if (!bool) break;
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                bool = this.terms[i].parse(lx.copy(), rule, r);
+                this.terms[i].setInput(e.target, bool)
+                if (bool) break;
             }
 
             if (!bool) {
@@ -64,13 +124,32 @@ class NR { //Notation Rule
         return true;
     }
 
-    buildInput(){
-        let element = document.createElement("select");
+    buildInput(repeat = 1, lex) {
 
-        for(let i = 0; i < this._terms_.length; i++){
-            let ele = document.createElement("option")
-            ele.innerHTML = ele.value = this._terms_[i]._value_;
-            element.appendChild(ele);
+        let element = document.createElement("div");
+        this.parseInput(lex, element);
+
+        if(lex){
+            var value = lex.tx;
+            var g = {props:{}}
+            var = this.parseInput(lex, g)
+        }
+
+        //Build Element
+        let element_selector = document.createElement("input");
+        element.appendChild(element_selector);
+        element_selector.addEventListener("input", this.input);
+
+        element_selector.value = value;
+        
+        //this.input({target:element_selector})
+
+        if (this.r[1] > 1 && this.r[1] > repeat) {
+            let button = document.createElement("button");
+            button.repeat = repeat;
+            button.innerHTML = "+";
+            element.appendChild(button);
+            button.addEventListener("click", this.button)
         }
 
         return element;
@@ -78,12 +157,12 @@ class NR { //Notation Rule
 }
 
 class AND extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    pi(lx, rule, r, start, end) {
 
         outer:
             for (let j = 0; j < end && !lx.END; j++) {
-                for (let i = 0, l = this._terms_.length; i < l; i++)
-                    if (!this._terms_[i].parse(lx, rule, r)) return false;
+                for (let i = 0, l = this.terms.length; i < l; i++)
+                    if (!this.terms[i].parse(lx, rule, r)) return false;
             }
 
         this.sp(r.v, rule);
@@ -91,16 +170,17 @@ class AND extends NR {
         return true;
     }
 }
+Object.assign(AND.prototype, prod.AND.prototype);
 
 class OR extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    pi(lx, rule, r, start, end) {
         let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
 
-            for (let i = 0, l = this._terms_.length; i < l; i++)
-                if (this._terms_[i].parse(lx, rule, r)) bool = true;
+            for (let i = 0, l = this.terms.length; i < l; i++)
+                if (this.terms[i].parse(lx, rule, r)) bool = true;
 
             if (!bool && j < start) {
                 this.sp(r.v, rule);
@@ -113,16 +193,17 @@ class OR extends NR {
         return true;
     }
 }
+Object.assign(OR.prototype, prod.OR.prototype)
 
 class ONE_OF extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    pi(lx, ele, r, start, end) {
         let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
 
-            for (let i = 0, l = this._terms_.length; i < l; i++) {
-                bool = this._terms_[i].parse(lx, rule, r);
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                bool = this.terms[i].parse(lx, rule, r);
                 if (bool) break;
             }
 
@@ -135,8 +216,14 @@ class ONE_OF extends NR {
 
         this.sp(r.v, rule);
 
+        //create alternatives
+        let button = document.createElement("button");
+        button.innerHTML = "ONE_OF";
+        ele.push(button);
+
         return bool;
     }
 }
+Object.assign(ONE_OF.prototype, prod.ONE_OF.prototype)
 
 export { NR, AND, OR, ONE_OF };

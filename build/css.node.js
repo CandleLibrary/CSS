@@ -1578,6 +1578,17 @@ class CSS_Color extends Color {
 
     }
 
+    static setInput(input, value){
+        input.type = "color";
+        input.value = value;
+    }
+
+    static buildInput(){
+        let ele = document.createElement("input");
+        ele.type = "color";
+        return ele;
+    }
+
     static parse(l, rule, r) {
 
         let c = CSS_Color._fs_(l);
@@ -1675,6 +1686,10 @@ class CSS_Color extends Color {
         }
 
         return out;
+    }
+
+    toString(){
+        return `#${("0"+this.r.toString(16)).slice(-2)}${("0"+this.g.toString(16)).slice(-2)}${("0"+this.b.toString(16)).slice(-2)}`
     }
 } {
 
@@ -1828,6 +1843,16 @@ class CSS_Color extends Color {
 }
 
 class CSS_Percentage extends Number {
+    static setInput(input, value){
+        input.type = "number";
+        input.value = parseFloat(value);
+    }
+
+    static buildInput(){
+        let ele = document.createElement("input");
+        ele.type = "number";
+        return ele;
+    }
     
     static parse(l, rule, r) {
         let tx = l.tx,
@@ -1894,6 +1919,18 @@ class CSS_Percentage extends Number {
 }
 
 class CSS_Length extends Number {
+
+    static setInput(input, value){
+        input.type = "number";
+        input.value = value;
+    }
+
+    static buildInput(){
+        let ele = document.createElement("input");
+        ele.type = "number";
+        return ele;
+    }
+
     static parse(l, rule, r) {
         let tx = l.tx,
             pky = l.pk.ty;
@@ -3408,6 +3445,8 @@ function CSS_Media_handle(type, prefix) {
     };
 }
 
+//import whind from "@candlefw/whind";
+
 function getValue(lex, attribute) {
     let v = lex.tx,
         mult = 1;
@@ -3445,7 +3484,7 @@ function getValue(lex, attribute) {
 }
 
 function ParseString(string, transform) {
-    var lex = whind$1(string);
+    //var lex = whind(string);
     
     while (!lex.END) {
         let tx = lex.tx;
@@ -3915,6 +3954,7 @@ class CSS_Path extends Array {
  * CSS Type constructors
  * @alias module:wick~internals.css.types.
  * @enum {object}
+ * https://www.w3.org/TR/CSS2/about.html#property-defs
  */
 const types = {
     color: CSS_Color,
@@ -3979,10 +4019,8 @@ const property_definitions = {
 
     /* Font https://www.w3.org/TR/css-fonts-4*/
     font_family: `[[<family_name>|<generic_family>],]*[<family_name>|<generic_family>]`,
-    family_name: `<id>||<string>`,
-    generic_name: `serif|sans_serif|cursive|fantasy|monospace`,
     font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
-    font_variant: `normal|small_caps`,
+    font_variant: `normal|small-caps`,
     font_style: `normal | italic | oblique <angle>?`,
     font_kerning: ` auto | normal | none`,
     font_variant_ligatures:`normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values> ]`,
@@ -4159,9 +4197,13 @@ const virtual_property_definitions = {
     attachment: `scroll|fixed|local`,
     line_style: `none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset`,
     line_width: `thin|medium|thick|<length>`,
-
     shadow: `inset?&&<length>{2,4}&&<color>?`,
 
+    /* Font https://www.w3.org/TR/css-fonts-4/#family-name-value */
+    
+    family_name: `<id>||<string>`,
+    generic_family: `serif|sans-serif|cursive|fantasy|monospace`,
+    
     /* Identifier https://drafts.csswg.org/css-values-4/ */
 
     identifier: `<id>`,
@@ -4328,16 +4370,28 @@ class CSSRule {
             this.props[prop.name] = prop.value;
     }
 
-    toString(off = 0) {
+
+
+    toString(off = 0, rule = "") {
         let str = [],
             offset = ("    ").repeat(off);
 
-        for (let a in this.props) {
-            if (this.props[a] !== null) {
-                if (Array.isArray(this.props[a]))
-                    str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
+        if (rule) {
+            if (this.props[rule]) {
+                if (Array.isArray(this.props[rule]))
+                    str.push(this.props[rule].join(" "));
                 else
-                    str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";\n");
+                    str.push(this.props[rule].toString());
+            }else
+                return "";
+        } else {
+            for (let a in this.props) {
+                if (this.props[a] !== null) {
+                    if (Array.isArray(this.props[a]))
+                        str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
+                    else
+                        str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";\n");
+                }
             }
         }
 
@@ -4366,18 +4420,22 @@ class NR { //Notation Rule
     constructor() {
 
         this.r = [NaN, NaN];
-        this._terms_ = [];
-        this._prop_ = null;
-        this._virtual_ = false;
+        this.terms = [];
+        this.prop = null;
+        this.virtual = false;
+    }
+
+    seal(){
+
     }
 
     sp(value, rule) { //Set Property
-        if (this._prop_){
+        if (this.prop){
             if (value)
                 if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
-                    rule[this._prop_] = value[0];
+                    rule[this.prop] = value[0];
                 else
-                    rule[this._prop_] = value;
+                    rule[this.prop] = value;
         }
     }
 
@@ -4400,9 +4458,9 @@ class NR { //Notation Rule
         let bool = true;
         for (let j = 0; j < end && !lx.END; j++) {
 
-            for (let i = 0, l = this._terms_.length; i < l; i++) {
-                bool = this._terms_[i].parse(lx, rule, r);
-                if (!bool) break;
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                bool = this.terms[i].parse(lx, rule, r);
+                if (bool) break;
             }
 
             if (!bool) {
@@ -4427,8 +4485,8 @@ class AND extends NR {
 
         outer:
             for (let j = 0; j < end && !lx.END; j++) {
-                for (let i = 0, l = this._terms_.length; i < l; i++)
-                    if (!this._terms_[i].parse(lx, rule, r)) return false;
+                for (let i = 0, l = this.terms.length; i < l; i++)
+                    if (!this.terms[i].parse(lx, rule, r)) return false;
             }
 
         this.sp(r.v, rule);
@@ -4444,8 +4502,8 @@ class OR extends NR {
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
 
-            for (let i = 0, l = this._terms_.length; i < l; i++)
-                if (this._terms_[i].parse(lx, rule, r)) bool = true;
+            for (let i = 0, l = this.terms.length; i < l; i++)
+                if (this.terms[i].parse(lx, rule, r)) bool = true;
 
             if (!bool && j < start) {
                 this.sp(r.v, rule);
@@ -4466,8 +4524,8 @@ class ONE_OF extends NR {
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
 
-            for (let i = 0, l = this._terms_.length; i < l; i++) {
-                bool = this._terms_[i].parse(lx, rule, r);
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                bool = this.terms[i].parse(lx, rule, r);
                 if (bool) break;
             }
 
@@ -4488,21 +4546,23 @@ class ValueTerm {
 
     constructor(value, getPropertyParser, definitions) {
 
-        this._value_ = null;
+        this.value = null;
 
         const IS_VIRTUAL = { is: false };
 
-        if (!(this._value_ = types[value]))
-            this._value_ = getPropertyParser(value, IS_VIRTUAL, definitions);
+        if (!(this.value = types[value]))
+            this.value = getPropertyParser(value, IS_VIRTUAL, definitions);
 
-        this._prop_ = "";
+        this.prop = "";
 
-        if (!this._value_)
+        if (!this.value)
             return new LiteralTerm(value);
 
-        if (this._value_ instanceof NR && IS_VIRTUAL.is)
-            this._virtual_ = true;
+        if (this.value instanceof NR && IS_VIRTUAL.is)
+            this.virtual = true;
     }
+
+    seal(){}
 
     parse(l, rule, r) {
         if (typeof(l) == "string")
@@ -4510,27 +4570,27 @@ class ValueTerm {
 
         let rn = { v: null };
 
-        let v = this._value_.parse(l, rule, rn);
+        let v = this.value.parse(l, rule, rn);
 
         if (rn.v) {
             if (r)
                 if (r.v) {
                     if (Array.isArray(r.v)) {
-                        if (Array.isArray(rn.v) && !this._virtual_)
+                        if (Array.isArray(rn.v) && !this.virtual)
                             r.v = r.v.concat(rn.v);
                         else
                             r.v.push(rn.v);
                     } else {
-                        if (Array.isArray(rn.v) && !this._virtual_)
+                        if (Array.isArray(rn.v) && !this.virtual)
                             r.v = ([r.v]).concat(rn.v);
                         else
                             r.v = [r.v, rn.v];
                     }
                 } else
-                    r.v = (this._virtual_) ? [rn.v] : rn.v;
+                    r.v = (this.virtual) ? [rn.v] : rn.v;
 
-            if (this._prop_)
-                rule[this._prop_] = rn.v;
+            if (this.prop)
+                rule[this.prop] = rn.v;
 
             return true;
 
@@ -4544,8 +4604,8 @@ class ValueTerm {
                 } else
                     r.v = v;
 
-            if (this._prop_)
-                rule[this._prop_] = v;
+            if (this.prop)
+                rule[this.prop] = v;
 
             return true;
         } else
@@ -4556,9 +4616,11 @@ class ValueTerm {
 class LiteralTerm {
 
     constructor(value) {
-        this._value_ = value;
-        this._prop_ = null;
+        this.value = value;
+        this.prop = null;
     }
+
+    seal(){}
 
     parse(l, rule, r) {
 
@@ -4566,7 +4628,7 @@ class LiteralTerm {
             l = whind$1(l);
 
         let v = l.tx;
-        if (v == this._value_) {
+        if (v == this.value) {
             l.next();
 
             if (r)
@@ -4580,8 +4642,8 @@ class LiteralTerm {
                 } else
                     r.v = v;
 
-            if (this._prop_)
-                rule[this._prop_] = v;
+            if (this.prop)
+                rule[this.prop] = v;
 
             return true;
         }
@@ -4594,7 +4656,7 @@ class SymbolTerm extends LiteralTerm {
         if (typeof(l) == "string")
             l = whind$1(l);
 
-        if (l.tx == this._value_) {
+        if (l.tx == this.value) {
             l.next();
             return true;
         }
@@ -4603,26 +4665,32 @@ class SymbolTerm extends LiteralTerm {
     }
 }
 
-function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null) {
+const standard_productions = {
+    NR, AND, OR, ONE_OF
+};
+function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null, productions = standard_productions) {
 
     let prop = definitions[property_name];
 
     if (prop) {
 
         if (typeof(prop) == "string")
-            prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions);
+            prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
 
         return prop;
     }
 
-    prop = virtual_property_definitions[property_name];
+    if(!definitions.__virtual)
+        definitions.__virtual = Object.assign({}, virtual_property_definitions);
+    
+    prop = definitions.__virtual[property_name];
 
     if (prop) {
 
         IS_VIRTUAL.is = true;
 
         if (typeof(prop) == "string")
-            prop = virtual_property_definitions[property_name] = CreatePropertyParser(prop, "", definitions);
+            prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
 
         return prop;
     }
@@ -4631,25 +4699,27 @@ function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definition
 }
 
 
-function CreatePropertyParser(notation, name, definitions) {
+function CreatePropertyParser(notation, name, definitions, productions) {
 
     const l = whind$1(notation);
 
     const important = { is: false };
 
-    let n = d$1(l, definitions);
+    let n = d$1(l, definitions, productions);
+    n.seal();
 
-    if (n instanceof NR && n._terms_.length == 1)
-        n = n._terms_[0];
+    //if (n instanceof productions.NR && n.terms.length == 1 && n.r[1] < 2)
+    //    n = n.terms[0];
 
-    n._prop_ = name;
+    n.prop = name;
     n.IMP = important.is;
 
     return n;
 }
 
-function d$1(l, definitions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
+function d$1(l, definitions, productions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
     let term, nt;
+    const {NR: NR$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1} = productions;
 
     while (!l.END) {
         switch (l.ch) {
@@ -4659,7 +4729,7 @@ function d$1(l, definitions, super_term = false, group = false, need_group = fal
                     throw new Error("Expected to have term before \"]\"");
             case "[":
                 if (term) return term;
-                term = d$1(l.next(), definitions);
+                term = d$1(l.next(), definitions, productions);
                 l.a("]");
                 break;
             case "&":
@@ -4667,14 +4737,14 @@ function d$1(l, definitions, super_term = false, group = false, need_group = fal
                     if (and_group)
                         return term;
 
-                    nt = new AND();
+                    nt = new AND$$1();
 
-                    nt._terms_.push(term);
+                    nt.terms.push(term);
 
                     l.sync().next();
 
                     while (!l.END) {
-                        nt._terms_.push(d$1(l, definitions, super_term, group, need_group, true, important));
+                        nt.terms.push(d$1(l, definitions,productions, super_term, group, need_group, true, important));
                         if (l.ch !== "&" || l.pk.ch !== "&") break;
                         l.a("&").a("&");
                     }
@@ -4688,14 +4758,14 @@ function d$1(l, definitions, super_term = false, group = false, need_group = fal
                         if (need_group)
                             return term;
 
-                        nt = new OR();
+                        nt = new OR$$1();
 
-                        nt._terms_.push(term);
+                        nt.terms.push(term);
 
                         l.sync().next();
 
                         while (!l.END) {
-                            nt._terms_.push(d$1(l, definitions, super_term, group, true, and_group, important));
+                            nt.terms.push(d$1(l, definitions,productions,  super_term, group, true, and_group, important));
                             if (l.ch !== "|" || l.pk.ch !== "|") break;
                             l.a("|").a("|");
                         }
@@ -4707,14 +4777,14 @@ function d$1(l, definitions, super_term = false, group = false, need_group = fal
                             return term;
                         }
 
-                        nt = new ONE_OF();
+                        nt = new ONE_OF$$1();
 
-                        nt._terms_.push(term);
+                        nt.terms.push(term);
 
                         l.next();
 
                         while (!l.END) {
-                            nt._terms_.push(d$1(l, definitions, super_term, true, need_group, and_group, important));
+                            nt.terms.push(d$1(l, definitions, productions, super_term, true, need_group, and_group, important));
                             if (l.ch !== "|") break;
                             l.a("|");
                         }
@@ -4724,15 +4794,17 @@ function d$1(l, definitions, super_term = false, group = false, need_group = fal
                 }
                 break;
             case "{":
-                term = _Jux_(term);
+                term = _Jux_(productions, term);
                 term.r[0] = parseInt(l.next().tx);
                 if (l.next().ch == ",") {
                     l.next();
-                    if (l.next().ch == "}")
-                        term.r[1] = Infinity;
-                    else {
+                    if (l.pk.ch == "}"){
+
                         term.r[1] = parseInt(l.tx);
                         l.next();
+                    }
+                    else {
+                        term.r[1] = Infinity;
                     }
                 } else
                     term.r[1] = term.r[0];
@@ -4740,29 +4812,29 @@ function d$1(l, definitions, super_term = false, group = false, need_group = fal
                 if (super_term) return term;
                 break;
             case "*":
-                term = _Jux_(term);
+                term = _Jux_(productions, term);
                 term.r[0] = 0;
                 term.r[1] = Infinity;
                 l.next();
                 if (super_term) return term;
                 break;
             case "+":
-                term = _Jux_(term);
+                term = _Jux_(productions, term);
                 term.r[0] = 1;
                 term.r[1] = Infinity;
                 l.next();
                 if (super_term) return term;
                 break;
             case "?":
-                term = _Jux_(term);
+                term = _Jux_(productions, term);
                 term.r[0] = 0;
                 term.r[1] = 1;
                 l.next();
                 if (super_term) return term;
                 break;
             case "#":
-                term = _Jux_(term);
-                term._terms_.push(new SymbolTerm(","));
+                term = _Jux_(productions, term);
+                term.terms.push(new SymbolTerm(","));
                 term.r[0] = 1;
                 term.r[1] = Infinity;
                 l.next();
@@ -4777,9 +4849,9 @@ function d$1(l, definitions, super_term = false, group = false, need_group = fal
                 let v;
 
                 if (term) {
-                    if (term instanceof NR && term.isRepeating()) term = _Jux_(new NR, term);
-                    let v = d$1(l, definitions, true);
-                    term = _Jux_(term, v);
+                    if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
+                    let v = d$1(l, definitions, productions, true);
+                    term = _Jux_(productions, term, v);
                 } else {
                     let v = new ValueTerm(l.next().tx, getPropertyParser, definitions);
                     l.next().a(">");
@@ -4794,9 +4866,9 @@ function d$1(l, definitions, super_term = false, group = false, need_group = fal
                 break;
             default:
                 if (term) {
-                    if (term instanceof NR && term.isRepeating()) term = _Jux_(new NR, term);
+                    if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
                     let v = d$1(l, definitions, true);
-                    term = _Jux_(term, v);
+                    term = _Jux_(productions, term, v);
                 } else {
                     let v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx);
                     l.next();
@@ -4804,17 +4876,21 @@ function d$1(l, definitions, super_term = false, group = false, need_group = fal
                 }
         }
     }
+
     return term;
 }
 
-function _Jux_(term, new_term = null) {
+function _Jux_(productions, term, new_term = null) {
     if (term) {
-        if (!(term instanceof NR)) {
-            let nr = new NR();
-            nr._terms_.push(term);
+        if (!(term instanceof productions.NR)) {
+            let nr = new productions.NR();
+            nr.terms.push(term);
             term = nr;
         }
-        if (new_term) term._terms_.push(new_term);
+        if (new_term) {
+            term.seal();
+            term.terms.push(new_term);
+        }
         return term;
     }
     return new_term;

@@ -20,6 +20,17 @@ export default class CSS_Color extends Color {
 
     }
 
+    static setInput(input, value){
+        input.type = "color";
+        input.value = value;
+    }
+
+    static buildInput(){
+        let ele = document.createElement("input")
+        ele.type = "color";
+        return ele;
+    }
+
     static parse(l, rule, r) {
 
         let c = CSS_Color._fs_(l);
@@ -117,6 +128,10 @@ export default class CSS_Color extends Color {
         }
 
         return out;
+    }
+
+    toString(){
+        return `#${("0"+this.r.toString(16)).slice(-2)}${("0"+this.g.toString(16)).slice(-2)}${("0"+this.b.toString(16)).slice(-2)}`
     }
 } {
 
