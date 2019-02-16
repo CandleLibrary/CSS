@@ -1,7 +1,50 @@
 import whind from "@candlefw/whind";
 import * as prod from "../properties/productions.mjs";
-import { LiteralTerm, ValueTerm, SymbolTerm } from "../properties/terms.mjs";
+import * as terms from "../properties/terms.mjs";
 
+class ValueTerm extends terms.ValueTerm {
+    list(ele) {
+        let element = document.createElement("div")
+        element.innerHTML = this.value.name;
+        ele.appendChild(element)
+    }
+
+    parse(l, ele, r) {
+
+    }
+}
+
+class LiteralTerm extends terms.LiteralTerm {
+    list(ele) {
+        let element = document.createElement("div")
+        element.innerHTML = this.value;
+        ele.appendChild(element)
+    }
+
+    parse(l, ele, r) {
+        if (l.tx == this.value) {
+            l.next();
+            let element = document.createElement("div")
+            element.innerHTML = this.value;
+            ele.appendChild(element);
+        }
+    }
+}
+
+class SymbolTerm extends LiteralTerm {
+    list(){}
+    parse(l, ele, r) {
+        if (typeof(l) == "string")
+            l = whind(l);
+
+        if (l.tx == this.value) {
+            l.next();
+            return true;
+        }
+
+        return false;
+    }
+}
 
 class literalHolder {
 
@@ -49,7 +92,7 @@ function input(e) {
     }
 }
 
-function button(e){
+function button(e) {
     const repeat = e.target.repeat;
     e.target.style.display = "none";
     e.target.parentElement.appendChild(this.buildInput(repeat + 1))
@@ -59,6 +102,23 @@ function button(e){
  * @class      NR (name)
  */
 class NR extends prod.NR {
+    //Adds an entry in options list. 
+    list(ele) {
+        let list = document.createElement("div")
+
+        this.buildList()
+    }
+
+    buildList(list_ele) {
+        let list = document.createElement("div");
+        //Build List
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            this.terms[i].list(list);
+        }
+
+        return list;
+    }
+
     seal() {
         //Create Element
         let literals = [];
@@ -94,23 +154,25 @@ class NR extends prod.NR {
     }
 
     pi(lx, ele, out_val, r, start, end) {
-        let element_selector = document.createElement("input");
-        element_selector.addEventListener("input", this.input);
-        ele.appendChild(element_selector);
+
+        //List
+        let list_ele = document.createElement("div")
+        ele.appendChild(list_ele);
 
         let bool = true;
+
+        this.buildList(list_ele);
 
         for (let j = 0; j < end && !lx.END; j++) {
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parse(lx.copy(), rule, r);
-                this.terms[i].setInput(e.target, bool)
+                bool = this.terms[i].parse(lx.copy(), ele, r);
                 if (bool) break;
             }
 
             if (!bool) {
 
-                this.sp(r.v, rule);
+                // this.sp(r.v, ele);
 
                 if (j < start)
                     return false;
@@ -119,53 +181,28 @@ class NR extends prod.NR {
             }
         }
 
-        this.sp(r.v, rule);
+        //this.sp(r.v, ele);
 
         return true;
     }
 
     buildInput(repeat = 1, lex) {
-
-        let element = document.createElement("div");
-        this.parseInput(lex, element);
-
-        if(lex){
-            var value = lex.tx;
-            var g = {props:{}}
-            var = this.parseInput(lex, g)
-        }
-
-        //Build Element
-        let element_selector = document.createElement("input");
-        element.appendChild(element_selector);
-        element_selector.addEventListener("input", this.input);
-
-        element_selector.value = value;
-        
-        //this.input({target:element_selector})
-
-        if (this.r[1] > 1 && this.r[1] > repeat) {
-            let button = document.createElement("button");
-            button.repeat = repeat;
-            button.innerHTML = "+";
-            element.appendChild(button);
-            button.addEventListener("click", this.button)
-        }
-
-        return element;
+        let ele = document.createElement("div");
+        this.parseInput(lex, ele)
+        return ele;
     }
 }
 
 class AND extends NR {
-    pi(lx, rule, r, start, end) {
+    pi(lx, ele, r, start, end) {
 
-        outer:
-            for (let j = 0; j < end && !lx.END; j++) {
-                for (let i = 0, l = this.terms.length; i < l; i++)
-                    if (!this.terms[i].parse(lx, rule, r)) return false;
-            }
 
-        this.sp(r.v, rule);
+        outer: for (let j = 0; j < end && !lx.END; j++) {
+            for (let i = 0, l = this.terms.length; i < l; i++)
+                if (!this.terms[i].parse(lx, ele, r)) return false;
+        }
+
+        this.sp(r.v, ele);
 
         return true;
     }
@@ -173,22 +210,32 @@ class AND extends NR {
 Object.assign(AND.prototype, prod.AND.prototype);
 
 class OR extends NR {
-    pi(lx, rule, r, start, end) {
+
+    list(ele) {
+        debugger
+        let element = document.createElement("div")
+        element.innerHTML = this.value;
+        ele.appendChild(element)
+    }
+
+    pi(lx, ele, r, start, end) {
         let bool = false;
+
+        ele.appendChild(this.buildList());
 
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++)
-                if (this.terms[i].parse(lx, rule, r)) bool = true;
+                if (this.terms[i].parse(lx, ele, r)) bool = true;
 
             if (!bool && j < start) {
-                this.sp(r.v, rule);
+                this.sp(r.v, ele);
                 return false;
             }
         }
 
-        this.sp(r.v, rule);
+        this.sp(r.v, ele);
 
         return true;
     }
@@ -196,34 +243,45 @@ class OR extends NR {
 Object.assign(OR.prototype, prod.OR.prototype)
 
 class ONE_OF extends NR {
+
     pi(lx, ele, r, start, end) {
+        //List
+
+        ele.appendChild(this.buildList());
+
+        //Add new
         let bool = false;
 
-        for (let j = 0; j < end && !lx.END; j++) {
-            bool = false;
+        ;
+        if (lx) {
 
-            for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parse(lx, rule, r);
-                if (bool) break;
+
+            //Parse Input
+            for (let j = 0; j < end && !lx.END; j++) {
+                bool = false;
+
+                for (let i = 0, l = this.terms.length; i < l; i++) {
+                    bool = this.terms[i].parse(lx, ele);
+                    if (bool) break;
+                }
+
+                if (!bool)
+                    if (j < start) {
+                        this.sp(r.v, ele);
+                        return false;
+                    }
             }
 
-            if (!bool)
-                if (j < start) {
-                    this.sp(r.v, rule);
-                    return false;
-                }
         }
 
-        this.sp(r.v, rule);
-
-        //create alternatives
-        let button = document.createElement("button");
-        button.innerHTML = "ONE_OF";
-        ele.push(button);
+        //append extender if end is less than start
+        if (start < end) {
+            //this.addExtensions(ele);
+        }
 
         return bool;
     }
 }
 Object.assign(ONE_OF.prototype, prod.ONE_OF.prototype)
 
-export { NR, AND, OR, ONE_OF };
+export { NR, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm };

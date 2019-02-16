@@ -4199,7 +4199,13 @@ class SymbolTerm extends LiteralTerm {
 }
 
 const standard_productions = {
-    NR, AND, OR, ONE_OF
+    NR,
+    AND,
+    OR,
+    ONE_OF,
+    LiteralTerm,
+    ValueTerm,
+    SymbolTerm
 };
 function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null, productions = standard_productions) {
 
@@ -4213,9 +4219,9 @@ function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definition
         return prop;
     }
 
-    if(!definitions.__virtual)
+    if (!definitions.__virtual)
         definitions.__virtual = Object.assign({}, virtual_property_definitions);
-    
+
     prop = definitions.__virtual[property_name];
 
     if (prop) {
@@ -4252,13 +4258,13 @@ function CreatePropertyParser(notation, name, definitions, productions) {
 
 function d$1(l, definitions, productions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
     let term, nt;
-    const {NR: NR$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1} = productions;
+    const { NR: NR$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
 
     while (!l.END) {
         switch (l.ch) {
             case "]":
                 if (term) return term;
-                else 
+                else
                     throw new Error("Expected to have term before \"]\"");
             case "[":
                 if (term) return term;
@@ -4277,7 +4283,7 @@ function d$1(l, definitions, productions, super_term = false, group = false, nee
                     l.sync().next();
 
                     while (!l.END) {
-                        nt.terms.push(d$1(l, definitions,productions, super_term, group, need_group, true, important));
+                        nt.terms.push(d$1(l, definitions, productions, super_term, group, need_group, true, important));
                         if (l.ch !== "&" || l.pk.ch !== "&") break;
                         l.a("&").a("&");
                     }
@@ -4298,7 +4304,7 @@ function d$1(l, definitions, productions, super_term = false, group = false, nee
                         l.sync().next();
 
                         while (!l.END) {
-                            nt.terms.push(d$1(l, definitions,productions,  super_term, group, true, and_group, important));
+                            nt.terms.push(d$1(l, definitions, productions, super_term, group, true, and_group, important));
                             if (l.ch !== "|" || l.pk.ch !== "|") break;
                             l.a("|").a("|");
                         }
@@ -4331,12 +4337,11 @@ function d$1(l, definitions, productions, super_term = false, group = false, nee
                 term.r[0] = parseInt(l.next().tx);
                 if (l.next().ch == ",") {
                     l.next();
-                    if (l.pk.ch == "}"){
+                    if (l.pk.ch == "}") {
 
                         term.r[1] = parseInt(l.tx);
                         l.next();
-                    }
-                    else {
+                    } else {
                         term.r[1] = Infinity;
                     }
                 } else
@@ -4367,7 +4372,7 @@ function d$1(l, definitions, productions, super_term = false, group = false, nee
                 break;
             case "#":
                 term = _Jux_(productions, term);
-                term.terms.push(new SymbolTerm(","));
+                term.terms.push(new SymbolTerm$$1(","));
                 term.r[0] = 1;
                 term.r[1] = Infinity;
                 l.next();
@@ -4386,7 +4391,7 @@ function d$1(l, definitions, productions, super_term = false, group = false, nee
                     let v = d$1(l, definitions, productions, true);
                     term = _Jux_(productions, term, v);
                 } else {
-                    let v = new ValueTerm(l.next().tx, getPropertyParser, definitions);
+                    let v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions);
                     l.next().a(">");
                     term = v;
                 }
@@ -4400,10 +4405,10 @@ function d$1(l, definitions, productions, super_term = false, group = false, nee
             default:
                 if (term) {
                     if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
-                    let v = d$1(l, definitions, true);
+                    let v = d$1(l, definitions, productions, true);
                     term = _Jux_(productions, term, v);
                 } else {
-                    let v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx);
+                    let v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx);
                     l.next();
                     term = v;
                 }
@@ -4427,6 +4432,50 @@ function _Jux_(productions, term, new_term = null) {
         return term;
     }
     return new_term;
+}
+
+class ValueTerm$1 extends ValueTerm {
+    list(ele) {
+        let element = document.createElement("div");
+        element.innerHTML = this.value.name;
+        ele.appendChild(element);
+    }
+
+    parse(l, ele, r) {
+
+    }
+}
+
+class LiteralTerm$1 extends LiteralTerm {
+    list(ele) {
+        let element = document.createElement("div");
+        element.innerHTML = this.value;
+        ele.appendChild(element);
+    }
+
+    parse(l, ele, r) {
+        if (l.tx == this.value) {
+            l.next();
+            let element = document.createElement("div");
+            element.innerHTML = this.value;
+            ele.appendChild(element);
+        }
+    }
+}
+
+class SymbolTerm$1 extends LiteralTerm$1 {
+    list(){}
+    parse(l, ele, r) {
+        if (typeof(l) == "string")
+            l = whind$1(l);
+
+        if (l.tx == this.value) {
+            l.next();
+            return true;
+        }
+
+        return false;
+    }
 }
 
 class literalHolder {
@@ -4475,7 +4524,7 @@ function input(e) {
     }
 }
 
-function button(e){
+function button(e) {
     const repeat = e.target.repeat;
     e.target.style.display = "none";
     e.target.parentElement.appendChild(this.buildInput(repeat + 1));
@@ -4485,6 +4534,23 @@ function button(e){
  * @class      NR (name)
  */
 class NR$1 extends NR {
+    //Adds an entry in options list. 
+    list(ele) {
+        let list = document.createElement("div");
+
+        this.buildList();
+    }
+
+    buildList(list_ele) {
+        let list = document.createElement("div");
+        //Build List
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            this.terms[i].list(list);
+        }
+
+        return list;
+    }
+
     seal() {
         //Create Element
         let literals = [];
@@ -4494,7 +4560,7 @@ class NR$1 extends NR {
         for (let i = 0; i < this.terms.length; i++) {
 
             let term = this.terms[i];
-            if (term instanceof LiteralTerm)
+            if (term instanceof LiteralTerm$1)
                 literals.push(term.value);
             else
                 dispatch.push(term.value);
@@ -4508,7 +4574,7 @@ class NR$1 extends NR {
             dispatch.push(new literalHolder(literals));
     }
 
-    parseInput(lx, rule, out_val) {
+    parseInput(lx, ele, out_val) {
         if (typeof(lx) == "string")
             lx = whind$1(lx);
 
@@ -4516,21 +4582,29 @@ class NR$1 extends NR {
             start = isNaN(this.r[0]) ? 1 : this.r[0],
             end = isNaN(this.r[1]) ? 1 : this.r[1];
 
-        return this.pi(lx, rule, out_val, r, start, end);
+        let result = this.pi(lx, ele, out_val, r, start, end);
     }
 
     pi(lx, ele, out_val, r, start, end) {
+
+        //List
+        let list_ele = document.createElement("div");
+        ele.appendChild(list_ele);
+
         let bool = true;
+
+        this.buildList(list_ele);
+
         for (let j = 0; j < end && !lx.END; j++) {
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parse(lx, rule, r);
+                bool = this.terms[i].parse(lx.copy(), ele, r);
                 if (bool) break;
             }
 
             if (!bool) {
 
-                this.sp(r.v, rule);
+                // this.sp(r.v, ele);
 
                 if (j < start)
                     return false;
@@ -4539,51 +4613,28 @@ class NR$1 extends NR {
             }
         }
 
-        this.sp(r.v, rule);
+        //this.sp(r.v, ele);
 
         return true;
     }
 
     buildInput(repeat = 1, lex) {
-
-        if(lex){
-            var value = lex.tx;
-            var g = {props:{}};
-            this.parseInput(lex, g);
-        }
-
-        //Build Element
-        let element = document.createElement("div");
-        let element_selector = document.createElement("input");
-        element.appendChild(element_selector);
-        element_selector.addEventListener("input", this.input);
-
-        element_selector.value = value;
-        
-        //this.input({target:element_selector})
-
-        if (this.r[1] > 1 && this.r[1] > repeat) {
-            let button = document.createElement("button");
-            button.repeat = repeat;
-            button.innerHTML = "+";
-            element.appendChild(button);
-            button.addEventListener("click", this.button);
-        }
-
-        return element;
+        let ele = document.createElement("div");
+        this.parseInput(lex, ele);
+        return ele;
     }
 }
 
 class AND$1 extends NR$1 {
-    pi(lx, rule, r, start, end) {
+    pi(lx, ele, r, start, end) {
 
-        outer:
-            for (let j = 0; j < end && !lx.END; j++) {
-                for (let i = 0, l = this.terms.length; i < l; i++)
-                    if (!this.terms[i].parse(lx, rule, r)) return false;
-            }
 
-        this.sp(r.v, rule);
+        outer: for (let j = 0; j < end && !lx.END; j++) {
+            for (let i = 0, l = this.terms.length; i < l; i++)
+                if (!this.terms[i].parse(lx, ele, r)) return false;
+        }
+
+        this.sp(r.v, ele);
 
         return true;
     }
@@ -4591,22 +4642,32 @@ class AND$1 extends NR$1 {
 Object.assign(AND$1.prototype, AND.prototype);
 
 class OR$1 extends NR$1 {
-    pi(lx, rule, r, start, end) {
+
+    list(ele) {
+        debugger
+        let element = document.createElement("div");
+        element.innerHTML = this.value;
+        ele.appendChild(element);
+    }
+
+    pi(lx, ele, r, start, end) {
         let bool = false;
+
+        ele.appendChild(this.buildList());
 
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++)
-                if (this.terms[i].parse(lx, rule, r)) bool = true;
+                if (this.terms[i].parse(lx, ele, r)) bool = true;
 
             if (!bool && j < start) {
-                this.sp(r.v, rule);
+                this.sp(r.v, ele);
                 return false;
             }
         }
 
-        this.sp(r.v, rule);
+        this.sp(r.v, ele);
 
         return true;
     }
@@ -4614,25 +4675,41 @@ class OR$1 extends NR$1 {
 Object.assign(OR$1.prototype, OR.prototype);
 
 class ONE_OF$1 extends NR$1 {
-    pi(lx, rule, r, start, end) {
+
+    pi(lx, ele, r, start, end) {
+        //List
+
+        ele.appendChild(this.buildList());
+
+        //Add new
         let bool = false;
 
-        for (let j = 0; j < end && !lx.END; j++) {
-            bool = false;
+        
+        if (lx) {
 
-            for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parse(lx, rule, r);
-                if (bool) break;
+
+            //Parse Input
+            for (let j = 0; j < end && !lx.END; j++) {
+                bool = false;
+
+                for (let i = 0, l = this.terms.length; i < l; i++) {
+                    bool = this.terms[i].parse(lx, ele);
+                    if (bool) break;
+                }
+
+                if (!bool)
+                    if (j < start) {
+                        this.sp(r.v, ele);
+                        return false;
+                    }
             }
 
-            if (!bool)
-                if (j < start) {
-                    this.sp(r.v, rule);
-                    return false;
-                }
         }
 
-        this.sp(r.v, rule);
+        //append extender if end is less than start
+        if (start < end) {
+            //this.addExtensions(ele);
+        }
 
         return bool;
     }
@@ -4643,7 +4720,10 @@ var ui_productions = /*#__PURE__*/Object.freeze({
     NR: NR$1,
     AND: AND$1,
     OR: OR$1,
-    ONE_OF: ONE_OF$1
+    ONE_OF: ONE_OF$1,
+    LiteralTerm: LiteralTerm$1,
+    ValueTerm: ValueTerm$1,
+    SymbolTerm: SymbolTerm$1
 });
 
 const props = Object.assign({}, property_definitions);
