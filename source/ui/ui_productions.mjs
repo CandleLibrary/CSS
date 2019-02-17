@@ -3,8 +3,10 @@ import * as prod from "../properties/productions.mjs";
 import * as terms from "../properties/terms.mjs";
 
 class ValueTerm extends terms.ValueTerm {
-    list(ele) {
+    list(ele, slot) {
+        console.log(this.value.name)
         let element = document.createElement("div")
+        element.classList.add("css_ui_selection");
         element.innerHTML = this.value.name;
         ele.appendChild(element)
     }
@@ -15,10 +17,14 @@ class ValueTerm extends terms.ValueTerm {
 }
 
 class LiteralTerm extends terms.LiteralTerm {
-    list(ele) {
+    list(ele, slot) {
         let element = document.createElement("div")
         element.innerHTML = this.value;
+        element.classList.add("css_ui_selection");
         ele.appendChild(element)
+        element.addEventListener("click", e=>{
+            slot.innerHTML = this.value;
+        })
     }
 
     parse(l, ele, r) {
@@ -103,20 +109,30 @@ function button(e) {
  */
 class NR extends prod.NR {
     //Adds an entry in options list. 
-    list(ele) {
-        let list = document.createElement("div")
-
-        this.buildList()
+    list(ele, slot) {
+        this.buildList(ele, slot)
     }
 
-    buildList(list_ele) {
-        let list = document.createElement("div");
-        //Build List
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].list(list);
+    buildList(list, slot) {
+
+        if(!slot){
+            let element = document.createElement("div")
+            element.classList.add("css_ui_slot")
+            slot = element;
         }
 
-        return list;
+        if(!list){
+            list = document.createElement("div");
+            list.classList.add("css_ui_slot")
+            slot.appendChild(list);
+        }
+
+        //Build List
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            this.terms[i].list(list, slot);
+        }
+
+        return slot;
     }
 
     seal() {
@@ -154,14 +170,10 @@ class NR extends prod.NR {
     }
 
     pi(lx, ele, out_val, r, start, end) {
-
         //List
-        let list_ele = document.createElement("div")
-        ele.appendChild(list_ele);
+        ele.appendChild(this.buildList());
 
         let bool = true;
-
-        this.buildList(list_ele);
 
         for (let j = 0; j < end && !lx.END; j++) {
 
@@ -211,11 +223,8 @@ Object.assign(AND.prototype, prod.AND.prototype);
 
 class OR extends NR {
 
-    list(ele) {
-        debugger
-        let element = document.createElement("div")
-        element.innerHTML = this.value;
-        ele.appendChild(element)
+    list(ele, slot) {
+        return this.buildList(ele, slot);
     }
 
     pi(lx, ele, r, start, end) {
@@ -243,10 +252,12 @@ class OR extends NR {
 Object.assign(OR.prototype, prod.OR.prototype)
 
 class ONE_OF extends NR {
+    list(ele, slot) {
+        this.buildList(ele, slot);
+    }
 
     pi(lx, ele, r, start, end) {
         //List
-
         ele.appendChild(this.buildList());
 
         //Add new

@@ -574,49 +574,27 @@ class Lexer {
     }
 
     /**
-    Creates and error message with a diagrame illustrating the location of the error. 
-    */
-    errorMessage(message = ""){
-        const arrow = String.fromCharCode(0x2b89),
-            trs = String.fromCharCode(0x2500),
-            line = String.fromCharCode(0x2500),
-            thick_line = String.fromCharCode(0x2501),
-            line_number = "    " + this.line + ": ",
-            line_fill = line_number.length,
-            t$$1 = thick_line.repeat(line_fill + 48),
-            is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
-        const pk = this.copy();
-        pk.IWS = false;
-        while (!pk.END && pk.ty !== Types.nl) { pk.next(); }
-        const end = pk.off;
-
-        return `${message} at ${this.line}:${this.char}
-${t$$1}
-${line_number+this.str.slice(Math.max(this.off - this.char, 0), end)}
-${line.repeat(this.char-1+line_fill)+trs+arrow}
-${t$$1}
-${is_iws}`;
-    }
-
-    /**
      * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
      * @instance
      * @public
      * @param {String} message - The error message.
-     * @param {Bool} DEFER - if true, returns an Error object instead of throwing.
      */
-    throw (message, DEFER = false) {
-        const error = new Error(this.errorMessage(message));
-        if(DEFER)
-            return error;
-        throw error;
+    throw (message) {
+        let t$$1 = ("________________________________________________"),
+            n$$1 = "\n",
+            is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
+        this.IWS = false;
+        let pk = this.copy();
+        while (!pk.END && pk.ty !== Types.nl) { pk.next(); }
+        let end = pk.off;
+        throw new Error(`${message} at ${this.line}:${this.char}\n${t$$1}\n${this.str.slice(this.off + this.tl + 1 - this.char, end)}\n${("").padStart(this.char - 2)}^\n${t$$1}\n${is_iws}`);
     }
 
     /**
      * Proxy for Lexer.prototype.reset
      * @public
      */
-    r() { return this.reset() }
+    r() { return this.reset(); }
 
     /**
      * Restore the Lexer back to it's initial state.
@@ -649,26 +627,24 @@ ${is_iws}`;
      */
     next(marker = this) {
 
+        let str = marker.str;
+
         if (marker.sl < 1) {
             marker.off = 0;
             marker.type = 32768;
             marker.tl = 0;
-            marker.line = 0;
-            marker.char = 0;
             return marker;
         }
 
         //Token builder
-        const l$$1 = marker.sl,
-            str = marker.str,
-            IWS = marker.IWS;
-
-        let length = marker.tl,
-            off = marker.off + length,
-            type = symbol,
-            char = marker.char + length,
-            line = marker.line,
-            base = off;
+        let length = marker.tl;
+        let off = marker.off + length;
+        let l$$1 = marker.sl;
+        let IWS = marker.IWS;
+        let type = symbol;
+        let char = marker.char + length;
+        let line = marker.line;
+        let base = off;
 
         if (off >= l$$1) {
             length = 0;
@@ -682,19 +658,19 @@ ${is_iws}`;
             return marker;
         }
 
-        for (;;) {
+        while (true) {
 
             base = off;
 
             length = 1;
 
-            const code = str.charCodeAt(off);
+            let code = str.charCodeAt(off);
 
             if (code < 128) {
 
                 switch (jump_table[code]) {
                     case 0: //NUMBER
-                        while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) ;
+                        while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) {}
 
                         if (str[off] == "e" || str[off] == "E") {
                             off++;
@@ -711,7 +687,7 @@ ${is_iws}`;
 
                         break;
                     case 1: //IDENTIFIER
-                        while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) ;
+                        while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) {}
                         type = identifier;
                         length = off - base;
                         break;
@@ -719,24 +695,23 @@ ${is_iws}`;
                         if (this.PARSE_STRING) {
                             type = symbol;
                         } else {
-                            while (++off < l$$1 && str.charCodeAt(off) !== code) ;
+                            while (++off < l$$1 && str.charCodeAt(off) !== code) {}
                             type = string;
                             length = off - base + 1;
                         }
                         break;
                     case 3: //SPACE SET
-                        while (++off < l$$1 && str.charCodeAt(off) === SPACE) ;
+                        while (++off < l$$1 && str.charCodeAt(off) === SPACE) {}
                         type = white_space;
                         length = off - base;
                         break;
                     case 4: //TAB SET
-                        while (++off < l$$1 && str[off] === HORIZONTAL_TAB) ;
+                        while (++off < l$$1 && str[off] === HORIZONTAL_TAB) {}
                         type = white_space;
                         length = off - base;
                         break;
                     case 5: //CARIAGE RETURN
                         length = 2;
-                        //Intentional
                     case 6: //LINEFEED
                         type = new_line;
                         char = 0;
@@ -748,6 +723,7 @@ ${is_iws}`;
                         break;
                     case 8: //OPERATOR
                         type = operator;
+
                         break;
                     case 9: //OPEN BRACKET
                         type = open_bracket;
@@ -819,7 +795,7 @@ ${is_iws}`;
      * Proxy for Lexer.prototype.assertCharacter
      * @public
      */
-    aC(char) { return this.assertCharacter(char) }
+    aC(char) { return this.assertCharacter(char); }
     /**
      * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
      * @public
@@ -828,7 +804,7 @@ ${is_iws}`;
      */
     assertCharacter(char) {
 
-        if (this.off < 0) this.throw(`Expecting ${char[0]} got null`);
+        if (this.off < 0) this.throw(`Expecting ${text} got null`);
 
         if (this.ch == char[0])
             this.next();
@@ -870,7 +846,7 @@ ${is_iws}`;
      * Proxy for Lexer.prototype.slice
      * @public
      */
-    s(start) { return this.slice(start) }
+    s(start) { return this.slice(start); }
 
     /**
      * Returns a slice of the parsed string beginning at `start` and ending at the current token.
@@ -900,8 +876,8 @@ ${is_iws}`;
                 while (!marker.END && (marker.next().ch != "*" || marker.pk.ch != "/")) { /* NO OP */ }
                 marker.sync().assert("/");
             } else if (marker.pk.ch == "/") {
-                const IWS = marker.IWS;
-                while (marker.next().ty != Types.new_line && !marker.END) { /* NO OP */ }
+                let IWS = marker.IWS;
+                while (marker.next().ty != types.new_line && !marker.END) { /* NO OP */ }
                 marker.IWS = IWS;
                 marker.next();
             } else
@@ -925,10 +901,10 @@ ${is_iws}`;
      * Returns new Whind Lexer that has leading and trailing whitespace characters removed from input. 
      */
     trim() {
-        const lex = this.copy();
+        let lex = this.copy();
 
         for (; lex.off < lex.sl; lex.off++) {
-            const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
+            let c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
 
             if (c$$1 > 2 && c$$1 < 7)
                 continue;
@@ -937,7 +913,7 @@ ${is_iws}`;
         }
 
         for (; lex.sl > lex.off; lex.sl--) {
-            const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+            let c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
             if (c$$1 > 2 && c$$1 < 7)
                 continue;
@@ -984,7 +960,7 @@ ${is_iws}`;
      * @type {String}
      * @readonly
      */
-    get tx() { return this.text }
+    get tx() { return this.text; }
 
     /**
      * The string value of the current token.
@@ -1002,7 +978,7 @@ ${is_iws}`;
      * @public
      * @readonly
      */
-    get ty() { return this.type }
+    get ty() { return this.type; }
 
     /**
      * The current token's offset position from the start of the string.
@@ -1020,15 +996,15 @@ ${is_iws}`;
      * @readonly
      * @type {Lexer}
      */
-    get pk() { return this.peek() }
+    get pk() { return this.peek(); }
 
     /**
      * Proxy for Lexer.prototype.next
      * @public
      */
-    get n() { return this.next() }
+    get n() { return this.next(); }
 
-    get END() { return this.off >= this.sl }
+    get END() { return this.off >= this.sl; }
     set END(v$$1) {}
 
     get type() {
@@ -1097,7 +1073,7 @@ ${is_iws}`;
     }
 }
 
-function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS) }
+function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS); }
 
 whind$1.constructor = Lexer;
 
@@ -1732,39 +1708,14 @@ class DEGLength extends CSS_Length {
 const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
 const STOCK_LOCATION = {
-    protocol: "",
-    host: "",
-    port: "",
-    path: "",
-    hash: "",
-    query: "",
-    search: ""
+    protocol :"",
+    host :"",
+    port :"",
+    path :"",
+    hash :"",
+    query :"",
+    search:""
 };
-
-/** Implement Basic Fetch Mechanism for NodeJS **/
-if (typeof(fetch) == "undefined" && typeof(global) !== "undefined") {
-    (async () => {
-        const fs = (await Promise.resolve(require("fs"))).default.promises;
-        const path = (await Promise.resolve(require("path"))).default;
-        global.fetch = (url, data) =>
-            new Promise(async (res, rej) => {
-                let p = await path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
-                try {
-                    let data = await fs.readFile(p, "utf8");
-                    return res({
-                        status: 200,
-                        text: () => {
-                            return {
-                                then: (f) => f(data)
-                            }
-                        }
-                    })
-                } catch (err) {
-                    return rej(err);
-                }
-            });
-    })();
-}
 
 function fetchLocalText(URL, m = "same-origin") {
     return new Promise((res, rej) => {
@@ -1855,7 +1806,7 @@ function submitJSON(URL, json_data, m = "same-origin") {
 class URL {
 
     static resolveRelative(URL_or_url_original, URL_or_url_new) {
-
+        
         let URL_old = (URL_or_url_original instanceof URL) ? URL_or_url_original : new URL(URL_or_url_original);
         let URL_new = (URL_or_url_new instanceof URL) ? URL_or_url_new : new URL(URL_or_url_new);
 
@@ -1886,20 +1837,13 @@ class URL {
 
     constructor(url = "", USE_LOCATION = false) {
 
-        let IS_STRING = true,
-            IS_LOCATION = false;
+        let IS_STRING = true;
+        
 
+        const location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION;
 
-        let location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION;
-
-        if (url instanceof Location) {
-            location = url;
-            url = "";
-            IS_LOCATION = true;
-        }
         if (!url || typeof(url) != "string") {
             IS_STRING = false;
-            IS_LOCATION = true;
             if (URL.GLOBAL && USE_LOCATION)
                 return URL.GLOBAL;
         }
@@ -1969,10 +1913,11 @@ class URL {
                 this.path = part[8] || ((USE_LOCATION) ? location.pathname : "");
                 this.query = part[9] || ((USE_LOCATION) ? location.search.slice(1) : "");
                 this.hash = part[10] || ((USE_LOCATION) ? location.hash.slice(1) : "");
-
             }
-        } else if (IS_LOCATION) {
-            this.protocol = location.protocol.replace(/\:/g,"");
+        } else if (USE_LOCATION) {
+
+            URL.G = this;
+            this.protocol = location.protocol;
             this.host = location.hostname;
             this.port = location.port;
             this.path = location.pathname;
@@ -1980,10 +1925,7 @@ class URL {
             this.query = location.search.slice(1);
             this._getQuery_(this.query);
 
-            if (USE_LOCATION) {
-                URL.G = this;
-                return URL.R;
-            }
+            return URL.R;
         }
         this._getQuery_(this.query);
     }
@@ -2065,13 +2007,11 @@ class URL {
     toString() {
         let str = [];
 
-        if (this.host) {
+        if (this.protocol && this.host)
+            str.push(`${this.protocol}://`);
 
-            if (this.protocol)
-                str.push(`${this.protocol}://`);
-
+        if (this.host)
             str.push(`${this.host}`);
-        }
 
         if (this.port)
             str.push(`:${this.port}`);
@@ -2080,11 +2020,7 @@ class URL {
             str.push(`${this.path[0] == "/" ? "" : "/"}${this.path}`);
 
         if (this.query)
-            str.push(((this.query[0] == "?" ? "" : "?") + this.query));
-
-        if (this.hash)
-            str.push("#"+this.hash);
-
+            str.push(this.query);
 
         return str.join("");
     }
@@ -2227,11 +2163,11 @@ class URL {
     }
 
     submitJSON(json_data) {
-        return submitJSON(this.toString(), json_data);
-    }
-    /**
-     * Goes to the current URL.
-     */
+            return submitJSON(this.toString(), json_data);
+        }
+        /**
+         * Goes to the current URL.
+         */
     goto() {
         return;
         let url = this.toString();
@@ -3612,7 +3548,7 @@ class CSS_Path extends Array {
  * @enum {object}
  * https://www.w3.org/TR/CSS2/about.html#property-defs
  */
-const types = {
+const types$1 = {
     color: CSS_Color,
     length: CSS_Length,
     time: CSS_Length,
@@ -4077,22 +4013,29 @@ class ONE_OF extends NR {
 
 class ValueTerm {
 
-    constructor(value, getPropertyParser, definitions) {
+    constructor(value, getPropertyParser, definitions, productions) {
+
+        if(value instanceof NR)
+            return value;
 
         this.value = null;
 
         const IS_VIRTUAL = { is: false };
 
-        if (!(this.value = types[value]))
-            this.value = getPropertyParser(value, IS_VIRTUAL, definitions);
+        if (!(this.value = types$1[value]))
+            this.value = getPropertyParser(value, IS_VIRTUAL, definitions, productions);
 
         this.prop = "";
 
         if (!this.value)
             return new LiteralTerm(value);
 
-        if (this.value instanceof NR && IS_VIRTUAL.is)
-            this.virtual = true;
+        if(this.value instanceof NR){
+            if (IS_VIRTUAL.is)
+                this.value.virtual = true;
+            return this.value;
+        }
+        //this.virtual = true;
     }
 
     seal(){}
@@ -4391,7 +4334,7 @@ function d$1(l, definitions, productions, super_term = false, group = false, nee
                     let v = d$1(l, definitions, productions, true);
                     term = _Jux_(productions, term, v);
                 } else {
-                    let v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions);
+                    let v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
                     l.next().a(">");
                     term = v;
                 }
@@ -4435,8 +4378,10 @@ function _Jux_(productions, term, new_term = null) {
 }
 
 class ValueTerm$1 extends ValueTerm {
-    list(ele) {
+    list(ele, slot) {
+        console.log(this.value.name);
         let element = document.createElement("div");
+        element.classList.add("css_ui_selection");
         element.innerHTML = this.value.name;
         ele.appendChild(element);
     }
@@ -4447,10 +4392,14 @@ class ValueTerm$1 extends ValueTerm {
 }
 
 class LiteralTerm$1 extends LiteralTerm {
-    list(ele) {
+    list(ele, slot) {
         let element = document.createElement("div");
         element.innerHTML = this.value;
+        element.classList.add("css_ui_selection");
         ele.appendChild(element);
+        element.addEventListener("click", e=>{
+            slot.innerHTML = this.value;
+        });
     }
 
     parse(l, ele, r) {
@@ -4535,20 +4484,30 @@ function button(e) {
  */
 class NR$1 extends NR {
     //Adds an entry in options list. 
-    list(ele) {
-        let list = document.createElement("div");
-
-        this.buildList();
+    list(ele, slot) {
+        this.buildList(ele, slot);
     }
 
-    buildList(list_ele) {
-        let list = document.createElement("div");
-        //Build List
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].list(list);
+    buildList(list, slot) {
+
+        if(!slot){
+            let element = document.createElement("div");
+            element.classList.add("css_ui_slot");
+            slot = element;
         }
 
-        return list;
+        if(!list){
+            list = document.createElement("div");
+            list.classList.add("css_ui_slot");
+            slot.appendChild(list);
+        }
+
+        //Build List
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            this.terms[i].list(list, slot);
+        }
+
+        return slot;
     }
 
     seal() {
@@ -4586,14 +4545,10 @@ class NR$1 extends NR {
     }
 
     pi(lx, ele, out_val, r, start, end) {
-
         //List
-        let list_ele = document.createElement("div");
-        ele.appendChild(list_ele);
+        ele.appendChild(this.buildList());
 
         let bool = true;
-
-        this.buildList(list_ele);
 
         for (let j = 0; j < end && !lx.END; j++) {
 
@@ -4643,11 +4598,8 @@ Object.assign(AND$1.prototype, AND.prototype);
 
 class OR$1 extends NR$1 {
 
-    list(ele) {
-        debugger
-        let element = document.createElement("div");
-        element.innerHTML = this.value;
-        ele.appendChild(element);
+    list(ele, slot) {
+        return this.buildList(ele, slot);
     }
 
     pi(lx, ele, r, start, end) {
@@ -4675,10 +4627,12 @@ class OR$1 extends NR$1 {
 Object.assign(OR$1.prototype, OR.prototype);
 
 class ONE_OF$1 extends NR$1 {
+    list(ele, slot) {
+        this.buildList(ele, slot);
+    }
 
     pi(lx, ele, r, start, end) {
         //List
-
         ele.appendChild(this.buildList());
 
         //Add new

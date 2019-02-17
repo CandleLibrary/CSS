@@ -196,7 +196,7 @@ function d(l, definitions, productions, super_term = false, group = false, need_
                     let v = d(l, definitions, productions, true);
                     term = _Jux_(productions, term, v);
                 } else {
-                    let v = new ValueTerm(l.next().tx, getPropertyParser, definitions);
+                    let v = new ValueTerm(l.next().tx, getPropertyParser, definitions, productions);
                     l.next().a(">");
                     term = v;
                 }

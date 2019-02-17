@@ -6,22 +6,29 @@ import { types } from "./property_and_type_definitions";
 
 class ValueTerm {
 
-    constructor(value, getPropertyParser, definitions) {
+    constructor(value, getPropertyParser, definitions, productions) {
+
+        if(value instanceof NR)
+            return value;
 
         this.value = null;
 
         const IS_VIRTUAL = { is: false };
 
         if (!(this.value = types[value]))
-            this.value = getPropertyParser(value, IS_VIRTUAL, definitions);
+            this.value = getPropertyParser(value, IS_VIRTUAL, definitions, productions);
 
         this.prop = "";
 
         if (!this.value)
             return new LiteralTerm(value);
 
-        if (this.value instanceof NR && IS_VIRTUAL.is)
-            this.virtual = true;
+        if(this.value instanceof NR){
+            if (IS_VIRTUAL.is)
+                this.value.virtual = true;
+            return this.value;
+        }
+        //this.virtual = true;
     }
 
     seal(){}
