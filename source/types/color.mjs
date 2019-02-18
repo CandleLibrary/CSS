@@ -12,12 +12,11 @@ import Color from "@candlefw/color";
 */
 export default class CSS_Color extends Color {
 
-    constructor(r, g, b, a) {
-        super(r, g, b, a);
-
-        if (typeof(r) == "string")
-            this.set(CSS_Color._fs_(r) || {r:255,g:255,b:255,a:0});
-
+    static valueHandler(existing_value){
+        let ele = document.createElement("input");
+        ele.type = "color"
+        ele.value = (existing_value) ? existing_value+ "" : "#000000";
+        return ele;
     }
 
     static setInput(input, value){
@@ -36,7 +35,6 @@ export default class CSS_Color extends Color {
         let c = CSS_Color._fs_(l);
 
         if (c) {
-            l.next();
 
             let color = new CSS_Color();
 
@@ -101,7 +99,7 @@ export default class CSS_Color extends Color {
                     out.b = parseInt(l.next().tx);
                     l.next(); // ,
                     out.a = parseFloat(l.next().tx);
-                    l.next();
+                    l.next().a(")");
                     c = new CSS_Color();
                     c.set(out);
                     return c;
@@ -113,21 +111,34 @@ export default class CSS_Color extends Color {
                     out.g = parseInt(l.next().tx);
                     l.next(); // ,
                     out.b = parseInt(l.next().tx);
-                    l.next();
+                    l.next().a(")");
                     c = new CSS_Color();
                     c.set(out);
                     return c;
                 } // intentional
             default:
+
                 let string = l.tx;
 
-                if (l.ty == l.types.str)
+                if (l.ty == l.types.str){
                     string = string.slice(1, -1);
+                }
 
                 out = CSS_Color.colors[string.toLowerCase()];
+
+                if(out)
+                    l.next();
         }
 
         return out;
+    }
+
+    constructor(r, g, b, a) {
+        super(r, g, b, a);
+
+        if (typeof(r) == "string")
+            this.set(CSS_Color._fs_(r) || {r:255,g:255,b:255,a:0});
+
     }
 
     toString(){

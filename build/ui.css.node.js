@@ -93,7 +93,7 @@ const q = 113;
 const Q = 81;
 const QMARK = 63;
 const QUOTE = 39;
-const r = 114;
+const r$1 = 114;
 const R = 82;
 const RECORD_SEPERATOR = 30;
 const s = 115;
@@ -574,27 +574,49 @@ class Lexer {
     }
 
     /**
+    Creates and error message with a diagrame illustrating the location of the error. 
+    */
+    errorMessage(message = ""){
+        const arrow = String.fromCharCode(0x2b89),
+            trs = String.fromCharCode(0x2500),
+            line = String.fromCharCode(0x2500),
+            thick_line = String.fromCharCode(0x2501),
+            line_number = "    " + this.line + ": ",
+            line_fill = line_number.length,
+            t$$1 = thick_line.repeat(line_fill + 48),
+            is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
+        const pk = this.copy();
+        pk.IWS = false;
+        while (!pk.END && pk.ty !== Types.nl) { pk.next(); }
+        const end = pk.off;
+
+        return `${message} at ${this.line}:${this.char}
+${t$$1}
+${line_number+this.str.slice(Math.max(this.off - this.char, 0), end)}
+${line.repeat(this.char-1+line_fill)+trs+arrow}
+${t$$1}
+${is_iws}`;
+    }
+
+    /**
      * Will throw a new Error, appending the parsed string line and position information to the the error message passed into the function.
      * @instance
      * @public
      * @param {String} message - The error message.
+     * @param {Bool} DEFER - if true, returns an Error object instead of throwing.
      */
-    throw (message) {
-        let t$$1 = ("________________________________________________"),
-            n$$1 = "\n",
-            is_iws = (!this.IWS) ? "\n The Lexer produced whitespace tokens" : "";
-        this.IWS = false;
-        let pk = this.copy();
-        while (!pk.END && pk.ty !== Types.nl) { pk.next(); }
-        let end = pk.off;
-        throw new Error(`${message} at ${this.line}:${this.char}\n${t$$1}\n${this.str.slice(this.off + this.tl + 1 - this.char, end)}\n${("").padStart(this.char - 2)}^\n${t$$1}\n${is_iws}`);
+    throw (message, DEFER = false) {
+        const error = new Error(this.errorMessage(message));
+        if(DEFER)
+            return error;
+        throw error;
     }
 
     /**
      * Proxy for Lexer.prototype.reset
      * @public
      */
-    r() { return this.reset(); }
+    r() { return this.reset() }
 
     /**
      * Restore the Lexer back to it's initial state.
@@ -627,24 +649,26 @@ class Lexer {
      */
     next(marker = this) {
 
-        let str = marker.str;
-
         if (marker.sl < 1) {
             marker.off = 0;
             marker.type = 32768;
             marker.tl = 0;
+            marker.line = 0;
+            marker.char = 0;
             return marker;
         }
 
         //Token builder
-        let length = marker.tl;
-        let off = marker.off + length;
-        let l$$1 = marker.sl;
-        let IWS = marker.IWS;
-        let type = symbol;
-        let char = marker.char + length;
-        let line = marker.line;
-        let base = off;
+        const l$$1 = marker.sl,
+            str = marker.str,
+            IWS = marker.IWS;
+
+        let length = marker.tl,
+            off = marker.off + length,
+            type = symbol,
+            char = marker.char + length,
+            line = marker.line,
+            base = off;
 
         if (off >= l$$1) {
             length = 0;
@@ -658,19 +682,19 @@ class Lexer {
             return marker;
         }
 
-        while (true) {
+        for (;;) {
 
             base = off;
 
             length = 1;
 
-            let code = str.charCodeAt(off);
+            const code = str.charCodeAt(off);
 
             if (code < 128) {
 
                 switch (jump_table[code]) {
                     case 0: //NUMBER
-                        while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) {}
+                        while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) ;
 
                         if (str[off] == "e" || str[off] == "E") {
                             off++;
@@ -687,7 +711,7 @@ class Lexer {
 
                         break;
                     case 1: //IDENTIFIER
-                        while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) {}
+                        while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) ;
                         type = identifier;
                         length = off - base;
                         break;
@@ -695,23 +719,24 @@ class Lexer {
                         if (this.PARSE_STRING) {
                             type = symbol;
                         } else {
-                            while (++off < l$$1 && str.charCodeAt(off) !== code) {}
+                            while (++off < l$$1 && str.charCodeAt(off) !== code) ;
                             type = string;
                             length = off - base + 1;
                         }
                         break;
                     case 3: //SPACE SET
-                        while (++off < l$$1 && str.charCodeAt(off) === SPACE) {}
+                        while (++off < l$$1 && str.charCodeAt(off) === SPACE) ;
                         type = white_space;
                         length = off - base;
                         break;
                     case 4: //TAB SET
-                        while (++off < l$$1 && str[off] === HORIZONTAL_TAB) {}
+                        while (++off < l$$1 && str[off] === HORIZONTAL_TAB) ;
                         type = white_space;
                         length = off - base;
                         break;
                     case 5: //CARIAGE RETURN
                         length = 2;
+                        //Intentional
                     case 6: //LINEFEED
                         type = new_line;
                         char = 0;
@@ -723,7 +748,6 @@ class Lexer {
                         break;
                     case 8: //OPERATOR
                         type = operator;
-
                         break;
                     case 9: //OPEN BRACKET
                         type = open_bracket;
@@ -795,7 +819,7 @@ class Lexer {
      * Proxy for Lexer.prototype.assertCharacter
      * @public
      */
-    aC(char) { return this.assertCharacter(char); }
+    aC(char) { return this.assertCharacter(char) }
     /**
      * Compares the character value of the current token to the value passed in. Advances to next token if the two are equal.
      * @public
@@ -804,7 +828,7 @@ class Lexer {
      */
     assertCharacter(char) {
 
-        if (this.off < 0) this.throw(`Expecting ${text} got null`);
+        if (this.off < 0) this.throw(`Expecting ${char[0]} got null`);
 
         if (this.ch == char[0])
             this.next();
@@ -846,7 +870,7 @@ class Lexer {
      * Proxy for Lexer.prototype.slice
      * @public
      */
-    s(start) { return this.slice(start); }
+    s(start) { return this.slice(start) }
 
     /**
      * Returns a slice of the parsed string beginning at `start` and ending at the current token.
@@ -876,8 +900,8 @@ class Lexer {
                 while (!marker.END && (marker.next().ch != "*" || marker.pk.ch != "/")) { /* NO OP */ }
                 marker.sync().assert("/");
             } else if (marker.pk.ch == "/") {
-                let IWS = marker.IWS;
-                while (marker.next().ty != types.new_line && !marker.END) { /* NO OP */ }
+                const IWS = marker.IWS;
+                while (marker.next().ty != Types.new_line && !marker.END) { /* NO OP */ }
                 marker.IWS = IWS;
                 marker.next();
             } else
@@ -901,10 +925,10 @@ class Lexer {
      * Returns new Whind Lexer that has leading and trailing whitespace characters removed from input. 
      */
     trim() {
-        let lex = this.copy();
+        const lex = this.copy();
 
         for (; lex.off < lex.sl; lex.off++) {
-            let c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
+            const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
 
             if (c$$1 > 2 && c$$1 < 7)
                 continue;
@@ -913,7 +937,7 @@ class Lexer {
         }
 
         for (; lex.sl > lex.off; lex.sl--) {
-            let c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+            const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
             if (c$$1 > 2 && c$$1 < 7)
                 continue;
@@ -960,7 +984,7 @@ class Lexer {
      * @type {String}
      * @readonly
      */
-    get tx() { return this.text; }
+    get tx() { return this.text }
 
     /**
      * The string value of the current token.
@@ -978,7 +1002,7 @@ class Lexer {
      * @public
      * @readonly
      */
-    get ty() { return this.type; }
+    get ty() { return this.type }
 
     /**
      * The current token's offset position from the start of the string.
@@ -996,15 +1020,15 @@ class Lexer {
      * @readonly
      * @type {Lexer}
      */
-    get pk() { return this.peek(); }
+    get pk() { return this.peek() }
 
     /**
      * Proxy for Lexer.prototype.next
      * @public
      */
-    get n() { return this.next(); }
+    get n() { return this.next() }
 
-    get END() { return this.off >= this.sl; }
+    get END() { return this.off >= this.sl }
     set END(v$$1) {}
 
     get type() {
@@ -1073,7 +1097,7 @@ class Lexer {
     }
 }
 
-function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS); }
+function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS) }
 
 whind$1.constructor = Lexer;
 
@@ -1202,12 +1226,11 @@ class Color extends Float64Array {
 */
 class CSS_Color extends Color {
 
-    constructor(r, g, b, a) {
-        super(r, g, b, a);
-
-        if (typeof(r) == "string")
-            this.set(CSS_Color._fs_(r) || {r:255,g:255,b:255,a:0});
-
+    static valueHandler(existing_value){
+        let ele = document.createElement("input");
+        ele.type = "color";
+        ele.value = (existing_value) ? existing_value+ "" : "#000000";
+        return ele;
     }
 
     static setInput(input, value){
@@ -1226,7 +1249,6 @@ class CSS_Color extends Color {
         let c = CSS_Color._fs_(l);
 
         if (c) {
-            l.next();
 
             let color = new CSS_Color();
 
@@ -1291,7 +1313,7 @@ class CSS_Color extends Color {
                     out.b = parseInt(l.next().tx);
                     l.next(); // ,
                     out.a = parseFloat(l.next().tx);
-                    l.next();
+                    l.next().a(")");
                     c = new CSS_Color();
                     c.set(out);
                     return c;
@@ -1303,21 +1325,34 @@ class CSS_Color extends Color {
                     out.g = parseInt(l.next().tx);
                     l.next(); // ,
                     out.b = parseInt(l.next().tx);
-                    l.next();
+                    l.next().a(")");
                     c = new CSS_Color();
                     c.set(out);
                     return c;
                 } // intentional
             default:
+
                 let string = l.tx;
 
-                if (l.ty == l.types.str)
+                if (l.ty == l.types.str){
                     string = string.slice(1, -1);
+                }
 
                 out = CSS_Color.colors[string.toLowerCase()];
+
+                if(out)
+                    l.next();
         }
 
         return out;
+    }
+
+    constructor(r, g, b, a) {
+        super(r, g, b, a);
+
+        if (typeof(r) == "string")
+            this.set(CSS_Color._fs_(r) || {r:255,g:255,b:255,a:0});
+
     }
 
     toString(){
@@ -1507,6 +1542,19 @@ class CSS_Percentage extends Number {
         return null;
     }
 
+    static _verify_(l) {
+        if(typeof(l) == "string" &&  !isNaN(parseInt(l)) && l.includes("%"))
+            return true;
+        return false;
+    }
+
+    static valueHandler(){
+        let ele = document.createElement("input");
+        ele.type = "number";
+        ele.value = 100;
+        return ele;
+    }
+
     constructor(v) {
 
         if (typeof(v) == "string") {
@@ -1517,12 +1565,6 @@ class CSS_Percentage extends Number {
         }
         
         super(v);
-    }
-
-    static _verify_(l) {
-        if(typeof(l) == "string" &&  !isNaN(parseInt(l)) && l.includes("%"))
-            return true;
-        return false;
     }
 
     toJSON() {
@@ -1708,14 +1750,39 @@ class DEGLength extends CSS_Length {
 const uri_reg_ex = /(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:\/\/))?(?:([^\:\?\[\]\@\/\#\b\s][^\:\?\[\]\@\/\#\b\s]*)(?:\:([^\:\?\[\]\@\/\#\b\s]*)?)?\@)?(?:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})|((?:\[[0-9a-f]{1,4})+(?:\:[0-9a-f]{0,4}){2,7}\])|([^\:\?\[\]\@\/\#\b\s\.]{2,}(?:\.[^\:\?\[\]\@\/\#\b\s]*)*))?(?:\:(\d+))?((?:[^\?\[\]\#\s\b]*)+)?(?:\?([^\[\]\#\s\b]*))?(?:\#([^\#\s\b]*))?/i;
 
 const STOCK_LOCATION = {
-    protocol :"",
-    host :"",
-    port :"",
-    path :"",
-    hash :"",
-    query :"",
-    search:""
+    protocol: "",
+    host: "",
+    port: "",
+    path: "",
+    hash: "",
+    query: "",
+    search: ""
 };
+
+/** Implement Basic Fetch Mechanism for NodeJS **/
+if (typeof(fetch) == "undefined" && typeof(global) !== "undefined") {
+    (async () => {
+        const fs = (await Promise.resolve(require("fs"))).default.promises;
+        const path = (await Promise.resolve(require("path"))).default;
+        global.fetch = (url, data) =>
+            new Promise(async (res, rej) => {
+                let p = await path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
+                try {
+                    let data = await fs.readFile(p, "utf8");
+                    return res({
+                        status: 200,
+                        text: () => {
+                            return {
+                                then: (f) => f(data)
+                            }
+                        }
+                    })
+                } catch (err) {
+                    return rej(err);
+                }
+            });
+    })();
+}
 
 function fetchLocalText(URL, m = "same-origin") {
     return new Promise((res, rej) => {
@@ -1806,7 +1873,7 @@ function submitJSON(URL, json_data, m = "same-origin") {
 class URL {
 
     static resolveRelative(URL_or_url_original, URL_or_url_new) {
-        
+
         let URL_old = (URL_or_url_original instanceof URL) ? URL_or_url_original : new URL(URL_or_url_original);
         let URL_new = (URL_or_url_new instanceof URL) ? URL_or_url_new : new URL(URL_or_url_new);
 
@@ -1837,13 +1904,20 @@ class URL {
 
     constructor(url = "", USE_LOCATION = false) {
 
-        let IS_STRING = true;
-        
+        let IS_STRING = true,
+            IS_LOCATION = false;
 
-        const location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION;
 
+        let location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION;
+
+        if (url instanceof Location) {
+            location = url;
+            url = "";
+            IS_LOCATION = true;
+        }
         if (!url || typeof(url) != "string") {
             IS_STRING = false;
+            IS_LOCATION = true;
             if (URL.GLOBAL && USE_LOCATION)
                 return URL.GLOBAL;
         }
@@ -1913,11 +1987,10 @@ class URL {
                 this.path = part[8] || ((USE_LOCATION) ? location.pathname : "");
                 this.query = part[9] || ((USE_LOCATION) ? location.search.slice(1) : "");
                 this.hash = part[10] || ((USE_LOCATION) ? location.hash.slice(1) : "");
-            }
-        } else if (USE_LOCATION) {
 
-            URL.G = this;
-            this.protocol = location.protocol;
+            }
+        } else if (IS_LOCATION) {
+            this.protocol = location.protocol.replace(/\:/g,"");
             this.host = location.hostname;
             this.port = location.port;
             this.path = location.pathname;
@@ -1925,7 +1998,10 @@ class URL {
             this.query = location.search.slice(1);
             this._getQuery_(this.query);
 
-            return URL.R;
+            if (USE_LOCATION) {
+                URL.G = this;
+                return URL.R;
+            }
         }
         this._getQuery_(this.query);
     }
@@ -2007,11 +2083,13 @@ class URL {
     toString() {
         let str = [];
 
-        if (this.protocol && this.host)
-            str.push(`${this.protocol}://`);
+        if (this.host) {
 
-        if (this.host)
+            if (this.protocol)
+                str.push(`${this.protocol}://`);
+
             str.push(`${this.host}`);
+        }
 
         if (this.port)
             str.push(`:${this.port}`);
@@ -2020,7 +2098,11 @@ class URL {
             str.push(`${this.path[0] == "/" ? "" : "/"}${this.path}`);
 
         if (this.query)
-            str.push(this.query);
+            str.push(((this.query[0] == "?" ? "" : "?") + this.query));
+
+        if (this.hash)
+            str.push("#"+this.hash);
+
 
         return str.join("");
     }
@@ -2163,11 +2245,11 @@ class URL {
     }
 
     submitJSON(json_data) {
-            return submitJSON(this.toString(), json_data);
-        }
-        /**
-         * Goes to the current URL.
-         */
+        return submitJSON(this.toString(), json_data);
+    }
+    /**
+     * Goes to the current URL.
+     */
     goto() {
         return;
         let url = this.toString();
@@ -3548,7 +3630,7 @@ class CSS_Path extends Array {
  * @enum {object}
  * https://www.w3.org/TR/CSS2/about.html#property-defs
  */
-const types$1 = {
+const types = {
     color: CSS_Color,
     length: CSS_Length,
     time: CSS_Length,
@@ -3929,7 +4011,7 @@ class NR { //Notation Rule
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
                 bool = this.terms[i].parse(lx, rule, r);
-                if (bool) break;
+                if (!bool) break;
             }
 
             if (!bool) {
@@ -4022,7 +4104,7 @@ class ValueTerm {
 
         const IS_VIRTUAL = { is: false };
 
-        if (!(this.value = types$1[value]))
+        if (!(this.value = types[value]))
             this.value = getPropertyParser(value, IS_VIRTUAL, definitions, productions);
 
         this.prop = "";
@@ -4377,49 +4459,223 @@ function _Jux_(productions, term, new_term = null) {
     return new_term;
 }
 
+class Segment {
+    constructor(parent) {
+        this.parent = null;
+
+        this.css_val = "";
+
+        this.val = document.createElement("span");
+        this.val.classList.add("css_ui_val");
+
+        this.list = document.createElement("div");
+        this.list.classList.add("css_ui_list");
+        //this.list.style.display = "none"
+
+        this.ext = document.createElement("button");
+        this.ext.classList.add("css_ui_ext");
+        this.ext.innerHTML = "+";
+        this.ext.style.display = "none";
+
+        this.element = document.createElement("span");
+        this.element.classList.add("css_ui_seg");
+
+        this.element.appendChild(this.val);
+        this.element.appendChild(this.list);
+        this.element.appendChild(this.ext);
+
+        this.value_list = [];
+        this.subs = [];
+        this.sib = null;
+        //*
+        this.element.addEventListener("mouseover", e => {
+            if (this.prod && this.list.innerHTML == "") {
+                this.prod.buildList(this.list, this);
+            }
+        });
+        //*//
+    }
+
+    replaceSub(old_sub, new_sub) {
+        for (let i = 0; i < this.subs.length; i++) {
+            if (this.subs[i] == old_sub) {
+                this.sub[i] = new_sub;
+                this.val.replaceChild(old_sub.element, new_sub.element);
+                return;
+            }
+        }
+    }
+
+    addSub(seg) {
+        seg.parent = this;
+        this.subs.push(seg);
+        this.val.appendChild(seg.element);
+    }
+
+    displayList() {
+
+    }
+
+    destroy() {
+
+    }
+
+    set value(v) {
+        this.val.innerHTML = v;
+        this.css_val = v;
+    }
+
+    repeat(prod, point, max) {
+        this.ext.style.display = "inline-block";
+        this.ext.addEventListener("click", e => {
+            prod.extend(this);
+            if (this.subs.length >= max)
+                this.ext.style.display = "none";
+        });
+
+    }
+
+    mount(element) {
+        element.appendChild(this.element);
+    }
+
+    setValueHandler(element) {
+        this.val.innerHTML = "";
+        this.val.appendChild(element);
+    }
+
+    update() {
+        if (this.parent)
+            this.parent.update();
+        else {
+            let val = this.getValue();
+            console.log(val);
+        }
+    }
+
+    getValue() {
+        let val = "";
+
+        if (this.subs.length > 0)
+            for (let i = 0; i < this.subs.length; i++)
+                val += " " + this.subs[i].getValue();
+        else
+            val = this.css_val;
+        return val;
+    }
+
+
+    updateFunction(v) {}
+}
+
 class ValueTerm$1 extends ValueTerm {
+
+    default (seg, list) {
+        let sub = new Segment();
+        let element = this.value.valueHandler();
+        element.addEventListener("change", e => {
+            let value = element.value;
+            sub.css_val = value;
+            sub.update();
+        });
+        sub.setValueHandler(element);
+        sub.prod = list;
+        seg.addSub(sub);
+    }
+
     list(ele, slot) {
-        console.log(this.value.name);
         let element = document.createElement("div");
         element.classList.add("css_ui_selection");
         element.innerHTML = this.value.name;
         ele.appendChild(element);
+
+        element.addEventListener("click", e => {
+            slot.innerHTML = this.value;
+            if (slot) {
+                let element = this.value.valueHandler();
+                element.addEventListener("change", e => {
+                    let value = element.value;
+                    sub.css_val = value;
+                    sub.update();
+                });
+                sub.setValueHandler(element);
+            } else {
+                let sub = new Segment();
+                sub.setValueHandler(this.value);
+                seg.addSub(sub);
+            }
+        });
     }
 
-    parse(l, ele, r) {
+    setSegment(segment) {
+        segment.element.innerHTML = this.value.name;
+    }
 
+    parseInput(l, seg, list) {
+        let val = this.value.parse(l);
+
+        if (val) {
+            let sub = new Segment();
+            let element = this.value.valueHandler(val);
+            element.addEventListener("change", e => {
+                let value = element.value;
+                sub.css_val = value;
+                sub.update();
+            });
+            sub.setValueHandler(element);
+            sub.css_val = val + "";
+            sub.prod = list;
+            seg.addSub(sub);
+        }
+
+        return val;
     }
 }
 
 class LiteralTerm$1 extends LiteralTerm {
     list(ele, slot) {
+
         let element = document.createElement("div");
         element.innerHTML = this.value;
         element.classList.add("css_ui_selection");
         ele.appendChild(element);
-        element.addEventListener("click", e=>{
+
+        element.addEventListener("click", e => {
             slot.innerHTML = this.value;
+            slot.value = this.value + "";
+            slot.update();
         });
     }
 
-    parse(l, ele, r) {
+    parseInput(l, seg, list) {
+        if (typeof(l) == "string")
+            l = whind(l);
+
         if (l.tx == this.value) {
             l.next();
-            let element = document.createElement("div");
-            element.innerHTML = this.value;
-            ele.appendChild(element);
+            let sub = new Segment();
+            sub.value = this.value + "";
+            sub.prod = list;
+            seg.addSub(sub);
+            return true;
         }
+
+        return false;
     }
 }
 
 class SymbolTerm$1 extends LiteralTerm$1 {
-    list(){}
-    parse(l, ele, r) {
+    list() {}
+
+    parseInput(l, seg, r) {
         if (typeof(l) == "string")
-            l = whind$1(l);
+            l = whind(l);
 
         if (l.tx == this.value) {
             l.next();
+            let sub = new Segment();
+            sub.value = this.value + "";
+            seg.addSub(sub);
             return true;
         }
 
@@ -4433,7 +4689,7 @@ class literalHolder {
         this.values = values;
     }
 
-    parse(lex) {
+    parseInput(lex) {
         let v = lex.tx;
 
         for (let i = 0; i < this.values.length; i++) {
@@ -4451,33 +4707,6 @@ class literalHolder {
     }
 }
 
-function input(e) {
-    let v = e.target.value;
-    let lex = whind$1(v);
-    let dispatch = this.dispatch;
-
-    if (v === "") {
-        e.target.type = "";
-        return;
-    }
-
-    e.target.style.color = "red";
-
-    let val = null;
-
-    for (let i = 0; i < dispatch.length; i++) {
-        if ((val = dispatch[i].parse(lex.copy()))) {
-            dispatch[i].setInput(e.target, val);
-            e.target.style.color = "black";
-        }
-    }
-}
-
-function button(e) {
-    const repeat = e.target.repeat;
-    e.target.style.display = "none";
-    e.target.parentElement.appendChild(this.buildInput(repeat + 1));
-}
 /**
  * wick internals.
  * @class      NR (name)
@@ -4490,13 +4719,13 @@ class NR$1 extends NR {
 
     buildList(list, slot) {
 
-        if(!slot){
+        if (!slot) {
             let element = document.createElement("div");
             element.classList.add("css_ui_slot");
             slot = element;
         }
 
-        if(!list){
+        if (!list) {
             list = document.createElement("div");
             list.classList.add("css_ui_slot");
             slot.appendChild(list);
@@ -4526,67 +4755,107 @@ class NR$1 extends NR {
 
         }
 
-        this.input = input.bind(this);
-        this.button = button.bind(this);
-
         if (literals.length > 0)
             dispatch.push(new literalHolder(literals));
     }
 
-    parseInput(lx, ele, out_val) {
+    parseInput(lx, segment, list) {
+
         if (typeof(lx) == "string")
             lx = whind$1(lx);
 
-        let r = out_val || { v: null },
-            start = isNaN(this.r[0]) ? 1 : this.r[0],
+        let start = isNaN(this.r[0]) ? 1 : this.r[0],
             end = isNaN(this.r[1]) ? 1 : this.r[1];
 
-        let result = this.pi(lx, ele, out_val, r, start, end);
+        return this.pi(lx, segment, list, start, end);
     }
 
-    pi(lx, ele, out_val, r, start, end) {
+    createSegment(lx) {
+        let seg = new Segment;
+        for (let i = 0; i < this.terms.length; i++) {
+            seg.addSub(this.terms[i].createSegment());
+        }
+        //this.buildList(seg);
+        return seg;
+    }
+
+    buildDefault() {
+
+    }
+
+    extend(segment) {
+        this.default(segment);
+    }
+
+    default (segment) {
+        for (let i = 0; i < this.terms.length; i++) {
+            this.terms[i].default(segment, null);
+        }
+    }
+
+    pi(lx, ele, lister = this, start = 1, end = 1) {
         //List
-        ele.appendChild(this.buildList());
+        let segment = null;
+        if (ele) {
+            segment = ele;
+        } else {
+            segment = new Segment();
+            segment.start = start;
+            segment.end = end;
+            this.addExtensions();
+        }
 
-        let bool = true;
+        let bool = true,
+            j = 0,
+            last_segment = null,
+            first;
 
-        for (let j = 0; j < end && !lx.END; j++) {
+        for (; j < end && !lx.END; j++) {
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parse(lx.copy(), ele, r);
-                if (bool) break;
+                bool = this.terms[i].parseInput(lx, segment, lister);
+
+                if (!bool) {
+                    bool = false;
+                    //segment = segment.prev;
+                    break;
+                }
+                //We know that this is in the original input, so we'll create an input for this object. 
             }
 
             if (!bool) {
-
-                // this.sp(r.v, ele);
-
                 if (j < start)
-                    return false;
+                    bool = false;
                 else
-                    return true;
+                    bool = true;
+                break;
             }
         }
 
-        //this.sp(r.v, ele);
+        this.addExtensions(segment, j, end);
 
-        return true;
+        return (bool) ? segment : null;
     }
 
     buildInput(repeat = 1, lex) {
-        let ele = document.createElement("div");
-        this.parseInput(lex, ele);
-        return ele;
+        let seg = this.parseInput(lex);
+        return seg;
+    }
+
+    addExtensions(segment, start, end) {
+
+        if (start < end)
+            segment.repeat(this, start, end);
     }
 }
 
 class AND$1 extends NR$1 {
-    pi(lx, ele, r, start, end) {
+    pi(lx, ele, lister = this, start = 1, end = 1) {
 
 
         outer: for (let j = 0; j < end && !lx.END; j++) {
             for (let i = 0, l = this.terms.length; i < l; i++)
-                if (!this.terms[i].parse(lx, ele, r)) return false;
+                if (!this.terms[i].parseInput(lx, ele, r)) return false;
         }
 
         this.sp(r.v, ele);
@@ -4598,74 +4867,80 @@ Object.assign(AND$1.prototype, AND.prototype);
 
 class OR$1 extends NR$1 {
 
-    list(ele, slot) {
-        return this.buildList(ele, slot);
-    }
+    pi(lx, ele, lister = this, start = 1, end = 1) {
+        let segment = null;
+        if (ele) {
+            segment = ele;
+        } else {
+            segment = new Segment();
+            segment.start = start;
+            segment.end = end;
+            this.addExtensions();
+        }
 
-    pi(lx, ele, r, start, end) {
         let bool = false;
 
-        ele.appendChild(this.buildList());
+        let j = 0;
 
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
 
-            for (let i = 0, l = this.terms.length; i < l; i++)
-                if (this.terms[i].parse(lx, ele, r)) bool = true;
-
-            if (!bool && j < start) {
-                this.sp(r.v, ele);
-                return false;
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                if (this.terms[i].parseInput(lx, segment)) {
+                    bool = true;
+                }else{
+                    //Make blank segment that can be filled. 
+                }
             }
+
+            if (!bool && j < start)
+                bool = false;
         }
 
-        this.sp(r.v, ele);
+        this.addExtensions(segment, j, end);
 
-        return true;
+        return (bool) ? segment : null;
     }
 }
 Object.assign(OR$1.prototype, OR.prototype);
 
 class ONE_OF$1 extends NR$1 {
-    list(ele, slot) {
-        this.buildList(ele, slot);
-    }
 
-    pi(lx, ele, r, start, end) {
+    pi(lx, ele, lister = this, start = 1, end = 1) {
         //List
-        ele.appendChild(this.buildList());
+        let segment = null;
+
+        if (ele) {
+            segment = ele;
+        } else {
+            segment = new Segment();
+            segment.start = start;
+            segment.end = end;
+            this.addExtensions();
+        }
 
         //Add new
         let bool = false;
 
-        
-        if (lx) {
+        let j = 0;
+        //Parse Input
+        for (; j < end && !lx.END; j++) {
+            bool = false;
 
-
-            //Parse Input
-            for (let j = 0; j < end && !lx.END; j++) {
-                bool = false;
-
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-                    bool = this.terms[i].parse(lx, ele);
-                    if (bool) break;
-                }
-
-                if (!bool)
-                    if (j < start) {
-                        this.sp(r.v, ele);
-                        return false;
-                    }
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                bool = this.terms[i].parseInput(lx, segment, lister);
+                if (bool) break;
             }
 
+            if (!bool) {
+                if (j < start) {
+                    bool = false;
+                    break;
+                }
+            }
         }
 
-        //append extender if end is less than start
-        if (start < end) {
-            //this.addExtensions(ele);
-        }
-
-        return bool;
+        return (bool) ? segment : null;
     }
 }
 Object.assign(ONE_OF$1.prototype, ONE_OF.prototype);
@@ -4683,30 +4958,30 @@ var ui_productions = /*#__PURE__*/Object.freeze({
 const props = Object.assign({}, property_definitions);
 const productions = { NR, AND, OR, ONE_OF };
 console.log(ui_productions);
-class UIValue{
+class UIValue {
 
-	constructor(type, value, parent){
-		
-		this.parent = parent;
+    constructor(type, value, parent) {
 
-		let pp = getPropertyParser(type, undefined, props, ui_productions);
-		this.setupElement(pp, value);
-		this.mount(this.parent.element);
-	}
+        this.parent = parent;
 
-	mount(element){
-		if(element instanceof HTMLElement)
-			element.appendChild(this.element);
-	}
+        let pp = getPropertyParser(type, undefined, props, ui_productions);
+        this.setupElement(pp, value);
+        this.mount(this.parent.element);
+    }
 
-	update(value){
+    mount(element) {
+        if (element instanceof HTMLElement)
+            this.element.mount(element);
+    }
 
-	}
+    update(value) {
 
-	setupElement(pp, value){
-		console.log(pp, " " + value);
-		this.element = pp.buildInput(1, whind$1(value));
-	}
+    }
+
+    setupElement(pp, value) {
+        console.log(pp, " " + value);
+        this.element = pp.buildInput(1, whind$1(value));
+    }
 }
 
 class UIMaster {
@@ -4788,7 +5063,7 @@ class UIRule{
 		this.parent = parent;
 		this.setupElement();
 
-		this.element.innerHTML = `${type}: ${value}`;
+		this.element.innerHTML = `${type}:`;
 		
 		this.value = new UIValue(type, value, this);
 

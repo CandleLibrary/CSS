@@ -1,56 +1,7 @@
 import whind from "@candlefw/whind";
 import * as prod from "../properties/productions.mjs";
-import * as terms from "../properties/terms.mjs";
-
-class ValueTerm extends terms.ValueTerm {
-    list(ele, slot) {
-        console.log(this.value.name)
-        let element = document.createElement("div")
-        element.classList.add("css_ui_selection");
-        element.innerHTML = this.value.name;
-        ele.appendChild(element)
-    }
-
-    parse(l, ele, r) {
-
-    }
-}
-
-class LiteralTerm extends terms.LiteralTerm {
-    list(ele, slot) {
-        let element = document.createElement("div")
-        element.innerHTML = this.value;
-        element.classList.add("css_ui_selection");
-        ele.appendChild(element)
-        element.addEventListener("click", e=>{
-            slot.innerHTML = this.value;
-        })
-    }
-
-    parse(l, ele, r) {
-        if (l.tx == this.value) {
-            l.next();
-            let element = document.createElement("div")
-            element.innerHTML = this.value;
-            ele.appendChild(element);
-        }
-    }
-}
-
-class SymbolTerm extends LiteralTerm {
-    list(){}
-    parse(l, ele, r) {
-        if (typeof(l) == "string")
-            l = whind(l);
-
-        if (l.tx == this.value) {
-            l.next();
-            return true;
-        }
-
-        return false;
-    }
-}
+import { Segment } from "./ui_segment.mjs"
+import { ValueTerm, LiteralTerm, SymbolTerm } from "./ui_terms.mjs";
 
 class literalHolder {
 
@@ -58,7 +9,7 @@ class literalHolder {
         this.values = values;
     }
 
-    parse(lex) {
+    parseInput(lex) {
         let v = lex.tx;
 
         for (let i = 0; i < this.values.length; i++) {
@@ -76,33 +27,6 @@ class literalHolder {
     }
 }
 
-function input(e) {
-    let v = e.target.value;
-    let lex = whind(v);
-    let dispatch = this.dispatch;
-
-    if (v === "") {
-        e.target.type = ""
-        return;
-    }
-
-    e.target.style.color = "red";
-
-    let val = null;
-
-    for (let i = 0; i < dispatch.length; i++) {
-        if ((val = dispatch[i].parse(lex.copy()))) {
-            dispatch[i].setInput(e.target, val)
-            e.target.style.color = "black";
-        };
-    }
-}
-
-function button(e) {
-    const repeat = e.target.repeat;
-    e.target.style.display = "none";
-    e.target.parentElement.appendChild(this.buildInput(repeat + 1))
-}
 /**
  * wick internals.
  * @class      NR (name)
@@ -115,13 +39,13 @@ class NR extends prod.NR {
 
     buildList(list, slot) {
 
-        if(!slot){
+        if (!slot) {
             let element = document.createElement("div")
             element.classList.add("css_ui_slot")
             slot = element;
         }
 
-        if(!list){
+        if (!list) {
             list = document.createElement("div");
             list.classList.add("css_ui_slot")
             slot.appendChild(list);
@@ -151,67 +75,107 @@ class NR extends prod.NR {
 
         }
 
-        this.input = input.bind(this);
-        this.button = button.bind(this);
-
         if (literals.length > 0)
             dispatch.push(new literalHolder(literals));
     }
 
-    parseInput(lx, ele, out_val) {
+    parseInput(lx, segment, list) {
+
         if (typeof(lx) == "string")
             lx = whind(lx);
 
-        let r = out_val || { v: null },
-            start = isNaN(this.r[0]) ? 1 : this.r[0],
+        let start = isNaN(this.r[0]) ? 1 : this.r[0],
             end = isNaN(this.r[1]) ? 1 : this.r[1];
 
-        let result = this.pi(lx, ele, out_val, r, start, end);
+        return this.pi(lx, segment, list, start, end);
     }
 
-    pi(lx, ele, out_val, r, start, end) {
+    createSegment(lx) {
+        let seg = new Segment;
+        for (let i = 0; i < this.terms.length; i++) {
+            seg.addSub(this.terms[i].createSegment());
+        }
+        //this.buildList(seg);
+        return seg;
+    }
+
+    buildDefault() {
+
+    }
+
+    extend(segment) {
+        this.default(segment);
+    }
+
+    default (segment) {
+        for (let i = 0; i < this.terms.length; i++) {
+            this.terms[i].default(segment, null);
+        }
+    }
+
+    pi(lx, ele, lister = this, start = 1, end = 1) {
         //List
-        ele.appendChild(this.buildList());
+        let segment = null;
+        if (ele) {
+            segment = ele;
+        } else {
+            segment = new Segment()
+            segment.start = start;
+            segment.end = end;
+            this.addExtensions();
+        }
 
-        let bool = true;
+        let bool = true,
+            j = 0,
+            last_segment = null,
+            first;
 
-        for (let j = 0; j < end && !lx.END; j++) {
+        for (; j < end && !lx.END; j++) {
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parse(lx.copy(), ele, r);
-                if (bool) break;
+                bool = this.terms[i].parseInput(lx, segment, lister);
+
+                if (!bool) {
+                    bool = false;
+                    //segment = segment.prev;
+                    break;
+                };
+                //We know that this is in the original input, so we'll create an input for this object. 
             }
 
             if (!bool) {
-
-                // this.sp(r.v, ele);
-
                 if (j < start)
-                    return false;
+                    bool = false;
                 else
-                    return true;
+                    bool = true;
+                break;
             }
         }
 
-        //this.sp(r.v, ele);
+        this.addExtensions(segment, j, end);
 
-        return true;
+        return (bool) ? segment : null;
     }
 
     buildInput(repeat = 1, lex) {
-        let ele = document.createElement("div");
-        this.parseInput(lex, ele)
-        return ele;
+        let seg = this.parseInput(lex);
+        return seg;
+    }
+
+    addExtensions(segment, start, end) {
+
+        if (start < end)
+            segment.repeat(this, start, end);
     }
 }
 
 class AND extends NR {
-    pi(lx, ele, r, start, end) {
+    pi(lx, ele, lister = this, start = 1, end = 1) {
 
 
         outer: for (let j = 0; j < end && !lx.END; j++) {
             for (let i = 0, l = this.terms.length; i < l; i++)
-                if (!this.terms[i].parse(lx, ele, r)) return false;
+                if (!this.terms[i].parseInput(lx, ele, r)) return false;
         }
 
         this.sp(r.v, ele);
@@ -223,74 +187,80 @@ Object.assign(AND.prototype, prod.AND.prototype);
 
 class OR extends NR {
 
-    list(ele, slot) {
-        return this.buildList(ele, slot);
-    }
+    pi(lx, ele, lister = this, start = 1, end = 1) {
+        let segment = null;
+        if (ele) {
+            segment = ele;
+        } else {
+            segment = new Segment()
+            segment.start = start;
+            segment.end = end;
+            this.addExtensions();
+        }
 
-    pi(lx, ele, r, start, end) {
         let bool = false;
 
-        ele.appendChild(this.buildList());
+        let j = 0;
 
         for (let j = 0; j < end && !lx.END; j++) {
             bool = false;
 
-            for (let i = 0, l = this.terms.length; i < l; i++)
-                if (this.terms[i].parse(lx, ele, r)) bool = true;
-
-            if (!bool && j < start) {
-                this.sp(r.v, ele);
-                return false;
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                if (this.terms[i].parseInput(lx, segment)) {
+                    bool = true;
+                }else{
+                    //Make blank segment that can be filled. 
+                }
             }
+
+            if (!bool && j < start)
+                bool = false;
         }
 
-        this.sp(r.v, ele);
+        this.addExtensions(segment, j, end);
 
-        return true;
+        return (bool) ? segment : null;
     }
 }
 Object.assign(OR.prototype, prod.OR.prototype)
 
 class ONE_OF extends NR {
-    list(ele, slot) {
-        this.buildList(ele, slot);
-    }
 
-    pi(lx, ele, r, start, end) {
+    pi(lx, ele, lister = this, start = 1, end = 1) {
         //List
-        ele.appendChild(this.buildList());
+        let segment = null;
+
+        if (ele) {
+            segment = ele;
+        } else {
+            segment = new Segment()
+            segment.start = start;
+            segment.end = end;
+            this.addExtensions();
+        }
 
         //Add new
         let bool = false;
 
-        ;
-        if (lx) {
+        let j = 0;
+        //Parse Input
+        for (; j < end && !lx.END; j++) {
+            bool = false;
 
-
-            //Parse Input
-            for (let j = 0; j < end && !lx.END; j++) {
-                bool = false;
-
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-                    bool = this.terms[i].parse(lx, ele);
-                    if (bool) break;
-                }
-
-                if (!bool)
-                    if (j < start) {
-                        this.sp(r.v, ele);
-                        return false;
-                    }
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                bool = this.terms[i].parseInput(lx, segment, lister);
+                if (bool) break;
             }
 
+            if (!bool) {
+                if (j < start) {
+                    bool = false
+                    break;
+                }
+            }
         }
 
-        //append extender if end is less than start
-        if (start < end) {
-            //this.addExtensions(ele);
-        }
-
-        return bool;
+        return (bool) ? segment : null;
     }
 }
 Object.assign(ONE_OF.prototype, prod.ONE_OF.prototype)

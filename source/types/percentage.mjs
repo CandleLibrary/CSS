@@ -31,6 +31,19 @@ export default class CSS_Percentage extends Number {
         return null;
     }
 
+    static _verify_(l) {
+        if(typeof(l) == "string" &&  !isNaN(parseInt(l)) && l.includes("%"))
+            return true;
+        return false;
+    }
+
+    static valueHandler(){
+        let ele = document.createElement("input");
+        ele.type = "number"
+        ele.value = 100;
+        return ele;
+    }
+
     constructor(v) {
 
         if (typeof(v) == "string") {
@@ -41,12 +54,6 @@ export default class CSS_Percentage extends Number {
         }
         
         super(v);
-    }
-
-    static _verify_(l) {
-        if(typeof(l) == "string" &&  !isNaN(parseInt(l)) && l.includes("%"))
-            return true;
-        return false;
     }
 
     toJSON() {

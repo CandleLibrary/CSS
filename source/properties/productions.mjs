@@ -49,7 +49,7 @@ class NR { //Notation Rule
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
                 bool = this.terms[i].parse(lx, rule, r);
-                if (bool) break;
+                if (!bool) break;
             }
 
             if (!bool) {

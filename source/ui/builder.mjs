@@ -78,7 +78,7 @@ class UIRule{
 		this.parent = parent;
 		this.setupElement();
 
-		this.element.innerHTML = `${type}: ${value}`
+		this.element.innerHTML = `${type}:`
 		
 		this.value = new UIValue(type, value, this);
 

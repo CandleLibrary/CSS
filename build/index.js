@@ -2,10 +2,7 @@ let start = async function  (){
 
 	const css_ = await css.CSSParser(`
 	.test {
-		position:absolute;
-		top:8px;
-		border-color:red green;
-		font-family: cursive
+		display:block flow;
 	}
 	`)
 
