@@ -3,30 +3,6 @@ import * as prod from "../properties/productions.mjs";
 import { Segment } from "./ui_segment.mjs"
 import { ValueTerm, LiteralTerm, SymbolTerm } from "./ui_terms.mjs";
 
-class literalHolder {
-
-    constructor(values) {
-        this.values = values;
-    }
-
-    parseInput(lex) {
-        let v = lex.tx;
-
-        for (let i = 0; i < this.values.length; i++) {
-            if (this.values[i].includes(v)) {
-                return v;
-            }
-        }
-
-        return "";
-    }
-
-    setInput(input, value) {
-        input.type = "";
-        input.value = value;
-    }
-}
-
 /**
  * wick internals.
  * @class      NR (name)
@@ -59,51 +35,18 @@ class NR extends prod.NR {
         return slot;
     }
 
-    seal() {
-        //Create Element
-        let literals = [];
-        this.dispatch = [];
-        const dispatch = this.dispatch;
-
-        for (let i = 0; i < this.terms.length; i++) {
-
-            let term = this.terms[i];
-            if (term instanceof LiteralTerm)
-                literals.push(term.value);
-            else
-                dispatch.push(term.value);
-
-        }
-
-        if (literals.length > 0)
-            dispatch.push(new literalHolder(literals));
-    }
+    seal() {}
 
     parseInput(lx, segment, list) {
 
         if (typeof(lx) == "string")
             lx = whind(lx);
 
-        let start = isNaN(this.r[0]) ? 1 : this.r[0],
-            end = isNaN(this.r[1]) ? 1 : this.r[1];
-
-        return this.pi(lx, segment, list, start, end);
-    }
-
-    createSegment(lx) {
-        let seg = new Segment;
-        for (let i = 0; i < this.terms.length; i++) {
-            seg.addSub(this.terms[i].createSegment());
-        }
-        //this.buildList(seg);
-        return seg;
-    }
-
-    buildDefault() {
-
+        return this.pi(lx, segment, list);
     }
 
     extend(segment) {
+
         this.default(segment);
     }
 
@@ -113,7 +56,7 @@ class NR extends prod.NR {
         }
     }
 
-    pi(lx, ele, lister = this, start = 1, end = 1) {
+    pi(lx, ele, lister = this, start = this.start, end = this.end) {
         //List
         let segment = null;
         if (ele) {
@@ -122,7 +65,6 @@ class NR extends prod.NR {
             segment = new Segment()
             segment.start = start;
             segment.end = end;
-            this.addExtensions();
         }
 
         let bool = true,
@@ -144,6 +86,7 @@ class NR extends prod.NR {
             }
 
             if (!bool) {
+
                 if (j < start)
                     bool = false;
                 else
@@ -152,33 +95,67 @@ class NR extends prod.NR {
             }
         }
 
-        this.addExtensions(segment, j, end);
+        if(bool) segment.repeat();
 
-        return (bool) ? segment : null;
+        return (!bool && start === 0) ? true : bool;
     }
 
     buildInput(repeat = 1, lex) {
-        let seg = this.parseInput(lex);
+        let seg = new Segment;
+        seg.start = this.start;
+        seg.end = this.end;
+        seg.prod = this;
+        this.parseInput(lex, seg, this);
         return seg;
     }
 
-    addExtensions(segment, start, end) {
+    get start(){
+        return isNaN(this.r[0]) ? 1 : this.r[0];
+    }
 
-        if (start < end)
-            segment.repeat(this, start, end);
+    get end(){
+        return isNaN(this.r[1]) ? 1 : this.r[1];
     }
 }
 
 class AND extends NR {
-    pi(lx, ele, lister = this, start = 1, end = 1) {
 
+    default(segment, list = this) {
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            this.terms[i].default(segment)
+        }
+    }
+
+    list(ele, slot) {
+
+        let name = (this.name) ? this.name.replace("\_\g", " "): this.terms.reduce((r, t) => r += " | " + t.name, "")
+        let element = document.createElement("div")
+        element.classList.add("css_ui_selection");
+        element.innerHTML = name;
+        ele.appendChild(element)
+
+        element.addEventListener("click", e => {
+            slot.innerHTML = this.value;
+            if (slot) {
+                slot.reset();
+                this.default(slot);
+                slot.update();
+            } else {
+                let sub = new Segment();
+                sub.setValueHandler(this.value)
+                seg.addSub(sub);
+            }
+        })
+    }
+
+    pi(lx, ele, lister = this, start = 1, end = 1) {
 
         outer: for (let j = 0; j < end && !lx.END; j++) {
             for (let i = 0, l = this.terms.length; i < l; i++)
-                if (!this.terms[i].parseInput(lx, ele, r)) return false;
+                if (!this.terms[i].parseInput(lx, ele, r)) return (start === 0) ? true : false
         }
 
-        this.sp(r.v, ele);
+        segment.repeat();
 
         return true;
     }
@@ -187,15 +164,46 @@ Object.assign(AND.prototype, prod.AND.prototype);
 
 class OR extends NR {
 
-    pi(lx, ele, lister = this, start = 1, end = 1) {
+    list(ele, slot) {
+
+        let name = this.terms.reduce((r, t) => r += " | " + t.name, "")
+        let element = document.createElement("div")
+        element.classList.add("css_ui_selection");
+        element.innerHTML = name;
+        ele.appendChild(element)
+
+        element.addEventListener("click", e => {
+            slot.innerHTML = this.value;
+            if (slot) {
+                slot.reset();
+                this.default(slot);
+                slot.update();
+            } else {
+                let sub = new Segment();
+                sub.setValueHandler(this.value)
+                seg.addSub(sub);
+            }
+        })
+    }
+
+    default(segment, list = this) {
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            this.terms[i].default(segment, list)
+        }
+    }
+
+    pi(lx, ele, lister = this, start = this.start, end = this.end){
+
         let segment = null;
+
         if (ele) {
             segment = ele;
         } else {
-            segment = new Segment()
+            segment = new Segment();
             segment.start = start;
             segment.end = end;
-            this.addExtensions();
+            lister = this;
+            //this.addExtensions();
         }
 
         let bool = false;
@@ -208,25 +216,53 @@ class OR extends NR {
             for (let i = 0, l = this.terms.length; i < l; i++) {
                 if (this.terms[i].parseInput(lx, segment)) {
                     bool = true;
-                }else{
+                } else {
                     //Make blank segment that can be filled. 
                 }
             }
 
-            if (!bool && j < start)
+            if (!bool && j < start){
                 bool = false;
+            }else if(start === 0)
+                bool = true;
         }
 
-        this.addExtensions(segment, j, end);
+        if(bool) segment.repeat();
 
-        return (bool) ? segment : null;
+        return (!bool && start === 0) ? true : bool;
     }
 }
 Object.assign(OR.prototype, prod.OR.prototype)
 
 class ONE_OF extends NR {
 
-    pi(lx, ele, lister = this, start = 1, end = 1) {
+    list(ele, slot) {
+
+        let name = (this.name) ? this.name.replace(/_/g, " "): this.terms.reduce((r, t) => r += " | " + t.name, "")
+        let element = document.createElement("div")
+        element.classList.add("css_ui_selection");
+        element.innerHTML = name;
+        ele.appendChild(element)
+
+        element.addEventListener("click", e => {
+            slot.innerHTML = this.value;
+            if (slot) {
+                slot.reset();
+                this.default(slot);
+                slot.update();
+            } else {
+                let sub = new Segment();
+                sub.setValueHandler(this.value)
+                seg.addSub(sub);
+            }
+        })
+    }
+
+    default (segment, list) {
+        this.terms[0].default(segment, this);
+    }
+
+    pi(lx, ele, lister = this, start = this.start, end = this.end) {
         //List
         let segment = null;
 
@@ -236,7 +272,7 @@ class ONE_OF extends NR {
             segment = new Segment()
             segment.start = start;
             segment.end = end;
-            this.addExtensions();
+            segment.prod = this;
         }
 
         //Add new
@@ -245,6 +281,7 @@ class ONE_OF extends NR {
         let j = 0;
         //Parse Input
         for (; j < end && !lx.END; j++) {
+            
             bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
@@ -260,9 +297,12 @@ class ONE_OF extends NR {
             }
         }
 
-        return (bool) ? segment : null;
+        segment.repeat();
+
+        return (!bool && start === 0) ? true : bool;
     }
 }
+
 Object.assign(ONE_OF.prototype, prod.ONE_OF.prototype)
 
 export { NR, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm };

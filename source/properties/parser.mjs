@@ -20,7 +20,7 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 
         if (typeof(prop) == "string")
             prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
-
+        prop.name = property_name;
         return prop;
     }
 
@@ -33,8 +33,10 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 
         IS_VIRTUAL.is = true;
 
-        if (typeof(prop) == "string")
+        if (typeof(prop) == "string"){
             prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
+            prop.name = property_name;
+        }
 
         return prop;
     }

@@ -11,6 +11,7 @@ class NR { //Notation Rule
         this.r = [NaN, NaN];
         this.terms = [];
         this.prop = null;
+        this.name = "";
         this.virtual = false;
     }
 

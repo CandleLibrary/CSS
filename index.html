@@ -5,8 +5,13 @@
 	<script src="./build/css.js"></script>
 	<script src="./build/ui.css.js"></script>
 	<style>
+		body{
+			font-family: Helvetica, sans-serif
+		}
 		.css_ui_selection:hover{
 			background-color:red;
+			color: white;
+			cursor: pointer;
 		}
 
 		.css_ui_slot{
@@ -14,23 +19,57 @@
 		}
 
 		.css_ui_slot{
-			background-color:green;
+			background-color:rgba(0,255,0,0.01);
 		}
 		.css_ui_list{
+			color: black;
 			position: absolute;
-			top:20px;
+			top: 15px;
 			display: none;
+			background-color: white;
+			padding: 4px;
+			box-shadow: 2px 2px 8px rgb(200,200,200);
+			border-radius: 3px;
+			min-width: 120px;
+			font-weight: 300;
+			z-index: 20;
 		}
-		.css_ui_seg:hover .css_ui_list{
+
+		.css_ui_menu {
+			display: inline-block;
+			width: 15px;
+			height: 15px;
+			background-color: red;
+			border-radius: 5px;
+			color: white;
+			font-weight: 800;
+			text-align: center;
+		}
+		.css_ui_menu:hover {
+			cursor: pointer;
+		}
+		.css_ui_menu:hover>.css_ui_list{
 			display: block;
 		}
+
+		.css_ui_menu > .css_ui_list{
+			display: none;
+		}
+
 		.css_ui_seg{
 			position: relative;
 			display: inline-block;
 			top:0;
 			left:0;
-			padding:2px;
-			background-color:green;
+			padding: 0 4px;
+			background-color:rgba(0,255,0,0.01);
+		}
+		.css_ui_ext{
+			display: inline-block;
+			width: 15px;
+			height: 15px;
+			border-radius: 5px;
+			outline-style: none;
 		}
 
 

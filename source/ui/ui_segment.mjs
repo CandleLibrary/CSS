@@ -16,11 +16,16 @@ export class Segment {
         this.ext.innerHTML = "+"
         this.ext.style.display = "none";
 
+        this.menu = document.createElement("span");
+        this.menu.classList.add("css_ui_menu");
+        this.menu.innerHTML = "+"
+        this.menu.appendChild(this.list);
+
         this.element = document.createElement("span");
         this.element.classList.add("css_ui_seg");
 
+        this.element.appendChild(this.menu);
         this.element.appendChild(this.val);
-        this.element.appendChild(this.list);
         this.element.appendChild(this.ext)
 
         this.value_list = [];
@@ -64,14 +69,38 @@ export class Segment {
         this.css_val = v;
     }
 
-    repeat(prod, point, max) {
-        this.ext.style.display = "inline-block";
-        this.ext.addEventListener("click", e => {
-            prod.extend(this)
-            if (this.subs.length >= max)
-                this.ext.style.display = "none";
-        })
+    repeat(prod = this.prod) {
 
+        if(this.end > this.subs.length){
+            this.ext.style.display = "inline-block";
+
+            this.ext.onclick = e => {
+                if(this.subs.length == 1){
+                    //Turn self into own seg
+                    let seg = new Segment;                        
+                    seg.prod = this.prod;
+                    seg.css_val = this.css_val;
+                    this.val.innerHTML = "";
+                    this.list.innerHTML = "";
+                    this.menu.style.display = "none";
+                    this.prod = null;
+                    let s = this.subs[0]
+                    this.subs = [];
+                    this.addSub(seg);
+                    seg.addSub(s);
+                }
+
+                let seg = new Segment;
+                seg.prod = prod;
+                this.addSub(seg);
+                prod.extend(seg)
+                
+                if (this.subs.length >= this.end)
+                    this.ext.style.display = "none";
+            }
+        }else{
+            this.ext.style.display = "none";
+        }
     }
 
     mount(element) {
@@ -101,6 +130,12 @@ export class Segment {
         else
             val = this.css_val;
         return val;
+    }
+
+    reset(){
+        this.val.innerHTML = "";
+        this.subs.forEach(e=>e.destroy);
+        this.subs = [];
     }
 
 

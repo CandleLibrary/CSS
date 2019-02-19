@@ -80,7 +80,7 @@ export const property_definitions = {
     background: `<bg_layer>#,<final_bg_layer>`,
 
     /* Font https://www.w3.org/TR/css-fonts-4*/
-    font_family: `[[<family_name>|<generic_family>],]*[<family_name>|<generic_family>]`,
+    font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
     font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
     font_variant: `normal|small-caps`,
     font_style: `normal | italic | oblique <angle>?`,
@@ -316,7 +316,7 @@ export const virtual_property_definitions = {
     //Display
     display_outside  : `block | inline | run-in`,
     display_inside   : `flow | flow-root | table | flex | grid | ruby`,
-    display_listitem : `<display-outside>? && [ flow | flow-root ]? && list-item`,
+    display_listitem : `<display_outside>? && [ flow | flow-root ]? && list-item`,
     display_internal : `table-row-group | table-header-group | table-footer-group | table-row | table-cell | table-column-group | table-column | table-caption | ruby-base | ruby-text | ruby-base-container | ruby-text-container`,
     display_box      : `contents | none`,
     display_legacy   : `inline-block | inline-table | inline-flex | inline-grid`,

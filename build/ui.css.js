@@ -3691,7 +3691,7 @@ ${is_iws}`;
         background: `<bg_layer>#,<final_bg_layer>`,
 
         /* Font https://www.w3.org/TR/css-fonts-4*/
-        font_family: `[[<family_name>|<generic_family>],]*[<family_name>|<generic_family>]`,
+        font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
         font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
         font_variant: `normal|small-caps`,
         font_style: `normal | italic | oblique <angle>?`,
@@ -3927,7 +3927,7 @@ ${is_iws}`;
         //Display
         display_outside  : `block | inline | run-in`,
         display_inside   : `flow | flow-root | table | flex | grid | ruby`,
-        display_listitem : `<display-outside>? && [ flow | flow-root ]? && list-item`,
+        display_listitem : `<display_outside>? && [ flow | flow-root ]? && list-item`,
         display_internal : `table-row-group | table-header-group | table-footer-group | table-row | table-cell | table-column-group | table-column | table-caption | ruby-base | ruby-text | ruby-base-container | ruby-text-container`,
         display_box      : `contents | none`,
         display_legacy   : `inline-block | inline-table | inline-flex | inline-grid`,
@@ -3972,6 +3972,7 @@ ${is_iws}`;
             this.r = [NaN, NaN];
             this.terms = [];
             this.prop = null;
+            this.name = "";
             this.virtual = false;
         }
 
@@ -4239,7 +4240,7 @@ ${is_iws}`;
 
             if (typeof(prop) == "string")
                 prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
-
+            prop.name = property_name;
             return prop;
         }
 
@@ -4252,8 +4253,10 @@ ${is_iws}`;
 
             IS_VIRTUAL.is = true;
 
-            if (typeof(prop) == "string")
+            if (typeof(prop) == "string"){
                 prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
+                prop.name = property_name;
+            }
 
             return prop;
         }
@@ -4476,11 +4479,16 @@ ${is_iws}`;
             this.ext.innerHTML = "+";
             this.ext.style.display = "none";
 
+            this.menu = document.createElement("span");
+            this.menu.classList.add("css_ui_menu");
+            this.menu.innerHTML = "+";
+            this.menu.appendChild(this.list);
+
             this.element = document.createElement("span");
             this.element.classList.add("css_ui_seg");
 
+            this.element.appendChild(this.menu);
             this.element.appendChild(this.val);
-            this.element.appendChild(this.list);
             this.element.appendChild(this.ext);
 
             this.value_list = [];
@@ -4524,14 +4532,38 @@ ${is_iws}`;
             this.css_val = v;
         }
 
-        repeat(prod, point, max) {
-            this.ext.style.display = "inline-block";
-            this.ext.addEventListener("click", e => {
-                prod.extend(this);
-                if (this.subs.length >= max)
-                    this.ext.style.display = "none";
-            });
+        repeat(prod = this.prod) {
 
+            if(this.end > this.subs.length){
+                this.ext.style.display = "inline-block";
+
+                this.ext.onclick = e => {
+                    if(this.subs.length == 1){
+                        //Turn self into own seg
+                        let seg = new Segment;                        
+                        seg.prod = this.prod;
+                        seg.css_val = this.css_val;
+                        this.val.innerHTML = "";
+                        this.list.innerHTML = "";
+                        this.menu.style.display = "none";
+                        this.prod = null;
+                        let s = this.subs[0];
+                        this.subs = [];
+                        this.addSub(seg);
+                        seg.addSub(s);
+                    }
+
+                    let seg = new Segment;
+                    seg.prod = prod;
+                    this.addSub(seg);
+                    prod.extend(seg);
+                    
+                    if (this.subs.length >= this.end)
+                        this.ext.style.display = "none";
+                };
+            }else{
+                this.ext.style.display = "none";
+            }
         }
 
         mount(element) {
@@ -4561,6 +4593,12 @@ ${is_iws}`;
             else
                 val = this.css_val;
             return val;
+        }
+
+        reset(){
+            this.val.innerHTML = "";
+            this.subs.forEach(e=>e.destroy);
+            this.subs = [];
         }
 
 
@@ -4594,10 +4632,10 @@ ${is_iws}`;
                     let element = this.value.valueHandler();
                     element.addEventListener("change", e => {
                         let value = element.value;
-                        sub.css_val = value;
-                        sub.update();
+                        slot.css_val = value;
+                        slot.update();
                     });
-                    sub.setValueHandler(element);
+                    slot.setValueHandler(element);
                 } else {
                     let sub = new Segment();
                     sub.setValueHandler(this.value);
@@ -4632,16 +4670,31 @@ ${is_iws}`;
     }
 
     class LiteralTerm$1 extends LiteralTerm {
+
+    	default (seg, list) {
+            let sub = new Segment();
+            let element = document.createElement("div");
+            element.innerHTML = this.value;
+            element.addEventListener("change", e => {
+                sub.value = this.value + "";
+                sub.css_val = this.value + "";
+                sub.update();
+            });
+            sub.setValueHandler(element);
+            sub.value = this.value;
+            sub.prod = list;
+            seg.addSub(sub);
+        }
+
         list(ele, slot) {
 
             let element = document.createElement("div");
             element.innerHTML = this.value;
             element.classList.add("css_ui_selection");
             ele.appendChild(element);
-
             element.addEventListener("click", e => {
-                slot.innerHTML = this.value;
                 slot.value = this.value + "";
+                slot.css_val = this.value + "";
                 slot.update();
             });
         }
@@ -4654,6 +4707,7 @@ ${is_iws}`;
                 l.next();
                 let sub = new Segment();
                 sub.value = this.value + "";
+                seg.css_val = this.value + "";
                 sub.prod = list;
                 seg.addSub(sub);
                 return true;
@@ -4679,30 +4733,6 @@ ${is_iws}`;
             }
 
             return false;
-        }
-    }
-
-    class literalHolder {
-
-        constructor(values) {
-            this.values = values;
-        }
-
-        parseInput(lex) {
-            let v = lex.tx;
-
-            for (let i = 0; i < this.values.length; i++) {
-                if (this.values[i].includes(v)) {
-                    return v;
-                }
-            }
-
-            return "";
-        }
-
-        setInput(input, value) {
-            input.type = "";
-            input.value = value;
         }
     }
 
@@ -4738,51 +4768,18 @@ ${is_iws}`;
             return slot;
         }
 
-        seal() {
-            //Create Element
-            let literals = [];
-            this.dispatch = [];
-            const dispatch = this.dispatch;
-
-            for (let i = 0; i < this.terms.length; i++) {
-
-                let term = this.terms[i];
-                if (term instanceof LiteralTerm$1)
-                    literals.push(term.value);
-                else
-                    dispatch.push(term.value);
-
-            }
-
-            if (literals.length > 0)
-                dispatch.push(new literalHolder(literals));
-        }
+        seal() {}
 
         parseInput(lx, segment, list) {
 
             if (typeof(lx) == "string")
                 lx = whind$1(lx);
 
-            let start = isNaN(this.r[0]) ? 1 : this.r[0],
-                end = isNaN(this.r[1]) ? 1 : this.r[1];
-
-            return this.pi(lx, segment, list, start, end);
-        }
-
-        createSegment(lx) {
-            let seg = new Segment;
-            for (let i = 0; i < this.terms.length; i++) {
-                seg.addSub(this.terms[i].createSegment());
-            }
-            //this.buildList(seg);
-            return seg;
-        }
-
-        buildDefault() {
-
+            return this.pi(lx, segment, list);
         }
 
         extend(segment) {
+
             this.default(segment);
         }
 
@@ -4792,7 +4789,7 @@ ${is_iws}`;
             }
         }
 
-        pi(lx, ele, lister = this, start = 1, end = 1) {
+        pi(lx, ele, lister = this, start = this.start, end = this.end) {
             //List
             let segment = null;
             if (ele) {
@@ -4801,7 +4798,6 @@ ${is_iws}`;
                 segment = new Segment();
                 segment.start = start;
                 segment.end = end;
-                this.addExtensions();
             }
 
             let bool = true,
@@ -4823,6 +4819,7 @@ ${is_iws}`;
                 }
 
                 if (!bool) {
+
                     if (j < start)
                         bool = false;
                     else
@@ -4831,33 +4828,67 @@ ${is_iws}`;
                 }
             }
 
-            this.addExtensions(segment, j, end);
+            if(bool) segment.repeat();
 
-            return (bool) ? segment : null;
+            return (!bool && start === 0) ? true : bool;
         }
 
         buildInput(repeat = 1, lex) {
-            let seg = this.parseInput(lex);
+            let seg = new Segment;
+            seg.start = this.start;
+            seg.end = this.end;
+            seg.prod = this;
+            this.parseInput(lex, seg, this);
             return seg;
         }
 
-        addExtensions(segment, start, end) {
+        get start(){
+            return isNaN(this.r[0]) ? 1 : this.r[0];
+        }
 
-            if (start < end)
-                segment.repeat(this, start, end);
+        get end(){
+            return isNaN(this.r[1]) ? 1 : this.r[1];
         }
     }
 
     class AND$1 extends NR$1 {
-        pi(lx, ele, lister = this, start = 1, end = 1) {
 
+        default(segment, list = this) {
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                this.terms[i].default(segment);
+            }
+        }
+
+        list(ele, slot) {
+
+            let name = (this.name) ? this.name.replace("\_\g", " "): this.terms.reduce((r, t) => r += " | " + t.name, "");
+            let element = document.createElement("div");
+            element.classList.add("css_ui_selection");
+            element.innerHTML = name;
+            ele.appendChild(element);
+
+            element.addEventListener("click", e => {
+                slot.innerHTML = this.value;
+                if (slot) {
+                    slot.reset();
+                    this.default(slot);
+                    slot.update();
+                } else {
+                    let sub = new Segment();
+                    sub.setValueHandler(this.value);
+                    seg.addSub(sub);
+                }
+            });
+        }
+
+        pi(lx, ele, lister = this, start = 1, end = 1) {
 
             outer: for (let j = 0; j < end && !lx.END; j++) {
                 for (let i = 0, l = this.terms.length; i < l; i++)
-                    if (!this.terms[i].parseInput(lx, ele, r)) return false;
+                    if (!this.terms[i].parseInput(lx, ele, r)) return (start === 0) ? true : false
             }
 
-            this.sp(r.v, ele);
+            segment.repeat();
 
             return true;
         }
@@ -4866,15 +4897,46 @@ ${is_iws}`;
 
     class OR$1 extends NR$1 {
 
-        pi(lx, ele, lister = this, start = 1, end = 1) {
+        list(ele, slot) {
+
+            let name = this.terms.reduce((r, t) => r += " | " + t.name, "");
+            let element = document.createElement("div");
+            element.classList.add("css_ui_selection");
+            element.innerHTML = name;
+            ele.appendChild(element);
+
+            element.addEventListener("click", e => {
+                slot.innerHTML = this.value;
+                if (slot) {
+                    slot.reset();
+                    this.default(slot);
+                    slot.update();
+                } else {
+                    let sub = new Segment();
+                    sub.setValueHandler(this.value);
+                    seg.addSub(sub);
+                }
+            });
+        }
+
+        default(segment, list = this) {
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                this.terms[i].default(segment, list);
+            }
+        }
+
+        pi(lx, ele, lister = this, start = this.start, end = this.end){
+
             let segment = null;
+
             if (ele) {
                 segment = ele;
             } else {
                 segment = new Segment();
                 segment.start = start;
                 segment.end = end;
-                this.addExtensions();
+                lister = this;
+                //this.addExtensions();
             }
 
             let bool = false;
@@ -4887,25 +4949,53 @@ ${is_iws}`;
                 for (let i = 0, l = this.terms.length; i < l; i++) {
                     if (this.terms[i].parseInput(lx, segment)) {
                         bool = true;
-                    }else{
+                    } else {
                         //Make blank segment that can be filled. 
                     }
                 }
 
-                if (!bool && j < start)
+                if (!bool && j < start){
                     bool = false;
+                }else if(start === 0)
+                    bool = true;
             }
 
-            this.addExtensions(segment, j, end);
+            if(bool) segment.repeat();
 
-            return (bool) ? segment : null;
+            return (!bool && start === 0) ? true : bool;
         }
     }
     Object.assign(OR$1.prototype, OR.prototype);
 
     class ONE_OF$1 extends NR$1 {
 
-        pi(lx, ele, lister = this, start = 1, end = 1) {
+        list(ele, slot) {
+
+            let name = (this.name) ? this.name.replace(/_/g, " "): this.terms.reduce((r, t) => r += " | " + t.name, "");
+            let element = document.createElement("div");
+            element.classList.add("css_ui_selection");
+            element.innerHTML = name;
+            ele.appendChild(element);
+
+            element.addEventListener("click", e => {
+                slot.innerHTML = this.value;
+                if (slot) {
+                    slot.reset();
+                    this.default(slot);
+                    slot.update();
+                } else {
+                    let sub = new Segment();
+                    sub.setValueHandler(this.value);
+                    seg.addSub(sub);
+                }
+            });
+        }
+
+        default (segment, list) {
+            this.terms[0].default(segment, this);
+        }
+
+        pi(lx, ele, lister = this, start = this.start, end = this.end) {
             //List
             let segment = null;
 
@@ -4915,7 +5005,7 @@ ${is_iws}`;
                 segment = new Segment();
                 segment.start = start;
                 segment.end = end;
-                this.addExtensions();
+                segment.prod = this;
             }
 
             //Add new
@@ -4924,6 +5014,7 @@ ${is_iws}`;
             let j = 0;
             //Parse Input
             for (; j < end && !lx.END; j++) {
+                
                 bool = false;
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
@@ -4939,9 +5030,12 @@ ${is_iws}`;
                 }
             }
 
-            return (bool) ? segment : null;
+            segment.repeat();
+
+            return (!bool && start === 0) ? true : bool;
         }
     }
+
     Object.assign(ONE_OF$1.prototype, ONE_OF.prototype);
 
     var ui_productions = /*#__PURE__*/Object.freeze({
