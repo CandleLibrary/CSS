@@ -4705,11 +4705,11 @@ ${is_iws}`;
 
             if (l.tx == this.value) {
                 l.next();
-                let sub = new Segment();
-                sub.value = this.value + "";
+                //let sub = new Segment();
+                seg.value = this.value + "";
                 seg.css_val = this.value + "";
-                sub.prod = list;
-                seg.addSub(sub);
+                seg.prod = list;
+                //seg.addSub(sub);
                 return true;
             }
 
@@ -4792,12 +4792,13 @@ ${is_iws}`;
         pi(lx, ele, lister = this, start = this.start, end = this.end) {
             //List
             let segment = null;
-            if (ele) {
+            if (false &&ele) {
                 segment = ele;
             } else {
                 segment = new Segment();
                 segment.start = start;
                 segment.end = end;
+                lister = this;
             }
 
             let bool = true,
@@ -4828,7 +4829,13 @@ ${is_iws}`;
                 }
             }
 
-            if(bool) segment.repeat();
+            if(bool){
+                segment.repeat();
+                if(ele)
+                    ele.addSub(segment);
+                this.last_segment = segment;    
+            }
+
 
             return (!bool && start === 0) ? true : bool;
         }
@@ -4839,7 +4846,7 @@ ${is_iws}`;
             seg.end = this.end;
             seg.prod = this;
             this.parseInput(lex, seg, this);
-            return seg;
+            return this.last_segment;
         }
 
         get start(){
@@ -4929,14 +4936,13 @@ ${is_iws}`;
 
             let segment = null;
 
-            if (ele) {
+            if (false &&ele) {
                 segment = ele;
             } else {
                 segment = new Segment();
                 segment.start = start;
                 segment.end = end;
                 lister = this;
-                //this.addExtensions();
             }
 
             let bool = false;
@@ -4960,7 +4966,13 @@ ${is_iws}`;
                     bool = true;
             }
 
-            if(bool) segment.repeat();
+            if(bool){
+                segment.repeat();
+                if(ele)
+                    ele.addSub(segment);
+                this.last_segment = segment;    
+            }
+
 
             return (!bool && start === 0) ? true : bool;
         }
@@ -4996,16 +5008,18 @@ ${is_iws}`;
         }
 
         pi(lx, ele, lister = this, start = this.start, end = this.end) {
+
             //List
             let segment = null;
 
-            if (ele) {
+            if (false &&ele) {
                 segment = ele;
             } else {
                 segment = new Segment();
                 segment.start = start;
                 segment.end = end;
                 segment.prod = this;
+                lister = this;
             }
 
             //Add new
@@ -5030,7 +5044,14 @@ ${is_iws}`;
                 }
             }
 
-            segment.repeat();
+            
+            if(bool){
+                segment.repeat();
+                if(ele)
+                    ele.addSub(segment);
+                this.last_segment = segment;    
+            }
+
 
             return (!bool && start === 0) ? true : bool;
         }

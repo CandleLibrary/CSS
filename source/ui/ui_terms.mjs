@@ -101,11 +101,11 @@ export class LiteralTerm extends terms.LiteralTerm {
 
         if (l.tx == this.value) {
             l.next();
-            let sub = new Segment();
-            sub.value = this.value + "";
+            //let sub = new Segment();
+            seg.value = this.value + "";
             seg.css_val = this.value + "";
-            sub.prod = list;
-            seg.addSub(sub);
+            seg.prod = list;
+            //seg.addSub(sub);
             return true;
         }
 

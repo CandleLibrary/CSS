@@ -59,12 +59,13 @@ class NR extends prod.NR {
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
         //List
         let segment = null;
-        if (ele) {
+        if (false &&ele) {
             segment = ele;
         } else {
             segment = new Segment()
             segment.start = start;
             segment.end = end;
+            lister = this;
         }
 
         let bool = true,
@@ -95,7 +96,13 @@ class NR extends prod.NR {
             }
         }
 
-        if(bool) segment.repeat();
+        if(bool){
+            segment.repeat();
+            if(ele)
+                ele.addSub(segment);
+            this.last_segment = segment;    
+        }
+
 
         return (!bool && start === 0) ? true : bool;
     }
@@ -106,7 +113,7 @@ class NR extends prod.NR {
         seg.end = this.end;
         seg.prod = this;
         this.parseInput(lex, seg, this);
-        return seg;
+        return this.last_segment;
     }
 
     get start(){
@@ -196,14 +203,13 @@ class OR extends NR {
 
         let segment = null;
 
-        if (ele) {
+        if (false &&ele) {
             segment = ele;
         } else {
             segment = new Segment();
             segment.start = start;
             segment.end = end;
             lister = this;
-            //this.addExtensions();
         }
 
         let bool = false;
@@ -227,7 +233,13 @@ class OR extends NR {
                 bool = true;
         }
 
-        if(bool) segment.repeat();
+        if(bool){
+            segment.repeat();
+            if(ele)
+                ele.addSub(segment);
+            this.last_segment = segment;    
+        }
+
 
         return (!bool && start === 0) ? true : bool;
     }
@@ -263,16 +275,18 @@ class ONE_OF extends NR {
     }
 
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
+
         //List
         let segment = null;
 
-        if (ele) {
+        if (false &&ele) {
             segment = ele;
         } else {
             segment = new Segment()
             segment.start = start;
             segment.end = end;
             segment.prod = this;
+            lister = this;
         }
 
         //Add new
@@ -297,7 +311,14 @@ class ONE_OF extends NR {
             }
         }
 
-        segment.repeat();
+        
+        if(bool){
+            segment.repeat();
+            if(ele)
+                ele.addSub(segment);
+            this.last_segment = segment;    
+        }
+
 
         return (!bool && start === 0) ? true : bool;
     }

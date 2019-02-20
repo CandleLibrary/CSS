@@ -4706,11 +4706,11 @@ class LiteralTerm$1 extends LiteralTerm {
 
         if (l.tx == this.value) {
             l.next();
-            let sub = new Segment();
-            sub.value = this.value + "";
+            //let sub = new Segment();
+            seg.value = this.value + "";
             seg.css_val = this.value + "";
-            sub.prod = list;
-            seg.addSub(sub);
+            seg.prod = list;
+            //seg.addSub(sub);
             return true;
         }
 
@@ -4793,12 +4793,13 @@ class NR$1 extends NR {
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
         //List
         let segment = null;
-        if (ele) {
+        if (false &&ele) {
             segment = ele;
         } else {
             segment = new Segment();
             segment.start = start;
             segment.end = end;
+            lister = this;
         }
 
         let bool = true,
@@ -4829,7 +4830,13 @@ class NR$1 extends NR {
             }
         }
 
-        if(bool) segment.repeat();
+        if(bool){
+            segment.repeat();
+            if(ele)
+                ele.addSub(segment);
+            this.last_segment = segment;    
+        }
+
 
         return (!bool && start === 0) ? true : bool;
     }
@@ -4840,7 +4847,7 @@ class NR$1 extends NR {
         seg.end = this.end;
         seg.prod = this;
         this.parseInput(lex, seg, this);
-        return seg;
+        return this.last_segment;
     }
 
     get start(){
@@ -4930,14 +4937,13 @@ class OR$1 extends NR$1 {
 
         let segment = null;
 
-        if (ele) {
+        if (false &&ele) {
             segment = ele;
         } else {
             segment = new Segment();
             segment.start = start;
             segment.end = end;
             lister = this;
-            //this.addExtensions();
         }
 
         let bool = false;
@@ -4961,7 +4967,13 @@ class OR$1 extends NR$1 {
                 bool = true;
         }
 
-        if(bool) segment.repeat();
+        if(bool){
+            segment.repeat();
+            if(ele)
+                ele.addSub(segment);
+            this.last_segment = segment;    
+        }
+
 
         return (!bool && start === 0) ? true : bool;
     }
@@ -4997,16 +5009,18 @@ class ONE_OF$1 extends NR$1 {
     }
 
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
+
         //List
         let segment = null;
 
-        if (ele) {
+        if (false &&ele) {
             segment = ele;
         } else {
             segment = new Segment();
             segment.start = start;
             segment.end = end;
             segment.prod = this;
+            lister = this;
         }
 
         //Add new
@@ -5031,7 +5045,14 @@ class ONE_OF$1 extends NR$1 {
             }
         }
 
-        segment.repeat();
+        
+        if(bool){
+            segment.repeat();
+            if(ele)
+                ele.addSub(segment);
+            this.last_segment = segment;    
+        }
+
 
         return (!bool && start === 0) ? true : bool;
     }
