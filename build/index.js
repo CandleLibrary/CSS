@@ -1,16 +1,26 @@
-let start = async function  (){
+let start = async function() {
 
-	const css_ = await css.CSSParser(`
-	.test {
-		font-family:sans-serif;
-	}
-	`)
+    let input = document.getElementById("input");
 
-	const uic = new ui.default(css_)
+    input.addEventListener("change", async (e) => {
+        let value = e.target.value;
+        css_.parse(value);
+    })
 
-	uic.build();
-	uic.render();
-	uic.mount(document.body);
+    input.value =
+        `.test {
+		border-color:red green;
+	}`
+
+	const css_ = await css.CSSParser(input.value)
+    const uic = new ui.default(css_)
+    uic.build();
+    uic.render();
+    uic.mount(document.body);
+
+    css_.on
+
+
 }
 
-start()
+window.addEventListener("load", start)

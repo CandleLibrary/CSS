@@ -1515,9 +1515,10 @@ class CSS_Percentage extends Number {
         input.value = parseFloat(value);
     }
 
-    static buildInput(){
+    static buildInput(value){
         let ele = document.createElement("input");
         ele.type = "number";
+         input.value = parseFloat(value) || 0;
         return ele;
     }
     
@@ -1593,6 +1594,13 @@ class CSS_Percentage extends Number {
 }
 
 class CSS_Length extends Number {
+
+    static valueHandler(value){
+        let ele = document.createElement("input");
+        ele.type = "number";
+        ele.value = (value) ? value + 0 : 0;
+        return ele;
+    }
 
     static setInput(input, value){
         input.type = "number";
@@ -4483,6 +4491,7 @@ class Segment {
         this.menu = document.createElement("span");
         this.menu.classList.add("css_ui_menu");
         this.menu.innerHTML = "+";
+        this.menu.style.display = "none";
         this.menu.appendChild(this.list);
 
         this.element = document.createElement("span");
@@ -4495,13 +4504,29 @@ class Segment {
         this.value_list = [];
         this.subs = [];
         this.sib = null;
-        //*
+        this.value_set;
+        this.HAS_VALUE = false;
+
         this.element.addEventListener("mouseover", e => {
-            if (this.prod && this.list.innerHTML == "") {
-                this.prod.buildList(this.list, this);
-            }
+            this.setList();
         });
-        //*//
+    }
+
+    destroy() {
+        this.element = null;
+        this.val = null;
+        this.list = null;
+        this.ext = null;
+        this.menu = null;
+        this.subs.forEach(e => e.destroy());
+        this.subs = null;
+    }
+
+    reset() {
+        this.list.innerHTML = "";
+        this.val.innerHTML = "";
+        this.subs.forEach(e => e.destroy);
+        this.subs = [];
     }
 
     replaceSub(old_sub, new_sub) {
@@ -4514,66 +4539,96 @@ class Segment {
         }
     }
 
+    mount(element) {
+        element.appendChild(this.element);
+    }
+
+
     addSub(seg) {
         seg.parent = this;
         this.subs.push(seg);
         this.val.appendChild(seg.element);
     }
 
-    displayList() {
-
-    }
-
-    destroy() {
-
-    }
-
-    set value(v) {
-        this.val.innerHTML = v;
-        this.css_val = v;
-    }
-
-    repeat(prod = this.prod) {
-
-        if(this.end > this.subs.length){
-            this.ext.style.display = "inline-block";
-
-            this.ext.onclick = e => {
-                if(this.subs.length == 1){
-                    //Turn self into own seg
-                    let seg = new Segment;                        
-                    seg.prod = this.prod;
-                    seg.css_val = this.css_val;
-                    this.val.innerHTML = "";
-                    this.list.innerHTML = "";
-                    this.menu.style.display = "none";
-                    this.prod = null;
-                    let s = this.subs[0];
-                    this.subs = [];
-                    this.addSub(seg);
-                    seg.addSub(s);
-                }
-
-                let seg = new Segment;
-                seg.prod = prod;
-                this.addSub(seg);
-                prod.extend(seg);
-                
-                if (this.subs.length >= this.end)
-                    this.ext.style.display = "none";
-            };
-        }else{
-            this.ext.style.display = "none";
+    setList() {
+        if (this.prod && this.list.innerHTML == "") {
+            if (!this.prod.buildList(this.list, this))
+                this.menu.style.display = "none";
+            else
+                this.menu.style.display = "inline-block";
         }
-    }
-
-    mount(element) {
-        element.appendChild(this.element);
     }
 
     setValueHandler(element) {
         this.val.innerHTML = "";
         this.val.appendChild(element);
+        this.menu.style.display = "none";
+        this.HAS_VALUE = true;
+        this.setList();
+    }
+
+    set value(v) {
+        this.val.innerHTML = v;
+        this.css_val = v;
+        this.HAS_VALUE = true;
+        this.setList();
+    }
+
+    get value_count() {
+        if (this.subs.length > 0)
+            return this.subs.length
+        return (this.HAS_VALUE) ? 1 : 0;
+    }
+
+    promote(){
+
+    }
+
+    demote() {
+        let seg = new Segment;
+        seg.prod = this.prod;
+        seg.css_val = this.css_val;
+
+        let children = this.val.childNodes;
+        if (children.length > 0) {
+            for (let i = 0, l = children.length; i < l; i++) {
+                seg.val.appendChild(children[0]);
+            }
+        } else {
+            seg.val.innerHTML = this.val.innerHTML;
+        }
+        
+        this.reset();
+        //this.prod = null;
+        this.addSub(seg);
+        seg.setList();
+    }
+
+    addRepeat(seg) {
+        if (this.subs.length == 0)
+            //Turn self into own sub seg
+            this.demote();
+        this.addSub(seg);
+    }
+
+    repeat(prod = this.prod) {
+        if (this.end > this.value_count) {
+            this.ext.style.display = "inline-block";
+
+            this.ext.onclick = e => {
+                if (this.subs.length == 0)
+                    //Turn self into own sub seg
+                    this.demote();
+
+                prod.default(this, true);
+
+                if (this.value_count >= this.end)
+                    this.ext.style.display = "none";
+            };
+        } else {
+            this.ext.style.display = "none";
+        }
+        this.setList();
     }
 
     update() {
@@ -4596,29 +4651,39 @@ class Segment {
         return val;
     }
 
-    reset(){
-        this.val.innerHTML = "";
-        this.subs.forEach(e=>e.destroy);
-        this.subs = [];
+    toString() {
+        return this.getValue();
     }
-
-
-    updateFunction(v) {}
 }
 
 class ValueTerm$1 extends ValueTerm {
 
-    default (seg, list) {
-        let sub = new Segment();
-        let element = this.value.valueHandler();
+    default (seg, APPEND = false, value = null) {
+        let element = this.value.valueHandler(value);
         element.addEventListener("change", e => {
             let value = element.value;
-            sub.css_val = value;
-            sub.update();
-        });
-        sub.setValueHandler(element);
-        sub.prod = list;
-        seg.addSub(sub);
+            seg.css_val = value;
+            seg.update();
+        });       
+        if(!APPEND){  
+            seg.setValueHandler(element);
+        }else{
+            let sub = new Segment();
+            sub.setValueHandler(element);
+            sub.prod = list;
+            seg.addSub(sub);
+        }
+    }
+
+    parseInput(l, seg, APPEND = false) {
+        let val = this.value.parse(l);
+
+        if (val) {
+            this.default(seg, APPEND, val);
+            return true;
+        }
+
+        return val;
     }
 
     list(ele, slot) {
@@ -4643,48 +4708,25 @@ class ValueTerm$1 extends ValueTerm {
                 seg.addSub(sub);
             }
         });
+
+        return 1;
     }
 
     setSegment(segment) {
         segment.element.innerHTML = this.value.name;
     }
-
-    parseInput(l, seg, list) {
-        let val = this.value.parse(l);
-
-        if (val) {
-            let sub = new Segment();
-            let element = this.value.valueHandler(val);
-            element.addEventListener("change", e => {
-                let value = element.value;
-                sub.css_val = value;
-                sub.update();
-            });
-            sub.setValueHandler(element);
-            sub.css_val = val + "";
-            sub.prod = list;
-            seg.addSub(sub);
-        }
-
-        return val;
-    }
 }
 
 class LiteralTerm$1 extends LiteralTerm {
 
-	default (seg, list) {
-        let sub = new Segment();
-        let element = document.createElement("div");
-        element.innerHTML = this.value;
-        element.addEventListener("change", e => {
-            sub.value = this.value + "";
-            sub.css_val = this.value + "";
-            sub.update();
-        });
-        sub.setValueHandler(element);
-        sub.value = this.value;
-        sub.prod = list;
-        seg.addSub(sub);
+	default (seg, APPEND = false) {
+        if(!APPEND){
+            seg.value = this.value;
+        }else{
+            let sub = new Segment();
+            sub.value = this.value;
+            seg.addSub(sub);
+        }
     }
 
     list(ele, slot) {
@@ -4695,22 +4737,19 @@ class LiteralTerm$1 extends LiteralTerm {
         ele.appendChild(element);
         element.addEventListener("click", e => {
             slot.value = this.value + "";
-            slot.css_val = this.value + "";
             slot.update();
         });
+
+        return 1;
     }
 
-    parseInput(l, seg, list) {
+    parseInput(l, seg, APPEND = false) {
         if (typeof(l) == "string")
             l = whind(l);
 
         if (l.tx == this.value) {
             l.next();
-            //let sub = new Segment();
-            seg.value = this.value + "";
-            seg.css_val = this.value + "";
-            seg.prod = list;
-            //seg.addSub(sub);
+            this.default(seg, APPEND);
             return true;
         }
 
@@ -4719,7 +4758,7 @@ class LiteralTerm$1 extends LiteralTerm {
 }
 
 class SymbolTerm$1 extends LiteralTerm$1 {
-    list() {}
+    list() {return 0}
 
     parseInput(l, seg, r) {
         if (typeof(l) == "string")
@@ -4743,8 +4782,14 @@ class SymbolTerm$1 extends LiteralTerm$1 {
  */
 class NR$1 extends NR {
     //Adds an entry in options list. 
-    list(ele, slot) {
-        this.buildList(ele, slot);
+
+
+    createSegment() {
+        let segment = new Segment();
+        segment.start = this.start;
+        segment.end = this.end;
+        segment.prod = this;
+        return segment
     }
 
     buildList(list, slot) {
@@ -4760,13 +4805,13 @@ class NR$1 extends NR {
             list.classList.add("css_ui_slot");
             slot.appendChild(list);
         }
-
+        let count = 0;
         //Build List
         for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].list(list, slot);
+            count += this.terms[i].list(list, slot);
         }
 
-        return slot;
+        return count > 1;
     }
 
     seal() {}
@@ -4779,28 +4824,22 @@ class NR$1 extends NR {
         return this.pi(lx, segment, list);
     }
 
-    extend(segment) {
+    default (segment, EXTENDED = true) {
+        let seg = this.createSegment();
 
-        this.default(segment);
-    }
+        segment.addSub(seg);
 
-    default (segment) {
-        for (let i = 0; i < this.terms.length; i++) {
-            this.terms[i].default(segment, null);
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            this.terms[i].default(seg, l > 1);
         }
+
+        if (!EXTENDED) seg.repeat();
     }
 
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
+
         //List
-        let segment = null;
-        if (false &&ele) {
-            segment = ele;
-        } else {
-            segment = new Segment();
-            segment.start = start;
-            segment.end = end;
-            lister = this;
-        }
+        let segment = this.createSegment();
 
         let bool = true,
             j = 0,
@@ -4808,9 +4847,14 @@ class NR$1 extends NR {
             first;
 
         for (; j < end && !lx.END; j++) {
+            const REPEAT = j > 0;
+
+            let seg = (REPEAT) ? new Segment : segment;
+
+            seg.prod = this;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parseInput(lx, segment, lister);
+                bool = this.terms[i].parseInput(lx, seg, l > 1);
 
                 if (!bool) {
                     bool = false;
@@ -4828,13 +4872,16 @@ class NR$1 extends NR {
                     bool = true;
                 break;
             }
+
+            if (REPEAT)
+                segment.addRepeat(seg);
         }
 
-        if(bool){
+        if (bool) {
             segment.repeat();
-            if(ele)
+            if (ele)
                 ele.addSub(segment);
-            this.last_segment = segment;    
+            this.last_segment = segment;
         }
 
 
@@ -4850,26 +4897,29 @@ class NR$1 extends NR {
         return this.last_segment;
     }
 
-    get start(){
+    get start() {
         return isNaN(this.r[0]) ? 1 : this.r[0];
     }
 
-    get end(){
+    get end() {
         return isNaN(this.r[1]) ? 1 : this.r[1];
     }
 }
 
 class AND$1 extends NR$1 {
 
-    default(segment, list = this) {
+    default (segment, EXTENDED = false) {
+        //let seg = this.createSegment();
+        //segment.addSub(seg);
         for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].default(segment);
+            this.terms[i].default(segment, i > 1);
         }
+        //seg.repeat();
     }
 
     list(ele, slot) {
 
-        let name = (this.name) ? this.name.replace("\_\g", " "): this.terms.reduce((r, t) => r += " | " + t.name, "");
+        let name = (this.name) ? this.name.replace("\_\g", " ") : this.terms.reduce((r, t) => r += " | " + t.name, "");
         let element = document.createElement("div");
         element.classList.add("css_ui_selection");
         element.innerHTML = name;
@@ -4887,6 +4937,8 @@ class AND$1 extends NR$1 {
                 seg.addSub(sub);
             }
         });
+
+        return 1;
     }
 
     pi(lx, ele, lister = this, start = 1, end = 1) {
@@ -4904,6 +4956,15 @@ class AND$1 extends NR$1 {
 Object.assign(AND$1.prototype, AND.prototype);
 
 class OR$1 extends NR$1 {
+
+    default (segment, EXTENDED = false) {
+        //let seg = this.createSegment();
+        //segment.addSub(seg);
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            this.terms[i].default(segment, l > 1);
+        }
+        //seg.repeat();
+    }
 
     list(ele, slot) {
 
@@ -4925,66 +4986,66 @@ class OR$1 extends NR$1 {
                 seg.addSub(sub);
             }
         });
+
+        return 1;
     }
 
-    default(segment, list = this) {
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].default(segment, list);
-        }
-    }
-
-    pi(lx, ele, lister = this, start = this.start, end = this.end){
-
-        let segment = null;
-
-        if (false &&ele) {
-            segment = ele;
-        } else {
-            segment = new Segment();
-            segment.start = start;
-            segment.end = end;
-            lister = this;
-        }
+    pi(lx, ele, lister = this, start = this.start, end = this.end) {
+        
+        let segment = ele; //this.createSegment()
 
         let bool = false;
 
         let j = 0;
 
         for (let j = 0; j < end && !lx.END; j++) {
+
+            let seg = (REPEAT) ? new Segment : segment;
+
             bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                if (this.terms[i].parseInput(lx, segment)) {
+                if (this.terms[i].parseInput(lx, seg)) {
                     bool = true;
                 } else {
                     //Make blank segment that can be filled. 
                 }
             }
 
-            if (!bool && j < start){
+            if (!bool && j < start) {
                 bool = false;
-            }else if(start === 0)
+            } else if (start === 0)
                 bool = true;
+
+            segment.addRepeat(seg);
         }
 
-        if(bool){
-            segment.repeat();
-            if(ele)
-                ele.addSub(segment);
-            this.last_segment = segment;    
+        if (bool) {
+            //segment.repeat();
+            //if (ele)
+            //    ele.addSub(segment);
+            //this.last_segment = segment;
         }
 
 
         return (!bool && start === 0) ? true : bool;
     }
 }
+
 Object.assign(OR$1.prototype, OR.prototype);
 
 class ONE_OF$1 extends NR$1 {
 
+    default (segment, EXTENDED = false) {
+        let seg = this.createSegment();
+        segment.addSub(seg);
+        this.terms[0].default(seg);
+        if (!EXTENDED) seg.repeat();
+    }
+
     list(ele, slot) {
 
-        let name = (this.name) ? this.name.replace(/_/g, " "): this.terms.reduce((r, t) => r += " | " + t.name, "");
+        let name = (this.name) ? this.name.replace(/_/g, " ") : this.terms.reduce((r, t) => r += " | " + t.name, "");
         let element = document.createElement("div");
         element.classList.add("css_ui_selection");
         element.innerHTML = name;
@@ -5002,26 +5063,14 @@ class ONE_OF$1 extends NR$1 {
                 seg.addSub(sub);
             }
         });
-    }
 
-    default (segment, list) {
-        this.terms[0].default(segment, this);
+        return 1;
     }
 
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
 
         //List
-        let segment = null;
-
-        if (false &&ele) {
-            segment = ele;
-        } else {
-            segment = new Segment();
-            segment.start = start;
-            segment.end = end;
-            segment.prod = this;
-            lister = this;
-        }
+        let segment = this.createSegment();
 
         //Add new
         let bool = false;
@@ -5029,11 +5078,14 @@ class ONE_OF$1 extends NR$1 {
         let j = 0;
         //Parse Input
         for (; j < end && !lx.END; j++) {
-            
+            const REPEAT = j > 0;
+
+            let seg = (REPEAT) ? new Segment : segment;
+
             bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parseInput(lx, segment, lister);
+                bool = this.terms[i].parseInput(lx, seg);
                 if (bool) break;
             }
 
@@ -5043,16 +5095,18 @@ class ONE_OF$1 extends NR$1 {
                     break;
                 }
             }
+            
+            if (REPEAT)
+                segment.addRepeat(seg);
+
         }
 
-        
-        if(bool){
+        if (bool) {
             segment.repeat();
-            if(ele)
+            if (ele)
                 ele.addSub(segment);
-            this.last_segment = segment;    
+            this.last_segment = segment;
         }
-
 
         return (!bool && start === 0) ? true : bool;
     }
@@ -5101,6 +5155,7 @@ class UIValue {
 
 class UIMaster {
 	constructor(css){
+		css.addObserver(this);
 		this.css = css;
 		this.rule_sets = [];
 		this.selectors = [];
@@ -5113,13 +5168,22 @@ class UIMaster {
 
 		let children = css.children;
 
+		this.rule_sets = [];
+		this.selectors = [];
 		
 		for(let i = 0; i < children.length; i++){
 			let r = new UIRuleSet(children[i], this);
 		}
 	}	
 
+	updatedCSS(css){
+		this.element.innerHTML = "";
+		this.build(css);
+		this.render();
+	}
+
 	render(){
+
 		for(let i = 0; i < this.rule_sets.length; i++)
 			this.rule_sets.render(this.element);
 	}

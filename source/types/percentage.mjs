@@ -4,9 +4,10 @@ export default class CSS_Percentage extends Number {
         input.value = parseFloat(value);
     }
 
-    static buildInput(){
+    static buildInput(value){
         let ele = document.createElement("input")
         ele.type = "number";
+         input.value = parseFloat(value) || 0;
         return ele;
     }
     

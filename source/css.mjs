@@ -117,6 +117,9 @@ class CSSRootNode {
     }
 
     parse(lex, root) {
+        if (typeof(lex) == "string")
+            lex = whind(lex);
+
         if (lex.sl > 0) {
 
             if (!root && root !== null) {
@@ -126,6 +129,7 @@ class CSSRootNode {
 
             return this.fch.parse(lex, this).then(e => {
                 this._setREADY_();
+                this.updated();
                 return this;
             });
         }

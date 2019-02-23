@@ -9,8 +9,14 @@ import { ValueTerm, LiteralTerm, SymbolTerm } from "./ui_terms.mjs";
  */
 class NR extends prod.NR {
     //Adds an entry in options list. 
-    list(ele, slot) {
-        this.buildList(ele, slot)
+
+
+    createSegment() {
+        let segment = new Segment()
+        segment.start = this.start;
+        segment.end = this.end;
+        segment.prod = this;
+        return segment
     }
 
     buildList(list, slot) {
@@ -26,13 +32,13 @@ class NR extends prod.NR {
             list.classList.add("css_ui_slot")
             slot.appendChild(list);
         }
-
+        let count = 0;
         //Build List
         for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].list(list, slot);
+            count += this.terms[i].list(list, slot);
         }
 
-        return slot;
+        return count > 1;
     }
 
     seal() {}
@@ -45,28 +51,22 @@ class NR extends prod.NR {
         return this.pi(lx, segment, list);
     }
 
-    extend(segment) {
+    default (segment, EXTENDED = true) {
+        let seg = this.createSegment();
 
-        this.default(segment);
-    }
+        segment.addSub(seg);
 
-    default (segment) {
-        for (let i = 0; i < this.terms.length; i++) {
-            this.terms[i].default(segment, null);
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            this.terms[i].default(seg, l > 1);
         }
+
+        if (!EXTENDED) seg.repeat();
     }
 
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
+
         //List
-        let segment = null;
-        if (false &&ele) {
-            segment = ele;
-        } else {
-            segment = new Segment()
-            segment.start = start;
-            segment.end = end;
-            lister = this;
-        }
+        let segment = this.createSegment()
 
         let bool = true,
             j = 0,
@@ -74,9 +74,14 @@ class NR extends prod.NR {
             first;
 
         for (; j < end && !lx.END; j++) {
+            const REPEAT = j > 0
+
+            let seg = (REPEAT) ? new Segment : segment;
+
+            seg.prod = this;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parseInput(lx, segment, lister);
+                bool = this.terms[i].parseInput(lx, seg, l > 1);
 
                 if (!bool) {
                     bool = false;
@@ -94,13 +99,16 @@ class NR extends prod.NR {
                     bool = true;
                 break;
             }
+
+            if (REPEAT)
+                segment.addRepeat(seg);
         }
 
-        if(bool){
+        if (bool) {
             segment.repeat();
-            if(ele)
+            if (ele)
                 ele.addSub(segment);
-            this.last_segment = segment;    
+            this.last_segment = segment;
         }
 
 
@@ -116,26 +124,29 @@ class NR extends prod.NR {
         return this.last_segment;
     }
 
-    get start(){
+    get start() {
         return isNaN(this.r[0]) ? 1 : this.r[0];
     }
 
-    get end(){
+    get end() {
         return isNaN(this.r[1]) ? 1 : this.r[1];
     }
 }
 
 class AND extends NR {
 
-    default(segment, list = this) {
+    default (segment, EXTENDED = false) {
+        //let seg = this.createSegment();
+        //segment.addSub(seg);
         for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].default(segment)
+            this.terms[i].default(segment, i > 1);
         }
+        //seg.repeat();
     }
 
     list(ele, slot) {
 
-        let name = (this.name) ? this.name.replace("\_\g", " "): this.terms.reduce((r, t) => r += " | " + t.name, "")
+        let name = (this.name) ? this.name.replace("\_\g", " ") : this.terms.reduce((r, t) => r += " | " + t.name, "")
         let element = document.createElement("div")
         element.classList.add("css_ui_selection");
         element.innerHTML = name;
@@ -153,6 +164,8 @@ class AND extends NR {
                 seg.addSub(sub);
             }
         })
+
+        return 1;
     }
 
     pi(lx, ele, lister = this, start = 1, end = 1) {
@@ -170,6 +183,15 @@ class AND extends NR {
 Object.assign(AND.prototype, prod.AND.prototype);
 
 class OR extends NR {
+
+    default (segment, EXTENDED = false) {
+        //let seg = this.createSegment();
+        //segment.addSub(seg);
+        for (let i = 0, l = this.terms.length; i < l; i++) {
+            this.terms[i].default(segment, l > 1);
+        }
+        //seg.repeat();
+    }
 
     list(ele, slot) {
 
@@ -191,66 +213,66 @@ class OR extends NR {
                 seg.addSub(sub);
             }
         })
+
+        return 1;
     }
 
-    default(segment, list = this) {
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].default(segment, list)
-        }
-    }
-
-    pi(lx, ele, lister = this, start = this.start, end = this.end){
-
-        let segment = null;
-
-        if (false &&ele) {
-            segment = ele;
-        } else {
-            segment = new Segment();
-            segment.start = start;
-            segment.end = end;
-            lister = this;
-        }
+    pi(lx, ele, lister = this, start = this.start, end = this.end) {
+        
+        let segment = ele //this.createSegment()
 
         let bool = false;
 
         let j = 0;
 
         for (let j = 0; j < end && !lx.END; j++) {
+
+            let seg = (REPEAT) ? new Segment : segment;
+
             bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                if (this.terms[i].parseInput(lx, segment)) {
+                if (this.terms[i].parseInput(lx, seg)) {
                     bool = true;
                 } else {
                     //Make blank segment that can be filled. 
                 }
             }
 
-            if (!bool && j < start){
+            if (!bool && j < start) {
                 bool = false;
-            }else if(start === 0)
+            } else if (start === 0)
                 bool = true;
+
+            segment.addRepeat(seg);
         }
 
-        if(bool){
-            segment.repeat();
-            if(ele)
-                ele.addSub(segment);
-            this.last_segment = segment;    
+        if (bool) {
+            //segment.repeat();
+            //if (ele)
+            //    ele.addSub(segment);
+            //this.last_segment = segment;
         }
 
 
         return (!bool && start === 0) ? true : bool;
     }
 }
+
 Object.assign(OR.prototype, prod.OR.prototype)
 
 class ONE_OF extends NR {
 
+    default (segment, EXTENDED = false) {
+        let seg = this.createSegment();
+        segment.addSub(seg);
+        this.terms[0].default(seg);
+        if (!EXTENDED) seg.repeat();
+    }
+
     list(ele, slot) {
 
-        let name = (this.name) ? this.name.replace(/_/g, " "): this.terms.reduce((r, t) => r += " | " + t.name, "")
+        let name = (this.name) ? this.name.replace(/_/g, " ") : this.terms.reduce((r, t) => r += " | " + t.name, "")
         let element = document.createElement("div")
         element.classList.add("css_ui_selection");
         element.innerHTML = name;
@@ -268,26 +290,14 @@ class ONE_OF extends NR {
                 seg.addSub(sub);
             }
         })
-    }
 
-    default (segment, list) {
-        this.terms[0].default(segment, this);
+        return 1;
     }
 
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
 
         //List
-        let segment = null;
-
-        if (false &&ele) {
-            segment = ele;
-        } else {
-            segment = new Segment()
-            segment.start = start;
-            segment.end = end;
-            segment.prod = this;
-            lister = this;
-        }
+        let segment = this.createSegment()
 
         //Add new
         let bool = false;
@@ -295,11 +305,14 @@ class ONE_OF extends NR {
         let j = 0;
         //Parse Input
         for (; j < end && !lx.END; j++) {
-            
+            const REPEAT = j > 0
+
+            let seg = (REPEAT) ? new Segment : segment;
+
             bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parseInput(lx, segment, lister);
+                bool = this.terms[i].parseInput(lx, seg);
                 if (bool) break;
             }
 
@@ -309,16 +322,18 @@ class ONE_OF extends NR {
                     break;
                 }
             }
+            
+            if (REPEAT)
+                segment.addRepeat(seg);
+
         }
 
-        
-        if(bool){
+        if (bool) {
             segment.repeat();
-            if(ele)
+            if (ele)
                 ele.addSub(segment);
-            this.last_segment = segment;    
+            this.last_segment = segment;
         }
-
 
         return (!bool && start === 0) ? true : bool;
     }

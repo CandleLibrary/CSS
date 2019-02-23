@@ -4,6 +4,13 @@ import whind from "@candlefw/whind";
 
 export default class CSS_Length extends Number {
 
+    static valueHandler(value){
+        let ele = document.createElement("input")
+        ele.type = "number";
+        ele.value = (value) ? value + 0 : 0;
+        return ele;
+    }
+
     static setInput(input, value){
         input.type = "number";
         input.value = value;

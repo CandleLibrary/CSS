@@ -1858,9 +1858,10 @@ ${is_iws}`;
             input.value = parseFloat(value);
         }
 
-        static buildInput(){
+        static buildInput(value){
             let ele = document.createElement("input");
             ele.type = "number";
+             input.value = parseFloat(value) || 0;
             return ele;
         }
         
@@ -1936,6 +1937,13 @@ ${is_iws}`;
     }
 
     class CSS_Length extends Number {
+
+        static valueHandler(value){
+            let ele = document.createElement("input");
+            ele.type = "number";
+            ele.value = (value) ? value + 0 : 0;
+            return ele;
+        }
 
         static setInput(input, value){
             input.type = "number";
@@ -5561,6 +5569,9 @@ ${is_iws}`;
         }
 
         parse(lex, root) {
+            if (typeof(lex) == "string")
+                lex = whind$1(lex);
+
             if (lex.sl > 0) {
 
                 if (!root && root !== null) {
@@ -5570,6 +5581,7 @@ ${is_iws}`;
 
                 return this.fch.parse(lex, this).then(e => {
                     this._setREADY_();
+                    this.updated();
                     return this;
                 });
             }

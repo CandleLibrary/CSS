@@ -3,17 +3,32 @@ import { Segment } from "./ui_segment.mjs"
 
 export class ValueTerm extends terms.ValueTerm {
 
-    default (seg, list) {
-        let sub = new Segment();
-        let element = this.value.valueHandler();
+    default (seg, APPEND = false, value = null) {
+        let element = this.value.valueHandler(value);
         element.addEventListener("change", e => {
             let value = element.value;
-            sub.css_val = value;
-            sub.update();
-        })
-        sub.setValueHandler(element);
-        sub.prod = list;
-        seg.addSub(sub);
+            seg.css_val = value;
+            seg.update();
+        })       
+        if(!APPEND){  
+            seg.setValueHandler(element);
+        }else{
+            let sub = new Segment();
+            sub.setValueHandler(element);
+            sub.prod = list;
+            seg.addSub(sub);
+        }
+    }
+
+    parseInput(l, seg, APPEND = false) {
+        let val = this.value.parse(l)
+
+        if (val) {
+            this.default(seg, APPEND, val)
+            return true;
+        }
+
+        return val;
     }
 
     list(ele, slot) {
@@ -38,48 +53,25 @@ export class ValueTerm extends terms.ValueTerm {
                 seg.addSub(sub);
             }
         })
+
+        return 1;
     }
 
     setSegment(segment) {
         segment.element.innerHTML = this.value.name;
     }
-
-    parseInput(l, seg, list) {
-        let val = this.value.parse(l)
-
-        if (val) {
-            let sub = new Segment();
-            let element = this.value.valueHandler(val);
-            element.addEventListener("change", e => {
-                let value = element.value;
-                sub.css_val = value;
-                sub.update();
-            })
-            sub.setValueHandler(element);
-            sub.css_val = val + "";
-            sub.prod = list;
-            seg.addSub(sub);
-        }
-
-        return val;
-    }
 }
 
 export class LiteralTerm extends terms.LiteralTerm {
 
-	default (seg, list) {
-        let sub = new Segment();
-        let element = document.createElement("div")
-        element.innerHTML = this.value;
-        element.addEventListener("change", e => {
-            sub.value = this.value + "";
-            sub.css_val = this.value + "";
-            sub.update();
-        })
-        sub.setValueHandler(element);
-        sub.value = this.value;
-        sub.prod = list;
-        seg.addSub(sub);
+	default (seg, APPEND = false) {
+        if(!APPEND){
+            seg.value = this.value;
+        }else{
+            let sub = new Segment();
+            sub.value = this.value;
+            seg.addSub(sub);
+        }
     }
 
     list(ele, slot) {
@@ -90,22 +82,19 @@ export class LiteralTerm extends terms.LiteralTerm {
         ele.appendChild(element)
         element.addEventListener("click", e => {
             slot.value = this.value + "";
-            slot.css_val = this.value + "";
             slot.update();
         })
+
+        return 1;
     }
 
-    parseInput(l, seg, list) {
+    parseInput(l, seg, APPEND = false) {
         if (typeof(l) == "string")
             l = whind(l);
 
         if (l.tx == this.value) {
             l.next();
-            //let sub = new Segment();
-            seg.value = this.value + "";
-            seg.css_val = this.value + "";
-            seg.prod = list;
-            //seg.addSub(sub);
+            this.default(seg, APPEND)
             return true;
         }
 
@@ -114,7 +103,7 @@ export class LiteralTerm extends terms.LiteralTerm {
 }
 
 export class SymbolTerm extends LiteralTerm {
-    list() {}
+    list() {return 0}
 
     parseInput(l, seg, r) {
         if (typeof(l) == "string")

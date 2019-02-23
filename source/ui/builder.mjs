@@ -1,6 +1,7 @@
 import { UIValue } from "./ui_value.mjs";
 export default class UIMaster {
 	constructor(css){
+		css.addObserver(this);
 		this.css = css;
 		this.rule_sets = [];
 		this.selectors = [];
@@ -13,13 +14,22 @@ export default class UIMaster {
 
 		let children = css.children;
 
+		this.rule_sets = [];
+		this.selectors = [];
 		
 		for(let i = 0; i < children.length; i++){
 			let r = new UIRuleSet(children[i], this);
 		}
 	}	
 
+	updatedCSS(css){
+		this.element.innerHTML = "";
+		this.build(css);
+		this.render();
+	}
+
 	render(){
+
 		for(let i = 0; i < this.rule_sets.length; i++)
 			this.rule_sets.render(this.element);
 	}
