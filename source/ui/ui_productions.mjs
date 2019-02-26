@@ -226,6 +226,7 @@ class OR extends NR {
         let j = 0;
 
         for (let j = 0; j < end && !lx.END; j++) {
+            const REPEAT = j > 0
 
             let seg = (REPEAT) ? new Segment : segment;
 
@@ -243,7 +244,7 @@ class OR extends NR {
                 bool = false;
             } else if (start === 0)
                 bool = true;
-
+                if (REPEAT)
             segment.addRepeat(seg);
         }
 

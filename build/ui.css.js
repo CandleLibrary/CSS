@@ -1268,7 +1268,6 @@ ${is_iws}`;
             Creates a new Color from a string or a Lexer.
         */
         static _fs_(l, v = false) {
-
             let c;
 
             if (typeof(l) == "string")
@@ -4632,10 +4631,9 @@ ${is_iws}`;
 
         update() {
             if (this.parent)
-                this.parent.update();
+                this.parent.update(this);
             else {
                 let val = this.getValue();
-                console.log(val);
             }
         }
 
@@ -4998,6 +4996,7 @@ ${is_iws}`;
             let j = 0;
 
             for (let j = 0; j < end && !lx.END; j++) {
+                const REPEAT = j > 0;
 
                 let seg = (REPEAT) ? new Segment : segment;
 
@@ -5015,7 +5014,7 @@ ${is_iws}`;
                     bool = false;
                 } else if (start === 0)
                     bool = true;
-
+                    if (REPEAT)
                 segment.addRepeat(seg);
             }
 
@@ -5125,15 +5124,21 @@ ${is_iws}`;
 
     const props = Object.assign({}, property_definitions);
     const productions = { NR, AND, OR, ONE_OF };
-    console.log(ui_productions);
+
+
     class UIValue {
 
         constructor(type, value, parent) {
+            this.type = type;
 
             this.parent = parent;
 
             let pp = getPropertyParser(type, undefined, props, ui_productions);
+            
+            pp.parent = this;
+
             this.setupElement(pp, value);
+
             this.mount(this.parent.element);
         }
 
@@ -5143,129 +5148,275 @@ ${is_iws}`;
         }
 
         update(value) {
-
+            this.parent.update(this.type, value.toString());
         }
 
         setupElement(pp, value) {
-            console.log(pp, " " + value);
             this.element = pp.buildInput(1, whind$1(value));
+            this.element.parent = this;
         }
     }
 
+    /**
+     * Used to _bind_ a rule to a CSS selector.
+     * @param      {string}  selector        The raw selector string value
+     * @param      {array}  selector_array  An array of selector group identifiers.
+     * @memberof module:wick~internals.css
+     * @alias CSSSelector
+     */
+    class CSSSelector {
+
+        constructor(selectors /* string */ , selectors_arrays /* array */ ) {
+
+            /**
+             * The raw selector string value
+             * @package
+             */
+
+            this.v = selectors;
+
+            /**
+             * Array of separated selector strings in reverse order.
+             * @package
+             */
+
+            this.a = selectors_arrays;
+
+            /**
+             * The CSSRule.
+             * @package
+             */
+            this.r = null;
+        }
+
+        get id() {
+            return this.v.join("");
+        }
+        /**
+         * Returns a string representation of the object.
+         * @return     {string}  String representation of the object.
+         */
+        toString(off = 0) {
+            let offset = ("    ").repeat(off);
+
+            let str = `${offset}${this.v.join(", ")} {\n`;
+
+            if (this.r)
+                str += this.r.toString(off + 1);
+
+            return str + `${offset}}\n`;
+        }
+
+        addProp(string) {
+            let root = this.r.root;
+            if (root) {
+                let lex = whind$1(string);
+                while (!lex.END)
+                    root.parseProperty(lex, this.r, property_definitions);
+            }
+        }
+
+    }
+
+    /**
+     * Holds a set of rendered CSS properties.
+     * @memberof module:wick~internals.css
+     * @alias CSSRule
+     */
+    class CSSRule {
+        constructor(root) {
+            /**
+             * Collection of properties held by this rule.
+             * @public
+             */
+            this.props = {};
+            this.LOADED = false;
+            this.root = root;
+        }
+
+        addProperty(prop, rule) {
+            if (prop)
+                this.props[prop.name] = prop.value;
+        }
+
+
+
+        toString(off = 0, rule = "") {
+            let str = [],
+                offset = ("    ").repeat(off);
+
+            if (rule) {
+                if (this.props[rule]) {
+                    if (Array.isArray(this.props[rule]))
+                        str.push(this.props[rule].join(" "));
+                    else
+                        str.push(this.props[rule].toString());
+                }else
+                    return "";
+            } else {
+                for (let a in this.props) {
+                    if (this.props[a] !== null) {
+                        if (Array.isArray(this.props[a]))
+                            str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
+                        else
+                            str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";\n");
+                    }
+                }
+            }
+
+            return str.join(""); //JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
+        }
+
+        merge(rule) {
+            if (rule.props) {
+                for (let n in rule.props)
+                    this.props[n] = rule.props[n];
+                this.LOADED = true;
+            }
+        }
+
+        get _wick_type_() { return 0; }
+
+        set _wick_type_(v) {}
+    }
+
     class UIMaster {
-    	constructor(css){
-    		css.addObserver(this);
-    		this.css = css;
-    		this.rule_sets = [];
-    		this.selectors = [];
-    		this.element = document.createElement("div");
-    	}
+        constructor(css) {
+            css.addObserver(this);
+            this.css = css;
+            this.rule_sets = [];
+            this.selectors = [];
+            this.element = document.createElement("div");
+        }
 
-    	build(css = this.css){
+        build(css = this.css) {
 
-    		this.css = css;
+            this.css = css;
 
-    		let children = css.children;
+            let children = css.children;
 
-    		this.rule_sets = [];
-    		this.selectors = [];
-    		
-    		for(let i = 0; i < children.length; i++){
-    			let r = new UIRuleSet(children[i], this);
-    		}
-    	}	
+            this.rule_sets = [];
+            this.selectors = [];
 
-    	updatedCSS(css){
-    		this.element.innerHTML = "";
-    		this.build(css);
-    		this.render();
-    	}
+            for (let i = 0; i < children.length; i++) {
+                let r = new UIRuleSet(children[i], this);
+            }
+        }
 
-    	render(){
+        updatedCSS(css) {
+            this.element.innerHTML = "";
+            this.build(css);
+            this.render();
+        }
 
-    		for(let i = 0; i < this.rule_sets.length; i++)
-    			this.rule_sets.render(this.element);
-    	}
+        render() {
+            for (let i = 0; i < this.rule_sets.length; i++)
+                this.rule_sets.render(this.element);
+        }
 
-    	mount(element){
-    		if(element instanceof HTMLElement)
-    			element.appendChild(this.element);
-    	}
+        mount(element) {
+            if (element instanceof HTMLElement)
+                element.appendChild(this.element);
+        }
 
-    	unmount(){
-    		if(this.element.parentElement)
-    			this.element.parentElement.removeChild(this.element);
-    	}
+        unmount() {
+            if (this.element.parentElement)
+                this.element.parentElement.removeChild(this.element);
+        }
+
+        update(){
+        	this.css.updated();
+        }
     }
 
-    class UIRuleSet{
-    	constructor(rule_body, parent){
-    		this.parent = parent;
-    		this.hash = 0;
-    		this.rules = [];
-    		this.selectors = [];
+    class UIRuleSet {
+        constructor(rule_body, parent) {
+            this.parent = parent;
+            this.hash = 0;
+            this.rules = [];
+            this.selectors = [];
 
-    		this.element = document.createElement("div");
+            this.element = document.createElement("div");
 
-    		this.build(rule_body._sel_a_[0].r);
-    		this.mount(this.parent.element);
-    	}
+            this.build(rule_body._sel_a_[0].r);
+            this.mount(this.parent.element);
+        }
 
-    	mount(element){
-    		if(element instanceof HTMLElement)
-    			element.appendChild(this.element);
-    	}
+        mount(element) {
+            if (element instanceof HTMLElement)
+                element.appendChild(this.element);
+        }
 
-    	unmount(){
-    		if(this.element.parentElement)
-    			this.element.parentElement.removeChild(this.element);
-    	}
+        unmount() {
+            if (this.element.parentElement)
+                this.element.parentElement.removeChild(this.element);
+        }
 
-    	build(rule_body = this.rule_body){
-    		this.rule_body = rule_body;
+        build(rule_body = this.rule_body) {
+            this.rule_body = rule_body;
 
-    		for(let a in rule_body.props){
-    			let rule = new UIRule(a, rule_body.toString(0, a), this);
-    		}
-    	}
+            for (let a in rule_body.props) {
+                let rule = new UIRule(a, rule_body.toString(0, a), this);
+            }
+        }
 
-    	generateHash(){
+        update(type, value) {
 
-    	}
+            let lexer = whind$1(value);
+            
+            const IS_VIRTUAL = {
+                is: false
+            };
+            
+            const parser = getPropertyParser(type, IS_VIRTUAL, property_definitions);
+            const rule = this.rule_body;
+            if (parser && !IS_VIRTUAL.is) {
+                if (!rule.props) rule.props = {};
+                parser.parse(lexer, rule.props);
+            }
+
+            this.parent.update();
+        }
+
+        generateHash() {}
     }
 
-    class UIRule{
-    	constructor(type, value, parent){
-    		this.hash = 0;
-    		this.type = type;
-    		this.parent = parent;
-    		this.setupElement();
+    class UIRule {
+        constructor(type, value, parent) {
+            this.hash = 0;
+            this.type = type;
+            this.parent = parent;
+            this.setupElement();
 
-    		this.element.innerHTML = `${type}:`;
-    		
-    		this.value = new UIValue(type, value, this);
+            this.element.innerHTML = `${type}:`;
 
-    		this.mount(this.parent.element);
-    	}
+            this.value = new UIValue(type, value, this);
 
-    	mount(element){
-    		if(element instanceof HTMLElement)
-    			element.appendChild(this.element);
-    	}
+            this.mount(this.parent.element);
+        }
 
-    	unmount(){
-    		if(this.element.parentElement)
-    			this.element.parentElement.removeChild(this.element);
-    	}
+        update(type, value) {
+            this.parent.update(type, value);
+        }
 
-    	setupElement(){
-    		this.element = document.createElement("div");
-    		this.element.classList.add("cfw_css_ui_rule");
-    	}
+        mount(element) {
+            if (element instanceof HTMLElement)
+                element.appendChild(this.element);
+        }
 
-    	generateHash(){
-    		
-    	}
+        unmount() {
+            if (this.element.parentElement)
+                this.element.parentElement.removeChild(this.element);
+        }
+
+        setupElement() {
+            this.element = document.createElement("div");
+            this.element.classList.add("cfw_css_ui_rule");
+        }
+
+        generateHash() {
+
+        }
     }
 
     exports.default = UIMaster;

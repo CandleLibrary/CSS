@@ -161,10 +161,9 @@ export class Segment {
 
     update() {
         if (this.parent)
-            this.parent.update();
+            this.parent.update(this);
         else {
             let val = this.getValue();
-            console.log(val)
         }
     }
 

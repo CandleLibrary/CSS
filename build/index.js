@@ -3,13 +3,17 @@ let start = async function() {
     let input = document.getElementById("input");
 
     input.addEventListener("change", async (e) => {
+        console.log(1)
         let value = e.target.value;
         css_.parse(value);
     })
 
+
+
     input.value =
         `.test {
 		border-color:red green;
+        display:flex;
 	}`
 
 	const css_ = await css.CSSParser(input.value)
@@ -18,7 +22,11 @@ let start = async function() {
     uic.render();
     uic.mount(document.body);
 
-    css_.on
+    css_.addObserver({
+        updatedCSS : ()=>{
+            input.value = css_.toString();
+        }
+    });
 
 
 }

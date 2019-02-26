@@ -55,7 +55,6 @@ export default class CSS_Color extends Color {
         Creates a new Color from a string or a Lexer.
     */
     static _fs_(l, v = false) {
-
         let c;
 
         if (typeof(l) == "string")

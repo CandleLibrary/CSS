@@ -7,15 +7,21 @@ import { NR, AND, OR, ONE_OF } from "../properties/productions.mjs";
 
 const props = Object.assign({}, property_definitions);
 const productions = { NR, AND, OR, ONE_OF };
-console.log(ui_productions)
+
+
 export class UIValue {
 
     constructor(type, value, parent) {
+        this.type = type;
 
         this.parent = parent;
 
-        let pp = getPropertyParser(type, undefined, props, ui_productions)
+        let pp = getPropertyParser(type, undefined, props, ui_productions);
+        
+        pp.parent = this;
+
         this.setupElement(pp, value);
+
         this.mount(this.parent.element)
     }
 
@@ -25,11 +31,11 @@ export class UIValue {
     }
 
     update(value) {
-
+        this.parent.update(this.type, value.toString());
     }
 
     setupElement(pp, value) {
-        console.log(pp, " " + value)
         this.element = pp.buildInput(1, whind(value));
+        this.element.parent = this;
     }
 }
