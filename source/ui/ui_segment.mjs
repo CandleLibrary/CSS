@@ -27,7 +27,7 @@ export class Segment {
 
         this.element.appendChild(this.menu);
         this.element.appendChild(this.val);
-        this.element.appendChild(this.ext)
+        this.element.appendChild(this.ext);
 
         this.value_list = [];
         this.subs = [];
@@ -41,6 +41,7 @@ export class Segment {
     }
 
     destroy() {
+        this.parent = null;
         this.element = null;
         this.val = null;
         this.list = null;
@@ -55,6 +56,8 @@ export class Segment {
         this.val.innerHTML = "";
         this.subs.forEach(e => e.destroy);
         this.subs = [];
+        this.setElement = null;
+        this.changeEvent = null;
     }
 
     replaceSub(old_sub, new_sub) {
@@ -78,6 +81,19 @@ export class Segment {
         this.val.appendChild(seg.element)
     }
 
+    removeSub(seg){
+        if(seg.parent == this){
+            for(let i = 0; i < this.subs.length;i++){
+                if(this.subs[i] == seg){
+                    this.val.removeChild(seg.element);
+                    seg.parent = null;
+                    break;
+                }
+            }
+        }
+        return seg;
+    }
+
     setList() {
         if (this.prod && this.list.innerHTML == "") {
             if (!this.prod.buildList(this.list, this))
@@ -86,10 +102,21 @@ export class Segment {
                 this.menu.style.display = "inline-block";
         }
     }
+    change(e){
+        if(this.changeEvent)
+            this.changeEvent(this.setElement, this, e);
+    }
 
-    setValueHandler(element) {
+    setValueHandler(element, change_event_function) {
         this.val.innerHTML = "";
         this.val.appendChild(element);
+
+        if(change_event_function){
+            this.setElement = element;
+            this.changeEvent = change_event_function;
+            this.setElement.onchange = this.change.bind(this);
+        }
+
         this.menu.style.display = "none";
         this.HAS_VALUE = true;
         this.setList();
@@ -117,7 +144,14 @@ export class Segment {
         seg.prod = this.prod;
         seg.css_val = this.css_val;
 
+        if(this.change_event_function){
+            seg.changeEvent = this.changeEvent;
+            seg.setElement = this.setElement;
+            seg.setElement.onchange = seg.change.bind(seg);
+        }
+
         let children = this.val.childNodes;
+        
         if (children.length > 0) {
             for (let i = 0, l = children.length; i < l; i++) {
                 seg.val.appendChild(children[0]);
@@ -143,6 +177,44 @@ export class Segment {
         if (this.end > this.value_count) {
             this.ext.style.display = "inline-block";
 
+            let root_x = 0;
+
+             const move =(e)=>{
+                let diff = e.clientX - root_x;
+
+                if(diff > 20 && this.value_count < this.end){   
+                    let bb = this.element
+
+                    if (this.subs.length == 0)
+                        //Turn self into own sub seg
+                        this.demote()
+
+                    prod.default(this, true);
+
+                    root_x = e.clientX;
+                    //this.update();
+                }else if(diff < -20 && this.value_count > 1){
+                    const sub = this.subs[this.subs.length -1];
+                    this.removeSub(sub).destroy();
+                    this.subs.length = this.subs.length - 1;
+                    //this.update();
+                    root_x = e.clientX;
+                }
+            }
+
+             const up =(e)=>{
+                window.removeEventListener("pointermove", move);
+                window.removeEventListener("pointerup", up)
+            }
+
+            this.ext.onpointerdown = e=>{
+                root_x = e.clientX;
+                window.addEventListener("pointermove", move);
+                window.addEventListener("pointerup", up)
+            }
+
+            
+            /*
             this.ext.onclick = e => {
                 if (this.subs.length == 0)
                     //Turn self into own sub seg
@@ -153,10 +225,12 @@ export class Segment {
                 if (this.value_count >= this.end)
                     this.ext.style.display = "none";
             }
+            */
         } else {
             this.ext.style.display = "none";
         }
         this.setList();
+        this.update();
     }
 
     update() {

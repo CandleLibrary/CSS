@@ -172,7 +172,7 @@ class AND extends NR {
 
         outer: for (let j = 0; j < end && !lx.END; j++) {
             for (let i = 0, l = this.terms.length; i < l; i++)
-                if (!this.terms[i].parseInput(lx, ele, r)) return (start === 0) ? true : false
+                if (!this.terms[i].parseInput(lx, ele)) return (start === 0) ? true : false
         }
 
         segment.repeat();
@@ -280,6 +280,7 @@ class ONE_OF extends NR {
         ele.appendChild(element)
 
         element.addEventListener("click", e => {
+
             slot.innerHTML = this.value;
             if (slot) {
                 slot.reset();
@@ -296,7 +297,6 @@ class ONE_OF extends NR {
     }
 
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
-
         //List
         let segment = this.createSegment()
 
@@ -336,7 +336,7 @@ class ONE_OF extends NR {
             this.last_segment = segment;
         }
 
-        return (!bool && start === 0) ? true : bool;
+        return /*(!bool && start === 0) ? true :*/ bool;
     }
 }
 

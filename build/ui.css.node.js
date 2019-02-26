@@ -93,7 +93,7 @@ const q = 113;
 const Q = 81;
 const QMARK = 63;
 const QUOTE = 39;
-const r$1 = 114;
+const r = 114;
 const R = 82;
 const RECORD_SEPERATOR = 30;
 const s = 115;
@@ -4512,6 +4512,7 @@ class Segment {
     }
 
     destroy() {
+        this.parent = null;
         this.element = null;
         this.val = null;
         this.list = null;
@@ -4526,6 +4527,8 @@ class Segment {
         this.val.innerHTML = "";
         this.subs.forEach(e => e.destroy);
         this.subs = [];
+        this.setElement = null;
+        this.changeEvent = null;
     }
 
     replaceSub(old_sub, new_sub) {
@@ -4549,6 +4552,19 @@ class Segment {
         this.val.appendChild(seg.element);
     }
 
+    removeSub(seg){
+        if(seg.parent == this){
+            for(let i = 0; i < this.subs.length;i++){
+                if(this.subs[i] == seg){
+                    this.val.removeChild(seg.element);
+                    seg.parent = null;
+                    break;
+                }
+            }
+        }
+        return seg;
+    }
+
     setList() {
         if (this.prod && this.list.innerHTML == "") {
             if (!this.prod.buildList(this.list, this))
@@ -4557,10 +4573,21 @@ class Segment {
                 this.menu.style.display = "inline-block";
         }
     }
+    change(e){
+        if(this.changeEvent)
+            this.changeEvent(this.setElement, this, e);
+    }
 
-    setValueHandler(element) {
+    setValueHandler(element, change_event_function) {
         this.val.innerHTML = "";
         this.val.appendChild(element);
+
+        if(change_event_function){
+            this.setElement = element;
+            this.changeEvent = change_event_function;
+            this.setElement.onchange = this.change.bind(this);
+        }
+
         this.menu.style.display = "none";
         this.HAS_VALUE = true;
         this.setList();
@@ -4588,7 +4615,14 @@ class Segment {
         seg.prod = this.prod;
         seg.css_val = this.css_val;
 
+        if(this.change_event_function){
+            seg.changeEvent = this.changeEvent;
+            seg.setElement = this.setElement;
+            seg.setElement.onchange = seg.change.bind(seg);
+        }
+
         let children = this.val.childNodes;
+        
         if (children.length > 0) {
             for (let i = 0, l = children.length; i < l; i++) {
                 seg.val.appendChild(children[0]);
@@ -4614,20 +4648,60 @@ class Segment {
         if (this.end > this.value_count) {
             this.ext.style.display = "inline-block";
 
+            let root_x = 0;
+
+             const move =(e)=>{
+                let diff = e.clientX - root_x;
+
+                if(diff > 20 && this.value_count < this.end){   
+                    let bb = this.element;
+
+                    if (this.subs.length == 0)
+                        //Turn self into own sub seg
+                        this.demote();
+
+                    prod.default(this, true);
+
+                    root_x = e.clientX;
+                    //this.update();
+                }else if(diff < -20 && this.value_count > 1){
+                    const sub = this.subs[this.subs.length -1];
+                    this.removeSub(sub).destroy();
+                    this.subs.length = this.subs.length - 1;
+                    //this.update();
+                    root_x = e.clientX;
+                }
+            };
+
+             const up =(e)=>{
+                window.removeEventListener("pointermove", move);
+                window.removeEventListener("pointerup", up);
+            };
+
+            this.ext.onpointerdown = e=>{
+                root_x = e.clientX;
+                window.addEventListener("pointermove", move);
+                window.addEventListener("pointerup", up);
+            };
+
+            
+            /*
             this.ext.onclick = e => {
                 if (this.subs.length == 0)
                     //Turn self into own sub seg
-                    this.demote();
+                    this.demote()
 
                 prod.default(this, true);
 
                 if (this.value_count >= this.end)
                     this.ext.style.display = "none";
-            };
+            }
+            */
         } else {
             this.ext.style.display = "none";
         }
         this.setList();
+        this.update();
     }
 
     update() {
@@ -4658,16 +4732,21 @@ class ValueTerm$1 extends ValueTerm {
 
     default (seg, APPEND = false, value = null) {
         let element = this.value.valueHandler(value);
-        element.addEventListener("change", e => {
-            let value = element.value;
-            seg.css_val = value;
-            seg.update();
-        });       
+
+        if(value)
+            seg.css_val = value + "";
+
         if(!APPEND){  
-            seg.setValueHandler(element);
+            seg.setValueHandler(element, (ele, seg, event)=>{
+                seg.css_val = element.value;
+                seg.update();
+            });
         }else{
             let sub = new Segment();
-            sub.setValueHandler(element);
+            sub.setValueHandler(element, (ele, seg, event)=>{
+                seg.css_val = element.value;
+                seg.update();
+            });
             sub.prod = list;
             seg.addSub(sub);
         }
@@ -4728,11 +4807,10 @@ class LiteralTerm$1 extends LiteralTerm {
     }
 
     list(ele, slot) {
-
         let element = document.createElement("div");
         element.innerHTML = this.value;
         element.classList.add("css_ui_selection");
-        ele.appendChild(element);
+        ele.appendChild(element); 
         element.addEventListener("click", e => {
             slot.value = this.value + "";
             slot.update();
@@ -4943,7 +5021,7 @@ class AND$1 extends NR$1 {
 
         outer: for (let j = 0; j < end && !lx.END; j++) {
             for (let i = 0, l = this.terms.length; i < l; i++)
-                if (!this.terms[i].parseInput(lx, ele, r)) return (start === 0) ? true : false
+                if (!this.terms[i].parseInput(lx, ele)) return (start === 0) ? true : false
         }
 
         segment.repeat();
@@ -5051,6 +5129,7 @@ class ONE_OF$1 extends NR$1 {
         ele.appendChild(element);
 
         element.addEventListener("click", e => {
+
             slot.innerHTML = this.value;
             if (slot) {
                 slot.reset();
@@ -5067,7 +5146,6 @@ class ONE_OF$1 extends NR$1 {
     }
 
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
-
         //List
         let segment = this.createSegment();
 
@@ -5107,7 +5185,7 @@ class ONE_OF$1 extends NR$1 {
             this.last_segment = segment;
         }
 
-        return (!bool && start === 0) ? true : bool;
+        return /*(!bool && start === 0) ? true :*/ bool;
     }
 }
 
@@ -5136,8 +5214,6 @@ class UIValue {
 
         let pp = getPropertyParser(type, undefined, props, ui_productions);
         
-        pp.parent = this;
-
         this.setupElement(pp, value);
 
         this.mount(this.parent.element);
@@ -5154,6 +5230,7 @@ class UIValue {
 
     setupElement(pp, value) {
         this.element = pp.buildInput(1, whind$1(value));
+        console.log(this.element);
         this.element.parent = this;
     }
 }
@@ -5397,6 +5474,7 @@ class UIRule {
     }
 
     update(type, value) {
+        console.log(`${type}:${value};`);
         this.parent.update(type, value);
     }
 

@@ -124,6 +124,7 @@ class UIRule {
     }
 
     update(type, value) {
+        console.log(`${type}:${value};`)
         this.parent.update(type, value);
     }
 

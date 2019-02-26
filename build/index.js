@@ -12,8 +12,8 @@ let start = async function() {
 
     input.value =
         `.test {
-		border-color:red green;
-        display:flex;
+        display: block flow list-item;
+        border-color:red;
 	}`
 
 	const css_ = await css.CSSParser(input.value)

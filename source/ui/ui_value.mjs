@@ -18,8 +18,6 @@ export class UIValue {
 
         let pp = getPropertyParser(type, undefined, props, ui_productions);
         
-        pp.parent = this;
-
         this.setupElement(pp, value);
 
         this.mount(this.parent.element)
@@ -36,6 +34,7 @@ export class UIValue {
 
     setupElement(pp, value) {
         this.element = pp.buildInput(1, whind(value));
+        console.log(this.element)
         this.element.parent = this;
     }
 }

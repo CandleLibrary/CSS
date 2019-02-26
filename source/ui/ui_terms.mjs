@@ -5,16 +5,21 @@ export class ValueTerm extends terms.ValueTerm {
 
     default (seg, APPEND = false, value = null) {
         let element = this.value.valueHandler(value);
-        element.addEventListener("change", e => {
-            let value = element.value;
-            seg.css_val = value;
-            seg.update();
-        })       
+
+        if(value)
+            seg.css_val = value + "";
+
         if(!APPEND){  
-            seg.setValueHandler(element);
+            seg.setValueHandler(element, (ele, seg, event)=>{
+                seg.css_val = element.value;
+                seg.update();
+            });
         }else{
             let sub = new Segment();
-            sub.setValueHandler(element);
+            sub.setValueHandler(element, (ele, seg, event)=>{
+                seg.css_val = element.value;
+                seg.update();
+            });
             sub.prod = list;
             seg.addSub(sub);
         }
@@ -75,11 +80,10 @@ export class LiteralTerm extends terms.LiteralTerm {
     }
 
     list(ele, slot) {
-
         let element = document.createElement("div")
         element.innerHTML = this.value;
         element.classList.add("css_ui_selection");
-        ele.appendChild(element)
+        ele.appendChild(element) 
         element.addEventListener("click", e => {
             slot.value = this.value + "";
             slot.update();
