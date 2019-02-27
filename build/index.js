@@ -5,14 +5,14 @@ let start = async function() {
     input.addEventListener("change", async (e) => {
         console.log(1)
         let value = e.target.value;
-        css_.parse(value);
+        css_.parse(value, true);
     })
 
 
 
     input.value =
         `.test {
-        font-family:serif
+        border : 1px solid red;
 	}`
 
 	const css_ = await css.CSSParser(input.value)

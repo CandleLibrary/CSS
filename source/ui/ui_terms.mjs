@@ -4,18 +4,22 @@ import { Segment } from "./ui_segment.mjs"
 export class ValueTerm extends terms.ValueTerm {
 
     default (seg, APPEND = false, value = null) {
+
         let element = this.value.valueHandler(value);
 
-        if(value)
-            seg.css_val = value + "";
-
         if(!APPEND){  
-            seg.setValueHandler(element, (ele, seg, event)=>{
+            if(value)
+                seg.css_val = value + "";
+                seg.setValueHandler(element, (ele, seg, event)=>{
                 seg.css_val = element.value;
                 seg.update();
             });
         }else{
             let sub = new Segment();
+            
+            if(value)
+                sub.css_val = value + "";
+            
             sub.setValueHandler(element, (ele, seg, event)=>{
                 seg.css_val = element.value;
                 seg.update();
@@ -49,6 +53,7 @@ export class ValueTerm extends terms.ValueTerm {
         ele.appendChild(element)
 
         element.addEventListener("click", e => {
+            
             slot.innerHTML = this.value;
             if (slot) {
                 let element = this.value.valueHandler();

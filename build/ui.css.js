@@ -4610,8 +4610,8 @@ ${is_iws}`;
                 this.setElement.onchange = this.change.bind(this);
             }
 
-            this.menu.style.display = "none";
             this.HAS_VALUE = true;
+            //this.menu.style.display = "none";
             this.setList();
         }
 
@@ -4800,18 +4800,22 @@ ${is_iws}`;
     class ValueTerm$1 extends ValueTerm {
 
         default (seg, APPEND = false, value = null) {
+
             let element = this.value.valueHandler(value);
 
-            if(value)
-                seg.css_val = value + "";
-
             if(!APPEND){  
-                seg.setValueHandler(element, (ele, seg, event)=>{
+                if(value)
+                    seg.css_val = value + "";
+                    seg.setValueHandler(element, (ele, seg, event)=>{
                     seg.css_val = element.value;
                     seg.update();
                 });
             }else{
                 let sub = new Segment();
+                
+                if(value)
+                    sub.css_val = value + "";
+                
                 sub.setValueHandler(element, (ele, seg, event)=>{
                     seg.css_val = element.value;
                     seg.update();
@@ -4845,6 +4849,7 @@ ${is_iws}`;
             ele.appendChild(element);
 
             element.addEventListener("click", e => {
+                
                 slot.innerHTML = this.value;
                 if (slot) {
                     let element = this.value.valueHandler();
@@ -5005,16 +5010,19 @@ ${is_iws}`;
 
                 seg.prod = this;
 
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-                    bool = this.terms[i].parseInput(lx, seg, l > 1);
+                outer:
+                
+                    for (let i = 0, l = this.terms.length; i < l; i++) {
+                        bool = this.terms[i].parseInput(lx, seg, l > 1);
 
-                    if (!bool) {
-                        bool = false;
-                        //segment = segment.prev;
-                        break;
+                        if (!bool) {
+                            bool = false;
+                            //segment = segment.prev;
+                            
+                        }
+                        //We know that this is in the original input, so we'll create an input for this object. 
                     }
-                    //We know that this is in the original input, so we'll create an input for this object. 
-                }
+                
 
                 if (!bool) {
 
@@ -5078,6 +5086,7 @@ ${is_iws}`;
             ele.appendChild(element);
 
             element.addEventListener("click", e => {
+                
                 slot.innerHTML = this.value;
                 if (slot) {
                     slot.reset();
@@ -5118,6 +5127,10 @@ ${is_iws}`;
             //seg.repeat();
         }
 
+        buildList(list, slot) {
+            return false;
+        }
+
         list(ele, slot) {
 
             let name = this.terms.reduce((r, t) => r += " | " + t.name, "");
@@ -5127,6 +5140,7 @@ ${is_iws}`;
             ele.appendChild(element);
 
             element.addEventListener("click", e => {
+                
                 slot.innerHTML = this.value;
                 if (slot) {
                     slot.reset();
@@ -5150,19 +5164,40 @@ ${is_iws}`;
 
             let j = 0;
 
+            let OVERALL_BOOL = false;
+
             for (let j = 0; j < end && !lx.END; j++) {
                 const REPEAT = j > 0;
 
                 let seg = (REPEAT) ? new Segment : segment;
 
+
                 bool = false;
 
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-                    if (this.terms[i].parseInput(lx, seg)) {
-                        bool = true;
-                    } else {
-                        //Make blank segment that can be filled. 
+                this.count = (this.count) ? this.count:this.count = 0;
+                
+                outer:
+                //User "factorial" expression to isolate used results in a continous match. 
+                while(true){
+                    for (let i = 0, l = this.terms.length; i < l; i++) {
+                        if(this.terms[i].count == this.count) continue
+
+                        if (this.terms[i].parseInput(lx, seg, true)) {
+                            this.terms[i].count = this.count;
+                            OVERALL_BOOL = true;
+                            bool = true;
+                            continue outer;
+                        }
                     }
+                    break;
+                }
+
+                {
+                    //Go through unmatched and make placeholders.
+                }
+
+                {
+                    //Sort everything based on parse 
                 }
 
                 if (!bool && j < start) {
@@ -5173,11 +5208,11 @@ ${is_iws}`;
                 segment.addRepeat(seg);
             }
 
-            if (bool) {
-                //segment.repeat();
+            if (OVERALL_BOOL) {
+                segment.repeat();
                 //if (ele)
                 //    ele.addSub(segment);
-                //this.last_segment = segment;
+                this.last_segment = segment;
             }
 
 
@@ -5206,7 +5241,7 @@ ${is_iws}`;
             ele.appendChild(element);
 
             element.addEventListener("click", e => {
-
+                
                 slot.innerHTML = this.value;
                 if (slot) {
                     slot.reset();
@@ -5230,6 +5265,7 @@ ${is_iws}`;
             let bool = false;
 
             let j = 0;
+
             //Parse Input
             for (; j < end && !lx.END; j++) {
                 const REPEAT = j > 0;
@@ -5254,7 +5290,6 @@ ${is_iws}`;
                         break;
                     }
                 }
-                
                 if (REPEAT)
                     segment.addRepeat(seg);
 

@@ -120,8 +120,8 @@ export class Segment {
             this.setElement.onchange = this.change.bind(this);
         }
 
-        this.menu.style.display = "none";
         this.HAS_VALUE = true;
+        //this.menu.style.display = "none";
         this.setList();
     }
 
