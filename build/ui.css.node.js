@@ -1226,6 +1226,10 @@ class Color extends Float64Array {
 */
 class CSS_Color extends Color {
 
+    /** UI FUNCTIONS **/
+
+    static list(){}
+
     static valueHandler(existing_value){
         let ele = document.createElement("input");
         ele.type = "color";
@@ -1278,8 +1282,24 @@ class CSS_Color extends Color {
 
         switch (l.ch) {
             case "#":
-                var value = l.next().tx;
+                l.next();
+                let pk = l.copy();
+
+                let type = l.types;
+                pk.IWS = false;
+
+
+                while(!(pk.ty & (type.newline | type.ws)) && !pk.END && pk.ch !== ";"){
+                    pk.next();
+                }
+
+                var value = pk.slice(l);
+                l.sync(pk);
+                l.tl = 0;
+                l.next();
+                
                 let num = parseInt(value,16);
+
                 
                 out = { r: 0, g: 0, b: 0, a: 1 };
                 if(value.length == 3){
@@ -4502,12 +4522,14 @@ class Segment {
 
         this.value_list = [];
         this.subs = [];
+        this.old_subs = [];
         this.sib = null;
         this.value_set;
         this.HAS_VALUE = false;
+        this.DEMOTED = false;
 
         this.element.addEventListener("mouseover", e => {
-            this.setList();
+            //this.setList();
         });
     }
 
@@ -4525,7 +4547,7 @@ class Segment {
     reset() {
         this.list.innerHTML = "";
         this.val.innerHTML = "";
-        this.subs.forEach(e => e.destroy);
+        //this.subs.forEach(e => e.destroy);
         this.subs = [];
         this.setElement = null;
         this.changeEvent = null;
@@ -4552,10 +4574,10 @@ class Segment {
         this.val.appendChild(seg.element);
     }
 
-    removeSub(seg){
-        if(seg.parent == this){
-            for(let i = 0; i < this.subs.length;i++){
-                if(this.subs[i] == seg){
+    removeSub(seg) {
+        if (seg.parent == this) {
+            for (let i = 0; i < this.subs.length; i++) {
+                if (this.subs[i] == seg) {
                     this.val.removeChild(seg.element);
                     seg.parent = null;
                     break;
@@ -4566,15 +4588,16 @@ class Segment {
     }
 
     setList() {
+        if(this.DEMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
-            if (!this.prod.buildList(this.list, this))
+            if (this.DEMOTED || !this.prod.buildList(this.list, this))
                 this.menu.style.display = "none";
             else
                 this.menu.style.display = "inline-block";
         }
     }
-    change(e){
-        if(this.changeEvent)
+    change(e) {
+        if (this.changeEvent)
             this.changeEvent(this.setElement, this, e);
     }
 
@@ -4582,7 +4605,7 @@ class Segment {
         this.val.innerHTML = "";
         this.val.appendChild(element);
 
-        if(change_event_function){
+        if (change_event_function) {
             this.setElement = element;
             this.changeEvent = change_event_function;
             this.setElement.onchange = this.change.bind(this);
@@ -4606,7 +4629,7 @@ class Segment {
         return (this.HAS_VALUE) ? 1 : 0;
     }
 
-    promote(){
+    promote() {
 
     }
 
@@ -4615,76 +4638,119 @@ class Segment {
         seg.prod = this.prod;
         seg.css_val = this.css_val;
 
-        if(this.change_event_function){
+        if (this.change_event_function) {
             seg.changeEvent = this.changeEvent;
             seg.setElement = this.setElement;
             seg.setElement.onchange = seg.change.bind(seg);
         }
 
-        let children = this.val.childNodes;
-        
-        if (children.length > 0) {
-            for (let i = 0, l = children.length; i < l; i++) {
-                seg.val.appendChild(children[0]);
+        let subs = this.subs;
+
+        if (subs.length > 0) {
+
+            for (let i = 0; i < this.subs.length; i++) {
+                console.log(this.subs[i].element);
+                seg.addSub(this.subs[i]);
             }
         } else {
-            seg.val.innerHTML = this.val.innerHTML;
+
+
+            let children = this.val.childNodes;
+
+            if (children.length > 0) {
+                for (let i = 0, l = children.length; i < l; i++) {
+                    seg.val.appendChild(children[0]);
+                }
+            } else {
+                seg.val.innerHTML = this.val.innerHTML;
+            }
         }
-        
+
+
+        this.menu.innerHTML = "";
+        this.menu.style.display = "none";
+        this.list.innerHTML = "";
+
         this.reset();
-        //this.prod = null;
+
+        this.addSub(seg);
+        seg.setList();
+        
+        this.DEMOTED = true;
+    }
+
+    addRepeat(seg) {
+        if (!this.DEMOTED)
+            //Turn self into own sub seg
+            this.demote();
         this.addSub(seg);
         seg.setList();
     }
 
-    addRepeat(seg) {
-        if (this.subs.length == 0)
-            //Turn self into own sub seg
-            this.demote();
-        this.addSub(seg);
-    }
-
     repeat(prod = this.prod) {
-        if (this.end > this.value_count) {
+        if (this.value_count <= this.end && this.start + this.end !== 2) {
             this.ext.style.display = "inline-block";
 
             let root_x = 0;
+            let width = 0;
+            let diff_width = 0;
 
-             const move =(e)=>{
+            const move = (e) => {
+
                 let diff = e.clientX - root_x;
+                let min_diff = diff + diff_width;
 
-                if(diff > 20 && this.value_count < this.end){   
+                if (diff > 15 && this.value_count < this.end) {
                     let bb = this.element;
 
-                    if (this.subs.length == 0)
+                    if (!this.DEMOTED) {
                         //Turn self into own sub seg
                         this.demote();
+                    }
 
-                    prod.default(this, true);
+                    if (this.old_subs.length > 1) {
+                        this.addSub(this.old_subs.pop());
+                    } else {
+                        prod.default(this, true);
+                    }
 
-                    root_x = e.clientX;
-                    //this.update();
-                }else if(diff < -20 && this.value_count > 1){
-                    const sub = this.subs[this.subs.length -1];
-                    this.removeSub(sub).destroy();
+                    let w = this.element.clientWidth;
+                    diff_width = w - width;
+                    width = w;
+                    root_x += diff_width;
+
+                    return;
+                }
+
+                let last_sub = this.subs[this.subs.length - 1];
+
+                if (diff < -5 - last_sub.width && this.value_count > 1) {
+                    const sub = this.subs[this.subs.length - 1];
+                    this.old_subs.push(sub);
+                    this.removeSub(sub);
                     this.subs.length = this.subs.length - 1;
-                    //this.update();
-                    root_x = e.clientX;
+
+                    let w = this.element.clientWidth;
+                    diff_width = w - width;
+                    width = w;
+
+                    root_x += diff_width;
                 }
             };
 
-             const up =(e)=>{
+            const up = (e) => {
                 window.removeEventListener("pointermove", move);
                 window.removeEventListener("pointerup", up);
             };
 
-            this.ext.onpointerdown = e=>{
+            this.ext.onpointerdown = e => {
+                width = this.element.clientWidth;
                 root_x = e.clientX;
                 window.addEventListener("pointermove", move);
                 window.addEventListener("pointerup", up);
             };
 
-            
+
             /*
             this.ext.onclick = e => {
                 if (this.subs.length == 0)
@@ -4702,6 +4768,10 @@ class Segment {
         }
         this.setList();
         this.update();
+    }
+
+    get width() {
+        return this.element.clientWidth;
     }
 
     update() {
@@ -4747,9 +4817,15 @@ class ValueTerm$1 extends ValueTerm {
                 seg.css_val = element.value;
                 seg.update();
             });
-            sub.prod = list;
+            //sub.prod = list;
             seg.addSub(sub);
         }
+    }
+
+    buildInput(rep = 1, value){
+        let seg = new Segment();
+        this.default(seg, false, value);
+        return seg;
     }
 
     parseInput(l, seg, APPEND = false) {
@@ -4908,6 +4984,7 @@ class NR$1 extends NR {
         for (let i = 0, l = this.terms.length; i < l; i++) {
             this.terms[i].default(seg, l > 1);
         }
+        seg.setList();
 
         if (!EXTENDED) seg.repeat();
     }
@@ -5115,8 +5192,9 @@ class ONE_OF$1 extends NR$1 {
 
     default (segment, EXTENDED = false) {
         let seg = this.createSegment();
-        segment.addSub(seg);
         this.terms[0].default(seg);
+        segment.addSub(seg);
+        seg.setList();
         if (!EXTENDED) seg.repeat();
     }
 
@@ -5157,7 +5235,12 @@ class ONE_OF$1 extends NR$1 {
         for (; j < end && !lx.END; j++) {
             const REPEAT = j > 0;
 
-            let seg = (REPEAT) ? new Segment : segment;
+            let seg = segment;
+            
+            if(REPEAT){
+                seg = new Segment;
+                seg.prod = this;
+            }
 
             bool = false;
 
@@ -5225,12 +5308,12 @@ class UIValue {
     }
 
     update(value) {
+        console.log(value.toString());
         this.parent.update(this.type, value.toString());
     }
 
     setupElement(pp, value) {
         this.element = pp.buildInput(1, whind$1(value));
-        console.log(this.element);
         this.element.parent = this;
     }
 }

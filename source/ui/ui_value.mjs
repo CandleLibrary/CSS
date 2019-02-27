@@ -29,12 +29,12 @@ export class UIValue {
     }
 
     update(value) {
+        console.log(value.toString())
         this.parent.update(this.type, value.toString());
     }
 
     setupElement(pp, value) {
         this.element = pp.buildInput(1, whind(value));
-        console.log(this.element)
         this.element.parent = this;
     }
 }

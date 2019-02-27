@@ -59,6 +59,7 @@ class NR extends prod.NR {
         for (let i = 0, l = this.terms.length; i < l; i++) {
             this.terms[i].default(seg, l > 1);
         }
+        seg.setList();
 
         if (!EXTENDED) seg.repeat();
     }
@@ -266,8 +267,9 @@ class ONE_OF extends NR {
 
     default (segment, EXTENDED = false) {
         let seg = this.createSegment();
-        segment.addSub(seg);
         this.terms[0].default(seg);
+        segment.addSub(seg);
+        seg.setList();
         if (!EXTENDED) seg.repeat();
     }
 
@@ -308,7 +310,12 @@ class ONE_OF extends NR {
         for (; j < end && !lx.END; j++) {
             const REPEAT = j > 0
 
-            let seg = (REPEAT) ? new Segment : segment;
+            let seg = segment;
+            
+            if(REPEAT){
+                seg = new Segment;
+                seg.prod = this;
+            }
 
             bool = false;
 

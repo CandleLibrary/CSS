@@ -12,8 +12,7 @@ let start = async function() {
 
     input.value =
         `.test {
-        display: block flow list-item;
-        border-color:red;
+        font-family:serif
 	}`
 
 	const css_ = await css.CSSParser(input.value)

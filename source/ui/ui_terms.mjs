@@ -20,9 +20,15 @@ export class ValueTerm extends terms.ValueTerm {
                 seg.css_val = element.value;
                 seg.update();
             });
-            sub.prod = list;
+            //sub.prod = list;
             seg.addSub(sub);
         }
+    }
+
+    buildInput(rep = 1, value){
+        let seg = new Segment();
+        this.default(seg, false, value);
+        return seg;
     }
 
     parseInput(l, seg, APPEND = false) {

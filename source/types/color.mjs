@@ -12,6 +12,10 @@ import Color from "@candlefw/color";
 */
 export default class CSS_Color extends Color {
 
+    /** UI FUNCTIONS **/
+
+    static list(){}
+
     static valueHandler(existing_value){
         let ele = document.createElement("input");
         ele.type = "color"
@@ -64,8 +68,24 @@ export default class CSS_Color extends Color {
 
         switch (l.ch) {
             case "#":
-                var value = l.next().tx;
+                l.next();
+                let pk = l.copy();
+
+                let type = l.types
+                pk.IWS = false;
+
+
+                while(!(pk.ty & (type.newline | type.ws)) && !pk.END && pk.ch !== ";"){
+                    pk.next();
+                }
+
+                var value = pk.slice(l);
+                l.sync(pk);
+                l.tl = 0;
+                l.next();
+                
                 let num = parseInt(value,16);
+
                 
                 out = { r: 0, g: 0, b: 0, a: 1 };
                 if(value.length == 3){
