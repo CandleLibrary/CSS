@@ -61,6 +61,23 @@ class CSSSelector {
         }
     }
 
+    removeRule(){
+        if(this.r)
+            this.r.decrementRef();
+
+        this.r = null;
+    }
+
+    addRule(rule = null){
+        
+        this.removeRule();
+
+        if(rule !== null)
+            rule.incrementRef()
+
+        this.r = rule;
+    }
+
 }
 
 /**
@@ -77,6 +94,24 @@ class CSSRule {
         this.props = {};
         this.LOADED = false;
         this.root = root;
+
+        //Reference Counting
+        this.refs = 0;
+
+        //Versioning
+        this.ver = 0;
+    }
+
+    incrementRef(){
+        this.refs++;
+    }
+
+    decrementRef(){
+        this.refs--;
+        if(this.refs <= 0){
+            //TODO: remove from rules entries.
+            debugger
+        }
     }
 
     addProperty(prop, rule) {
@@ -117,6 +152,7 @@ class CSSRule {
             for (let n in rule.props)
                 this.props[n] = rule.props[n];
             this.LOADED = true;
+            this.ver++;
         }
     }
 

@@ -11,7 +11,7 @@ let start = async function() {
 
 
     input.value =
-        `.test {
+        `.test, div {
         border : 1px solid red;
 	}`
 

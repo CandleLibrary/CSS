@@ -4392,6 +4392,23 @@ class CSSSelector {
         }
     }
 
+    removeRule(){
+        if(this.r)
+            this.r.decrementRef();
+
+        this.r = null;
+    }
+
+    addRule(rule = null){
+        
+        this.removeRule();
+
+        if(rule !== null)
+            rule.incrementRef();
+
+        this.r = rule;
+    }
+
 }
 
 /**
@@ -4408,6 +4425,24 @@ class CSSRule {
         this.props = {};
         this.LOADED = false;
         this.root = root;
+
+        //Reference Counting
+        this.refs = 0;
+
+        //Versioning
+        this.ver = 0;
+    }
+
+    incrementRef(){
+        this.refs++;
+    }
+
+    decrementRef(){
+        this.refs--;
+        if(this.refs <= 0){
+            //TODO: remove from rules entries.
+            debugger
+        }
     }
 
     addProperty(prop, rule) {
@@ -4448,6 +4483,7 @@ class CSSRule {
             for (let n in rule.props)
                 this.props[n] = rule.props[n];
             this.LOADED = true;
+            this.ver++;
         }
     }
 
@@ -4987,16 +5023,20 @@ class _mediaSelectorPart_ {
 }
 
 class CSSRuleBody {
+    
     constructor() {
+
+        // 
         this.media_selector = null;
-        /**
-         * All selectors indexed by their value
-         */
+        
+        // All selectors indexed by their value
         this._selectors_ = {};
-        /**
-         * All selectors in order of appearance
-         */
+
+        //All selectors in order of appearance
         this._sel_a_ = [];
+
+        //
+        this.rules = []; 
     }
 
     _applyProperties_(lexer, rule) {
@@ -5084,11 +5124,11 @@ class CSSRuleBody {
         return true;
     }
 
-    /**
-     * Retrieves the set of rules from all matching selectors for an element.
-     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
-     * @public
-     */
+    
+    /* 
+        Retrieves the set of rules from all matching selectors for an element.
+            element HTMLElement - An DOM element that should be matched to applicable rules. 
+    */
     getApplicableRules(element, rule = new CSSRule(), win = window) {
 
         if (!this.matchMedia(win)) return;
@@ -5284,6 +5324,7 @@ class CSSRuleBody {
                     break;
             }
         }
+
         selector_array.unshift(sel);
         selectors_array.push(selector_array);
         selectors.push(lexer.s(start).trim().slice(0));
@@ -5302,8 +5343,9 @@ class CSSRuleBody {
         if (root && !this.par) root.push(this);
 
         return new Promise((res, rej) => {
-            let selectors = [],
-                l = 0;
+            
+            let selectors = [], l = 0;
+            
             while (!lexer.END) {
                 switch (lexer.ch) {
                     case "@":
@@ -5361,7 +5403,7 @@ class CSSRuleBody {
                                      * We use that promise to hook into the existing promise returned by CSSRoot#parse,
                                      * executing a new parse sequence on the fetched string data using the existing CSSRoot instance,
                                      * and then resume the current parse sequence.
-                                     * @todo Conform to CSS spec and only parse if @import is at the top of the CSS string.
+                                     * @todo Conform to CSS spec and only parse if @import is at the head of the CSS string.
                                      */
                                     return type.fetchText().then((str) =>
                                         //Successfully fetched content, proceed to parse in the current root.
@@ -5384,11 +5426,18 @@ class CSSRuleBody {
                         lexer.next();
                         return res(this);
                     case "{":
+                        //Check to see if a rule body for the selector exists already.
+                        let MERGED = false;
                         let rule = new CSSRule(this);
                         this._applyProperties_(lexer.next(), rule);
                         for (let i = -1, sel = null; sel = selectors[++i];)
-                            if (sel.r) sel.r.merge(rule);
-                            else sel.r = rule;
+                            if (sel.r) {sel.r.merge(rule); MERGED = true;}
+                            else sel.addRule(rule);
+
+                        if(!MERGED){
+                            this.rules.push(rule);
+                        }
+                            
                         selectors.length = l = 0;
                         continue;
                 }
@@ -5471,7 +5520,9 @@ class CSSRuleBody {
             if (!this._selectors_[selector.id]) {
                 this._selectors_[selector.id] = selector;
                 this._sel_a_.push(selector);
-                selector.r = new CSSRule(this);
+                const rule = new CSSRule(this);
+                selector.addRule(rule);
+                this.rules.push(rule);
             } else
                 selector = this._selectors_[selector.id];
 
