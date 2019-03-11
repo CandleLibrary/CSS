@@ -1103,6 +1103,447 @@ ${is_iws}`;
     Lexer.types = Types;
     whind$1.types = Types;
 
+    /**
+     * wick internals.
+     * @class      NR (name)
+     */
+    class NR { //Notation Rule
+
+        constructor() {
+
+            this.r = [NaN, NaN];
+            this.terms = [];
+            this.prop = null;
+            this.name = "";
+            this.virtual = false;
+        }
+
+        seal(){
+
+        }
+
+        sp(value, rule) { //Set Property
+            if (this.prop){
+                if (value)
+                    if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
+                        rule[this.prop] = value[0];
+                    else
+                        rule[this.prop] = value;
+            }
+        }
+
+        isRepeating() {
+            return !(isNaN(this.r[0]) && isNaN(this.r[1]));
+        }
+
+        parse(lx, rule, out_val) {
+            if (typeof(lx) == "string")
+                lx = whind$1(lx);
+
+            let r = out_val || { v: null },
+                start = isNaN(this.r[0]) ? 1 : this.r[0],
+                end = isNaN(this.r[1]) ? 1 : this.r[1];
+
+            return this.___(lx, rule, out_val, r, start, end);
+        }
+
+        ___(lx, rule, out_val, r, start, end) {
+            let bool = true;
+            for (let j = 0; j < end && !lx.END; j++) {
+
+                for (let i = 0, l = this.terms.length; i < l; i++) {
+                    bool = this.terms[i].parse(lx, rule, r);
+                    if (!bool) break;
+                }
+
+                if (!bool) {
+
+                    this.sp(r.v, rule);
+
+                    if (j < start)
+                        return false;
+                    else
+                        return true;
+                }
+            }
+
+            this.sp(r.v, rule);
+
+            return true;
+        }
+    }
+
+    class AND extends NR {
+        ___(lx, rule, out_val, r, start, end) {
+
+            outer:
+                for (let j = 0; j < end && !lx.END; j++) {
+                    for (let i = 0, l = this.terms.length; i < l; i++)
+                        if (!this.terms[i].parse(lx, rule, r)) return false;
+                }
+
+            this.sp(r.v, rule);
+
+            return true;
+        }
+    }
+
+    class OR extends NR {
+        ___(lx, rule, out_val, r, start, end) {
+            let bool = false;
+
+            for (let j = 0; j < end && !lx.END; j++) {
+                bool = false;
+
+                for (let i = 0, l = this.terms.length; i < l; i++)
+                    if (this.terms[i].parse(lx, rule, r)) bool = true;
+
+                if (!bool && j < start) {
+                    this.sp(r.v, rule);
+                    return false;
+                }
+            }
+
+            this.sp(r.v, rule);
+
+            return true;
+        }
+    }
+
+    class ONE_OF extends NR {
+        ___(lx, rule, out_val, r, start, end) {
+            let bool = false;
+
+            for (let j = 0; j < end && !lx.END; j++) {
+                bool = false;
+
+                for (let i = 0, l = this.terms.length; i < l; i++) {
+                    bool = this.terms[i].parse(lx, rule, r);
+                    if (bool) break;
+                }
+
+                if (!bool)
+                    if (j < start) {
+                        this.sp(r.v, rule);
+                        return false;
+                    }
+            }
+
+            this.sp(r.v, rule);
+
+            return bool;
+        }
+    }
+
+    class Segment {
+        constructor(parent) {
+            this.parent = null;
+
+            this.css_val = "";
+
+            this.val = document.createElement("span");
+            this.val.classList.add("css_ui_val");
+
+            this.list = document.createElement("div");
+            this.list.classList.add("css_ui_list");
+            //this.list.style.display = "none"
+
+            this.ext = document.createElement("button");
+            this.ext.classList.add("css_ui_ext");
+            this.ext.innerHTML = "+";
+            this.ext.style.display = "none";
+
+            this.menu = document.createElement("span");
+            this.menu.classList.add("css_ui_menu");
+            this.menu.innerHTML = "+";
+            this.menu.style.display = "none";
+            this.menu.appendChild(this.list);
+
+            this.element = document.createElement("span");
+            this.element.classList.add("css_ui_seg");
+
+            this.element.appendChild(this.menu);
+            this.element.appendChild(this.val);
+            this.element.appendChild(this.ext);
+
+            this.value_list = [];
+            this.subs = [];
+            this.old_subs = [];
+            this.sib = null;
+            this.value_set;
+            this.HAS_VALUE = false;
+            this.DEMOTED = false;
+
+            this.element.addEventListener("mouseover", e => {
+                //this.setList();
+            });
+        }
+
+        destroy() {
+            this.parent = null;
+            this.element = null;
+            this.val = null;
+            this.list = null;
+            this.ext = null;
+            this.menu = null;
+            this.subs.forEach(e => e.destroy());
+            this.subs = null;
+        }
+
+        reset() {
+            this.list.innerHTML = "";
+            this.val.innerHTML = "";
+            //this.subs.forEach(e => e.destroy);
+            this.subs = [];
+            this.setElement = null;
+            this.changeEvent = null;
+        }
+
+        replaceSub(old_sub, new_sub) {
+            for (let i = 0; i < this.subs.length; i++) {
+                if (this.subs[i] == old_sub) {
+                    this.sub[i] = new_sub;
+                    this.val.replaceChild(old_sub.element, new_sub.element);
+                    return;
+                }
+            }
+        }
+
+        mount(element) {
+            element.appendChild(this.element);
+        }
+
+
+        addSub(seg) {
+            seg.parent = this;
+            this.subs.push(seg);
+            this.val.appendChild(seg.element);
+        }
+
+        removeSub(seg) {
+            if (seg.parent == this) {
+                for (let i = 0; i < this.subs.length; i++) {
+                    if (this.subs[i] == seg) {
+                        this.val.removeChild(seg.element);
+                        seg.parent = null;
+                        break;
+                    }
+                }
+            }
+            return seg;
+        }
+
+        setList() {
+            if(this.DEMOTED) debugger
+            if (this.prod && this.list.innerHTML == "") {
+                if (this.DEMOTED || !this.prod.buildList(this.list, this))
+                    this.menu.style.display = "none";
+                else
+                    this.menu.style.display = "inline-block";
+            }
+        }
+        change(e) {
+            if (this.changeEvent)
+                this.changeEvent(this.setElement, this, e);
+        }
+
+        setValueHandler(element, change_event_function) {
+            this.val.innerHTML = "";
+            this.val.appendChild(element);
+
+            if (change_event_function) {
+                this.setElement = element;
+                this.changeEvent = change_event_function;
+                this.setElement.onchange = this.change.bind(this);
+            }
+
+            this.HAS_VALUE = true;
+            //this.menu.style.display = "none";
+            this.setList();
+        }
+
+        set value(v) {
+            this.val.innerHTML = v;
+            this.css_val = v;
+            this.HAS_VALUE = true;
+            this.setList();
+        }
+
+        get value_count() {
+            if (this.subs.length > 0)
+                return this.subs.length
+            return (this.HAS_VALUE) ? 1 : 0;
+        }
+
+        promote() {
+
+        }
+
+        demote() {
+            let seg = new Segment;
+            seg.prod = this.prod;
+            seg.css_val = this.css_val;
+
+            if (this.change_event_function) {
+                seg.changeEvent = this.changeEvent;
+                seg.setElement = this.setElement;
+                seg.setElement.onchange = seg.change.bind(seg);
+            }
+
+            let subs = this.subs;
+
+            if (subs.length > 0) {
+
+                for (let i = 0; i < this.subs.length; i++) {
+                    console.log(this.subs[i].element);
+                    seg.addSub(this.subs[i]);
+                }
+            } else {
+
+
+                let children = this.val.childNodes;
+
+                if (children.length > 0) {
+                    for (let i = 0, l = children.length; i < l; i++) {
+                        seg.val.appendChild(children[0]);
+                    }
+                } else {
+                    seg.val.innerHTML = this.val.innerHTML;
+                }
+            }
+
+
+            this.menu.innerHTML = "";
+            this.menu.style.display = "none";
+            this.list.innerHTML = "";
+
+            this.reset();
+
+            this.addSub(seg);
+            seg.setList();
+            
+            this.DEMOTED = true;
+        }
+
+        addRepeat(seg) {
+            if (!this.DEMOTED)
+                //Turn self into own sub seg
+                this.demote();
+            this.addSub(seg);
+            seg.setList();
+        }
+
+        repeat(prod = this.prod) {
+            if (this.value_count <= this.end && this.start + this.end !== 2) {
+                this.ext.style.display = "inline-block";
+
+                let root_x = 0;
+                let width = 0;
+                let diff_width = 0;
+
+                const move = (e) => {
+
+                    let diff = e.clientX - root_x;
+                    let min_diff = diff + diff_width;
+
+                    if (diff > 15 && this.value_count < this.end) {
+                        let bb = this.element;
+
+                        if (!this.DEMOTED) {
+                            //Turn self into own sub seg
+                            this.demote();
+                        }
+
+                        if (this.old_subs.length > 1) {
+                            this.addSub(this.old_subs.pop());
+                        } else {
+                            prod.default(this, true);
+                        }
+
+                        let w = this.element.clientWidth;
+                        diff_width = w - width;
+                        width = w;
+                        root_x += diff_width;
+
+                        return;
+                    }
+
+                    let last_sub = this.subs[this.subs.length - 1];
+
+                    if (diff < -5 - last_sub.width && this.value_count > 1) {
+                        const sub = this.subs[this.subs.length - 1];
+                        this.old_subs.push(sub);
+                        this.removeSub(sub);
+                        this.subs.length = this.subs.length - 1;
+
+                        let w = this.element.clientWidth;
+                        diff_width = w - width;
+                        width = w;
+
+                        root_x += diff_width;
+                    }
+                };
+
+                const up = (e) => {
+                    window.removeEventListener("pointermove", move);
+                    window.removeEventListener("pointerup", up);
+                };
+
+                this.ext.onpointerdown = e => {
+                    width = this.element.clientWidth;
+                    root_x = e.clientX;
+                    window.addEventListener("pointermove", move);
+                    window.addEventListener("pointerup", up);
+                };
+
+
+                /*
+                this.ext.onclick = e => {
+                    if (this.subs.length == 0)
+                        //Turn self into own sub seg
+                        this.demote()
+
+                    prod.default(this, true);
+
+                    if (this.value_count >= this.end)
+                        this.ext.style.display = "none";
+                }
+                */
+            } else {
+                this.ext.style.display = "none";
+            }
+            this.setList();
+            this.update();
+        }
+
+        get width() {
+            return this.element.clientWidth;
+        }
+
+        update() {
+            if (this.parent)
+                this.parent.update(this);
+            else {
+                let val = this.getValue();
+            }
+        }
+
+        getValue() {
+            let val = "";
+
+            if (this.subs.length > 0)
+                for (let i = 0; i < this.subs.length; i++)
+                    val += " " + this.subs[i].getValue();
+            else
+                val = this.css_val;
+            return val;
+        }
+
+        toString() {
+            return this.getValue();
+        }
+    }
+
     class Color extends Float64Array {
 
         constructor(r, g, b, a = 0) {
@@ -3988,138 +4429,6 @@ ${is_iws}`;
 
     };
 
-    /**
-     * wick internals.
-     * @class      NR (name)
-     */
-    class NR { //Notation Rule
-
-        constructor() {
-
-            this.r = [NaN, NaN];
-            this.terms = [];
-            this.prop = null;
-            this.name = "";
-            this.virtual = false;
-        }
-
-        seal(){
-
-        }
-
-        sp(value, rule) { //Set Property
-            if (this.prop){
-                if (value)
-                    if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
-                        rule[this.prop] = value[0];
-                    else
-                        rule[this.prop] = value;
-            }
-        }
-
-        isRepeating() {
-            return !(isNaN(this.r[0]) && isNaN(this.r[1]));
-        }
-
-        parse(lx, rule, out_val) {
-            if (typeof(lx) == "string")
-                lx = whind$1(lx);
-
-            let r = out_val || { v: null },
-                start = isNaN(this.r[0]) ? 1 : this.r[0],
-                end = isNaN(this.r[1]) ? 1 : this.r[1];
-
-            return this.___(lx, rule, out_val, r, start, end);
-        }
-
-        ___(lx, rule, out_val, r, start, end) {
-            let bool = true;
-            for (let j = 0; j < end && !lx.END; j++) {
-
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-                    bool = this.terms[i].parse(lx, rule, r);
-                    if (!bool) break;
-                }
-
-                if (!bool) {
-
-                    this.sp(r.v, rule);
-
-                    if (j < start)
-                        return false;
-                    else
-                        return true;
-                }
-            }
-
-            this.sp(r.v, rule);
-
-            return true;
-        }
-    }
-
-    class AND extends NR {
-        ___(lx, rule, out_val, r, start, end) {
-
-            outer:
-                for (let j = 0; j < end && !lx.END; j++) {
-                    for (let i = 0, l = this.terms.length; i < l; i++)
-                        if (!this.terms[i].parse(lx, rule, r)) return false;
-                }
-
-            this.sp(r.v, rule);
-
-            return true;
-        }
-    }
-
-    class OR extends NR {
-        ___(lx, rule, out_val, r, start, end) {
-            let bool = false;
-
-            for (let j = 0; j < end && !lx.END; j++) {
-                bool = false;
-
-                for (let i = 0, l = this.terms.length; i < l; i++)
-                    if (this.terms[i].parse(lx, rule, r)) bool = true;
-
-                if (!bool && j < start) {
-                    this.sp(r.v, rule);
-                    return false;
-                }
-            }
-
-            this.sp(r.v, rule);
-
-            return true;
-        }
-    }
-
-    class ONE_OF extends NR {
-        ___(lx, rule, out_val, r, start, end) {
-            let bool = false;
-
-            for (let j = 0; j < end && !lx.END; j++) {
-                bool = false;
-
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-                    bool = this.terms[i].parse(lx, rule, r);
-                    if (bool) break;
-                }
-
-                if (!bool)
-                    if (j < start) {
-                        this.sp(r.v, rule);
-                        return false;
-                    }
-            }
-
-            this.sp(r.v, rule);
-
-            return bool;
-        }
-    }
-
     class ValueTerm {
 
         constructor(value, getPropertyParser, definitions, productions) {
@@ -4247,553 +4556,6 @@ ${is_iws}`;
             }
 
             return false;
-        }
-    }
-
-    const standard_productions = {
-        NR,
-        AND,
-        OR,
-        ONE_OF,
-        LiteralTerm,
-        ValueTerm,
-        SymbolTerm
-    };
-    function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null, productions = standard_productions) {
-
-        let prop = definitions[property_name];
-
-        if (prop) {
-
-            if (typeof(prop) == "string")
-                prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
-            prop.name = property_name;
-            return prop;
-        }
-
-        if (!definitions.__virtual)
-            definitions.__virtual = Object.assign({}, virtual_property_definitions);
-
-        prop = definitions.__virtual[property_name];
-
-        if (prop) {
-
-            IS_VIRTUAL.is = true;
-
-            if (typeof(prop) == "string"){
-                prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
-                prop.name = property_name;
-            }
-
-            return prop;
-        }
-
-        return null;
-    }
-
-
-    function CreatePropertyParser(notation, name, definitions, productions) {
-
-        const l = whind$1(notation);
-
-        const important = { is: false };
-
-        let n = d$1(l, definitions, productions);
-        n.seal();
-
-        //if (n instanceof productions.NR && n.terms.length == 1 && n.r[1] < 2)
-        //    n = n.terms[0];
-
-        n.prop = name;
-        n.IMP = important.is;
-
-        return n;
-    }
-
-    function d$1(l, definitions, productions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
-        let term, nt;
-        const { NR: NR$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
-
-        while (!l.END) {
-            switch (l.ch) {
-                case "]":
-                    if (term) return term;
-                    else
-                        throw new Error("Expected to have term before \"]\"");
-                case "[":
-                    if (term) return term;
-                    term = d$1(l.next(), definitions, productions);
-                    l.a("]");
-                    break;
-                case "&":
-                    if (l.pk.ch == "&") {
-                        if (and_group)
-                            return term;
-
-                        nt = new AND$$1();
-
-                        nt.terms.push(term);
-
-                        l.sync().next();
-
-                        while (!l.END) {
-                            nt.terms.push(d$1(l, definitions, productions, super_term, group, need_group, true, important));
-                            if (l.ch !== "&" || l.pk.ch !== "&") break;
-                            l.a("&").a("&");
-                        }
-
-                        return nt;
-                    }
-                case "|":
-                    {
-                        if (l.pk.ch == "|") {
-
-                            if (need_group)
-                                return term;
-
-                            nt = new OR$$1();
-
-                            nt.terms.push(term);
-
-                            l.sync().next();
-
-                            while (!l.END) {
-                                nt.terms.push(d$1(l, definitions, productions, super_term, group, true, and_group, important));
-                                if (l.ch !== "|" || l.pk.ch !== "|") break;
-                                l.a("|").a("|");
-                            }
-
-                            return nt;
-
-                        } else {
-                            if (group) {
-                                return term;
-                            }
-
-                            nt = new ONE_OF$$1();
-
-                            nt.terms.push(term);
-
-                            l.next();
-
-                            while (!l.END) {
-                                nt.terms.push(d$1(l, definitions, productions, super_term, true, need_group, and_group, important));
-                                if (l.ch !== "|") break;
-                                l.a("|");
-                            }
-
-                            return nt;
-                        }
-                    }
-                    break;
-                case "{":
-                    term = _Jux_(productions, term);
-                    term.r[0] = parseInt(l.next().tx);
-                    if (l.next().ch == ",") {
-                        l.next();
-                        if (l.pk.ch == "}") {
-
-                            term.r[1] = parseInt(l.tx);
-                            l.next();
-                        } else {
-                            term.r[1] = Infinity;
-                        }
-                    } else
-                        term.r[1] = term.r[0];
-                    l.a("}");
-                    if (super_term) return term;
-                    break;
-                case "*":
-                    term = _Jux_(productions, term);
-                    term.r[0] = 0;
-                    term.r[1] = Infinity;
-                    l.next();
-                    if (super_term) return term;
-                    break;
-                case "+":
-                    term = _Jux_(productions, term);
-                    term.r[0] = 1;
-                    term.r[1] = Infinity;
-                    l.next();
-                    if (super_term) return term;
-                    break;
-                case "?":
-                    term = _Jux_(productions, term);
-                    term.r[0] = 0;
-                    term.r[1] = 1;
-                    l.next();
-                    if (super_term) return term;
-                    break;
-                case "#":
-                    term = _Jux_(productions, term);
-                    term.terms.push(new SymbolTerm$$1(","));
-                    term.r[0] = 1;
-                    term.r[1] = Infinity;
-                    l.next();
-                    if (l.ch == "{") {
-                        term.r[0] = parseInt(l.next().tx);
-                        term.r[1] = parseInt(l.next().a(",").tx);
-                        l.next().a("}");
-                    }
-                    if (super_term) return term;
-                    break;
-                case "<":
-                    let v;
-
-                    if (term) {
-                        if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
-                        let v = d$1(l, definitions, productions, true);
-                        term = _Jux_(productions, term, v);
-                    } else {
-                        let v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
-                        l.next().a(">");
-                        term = v;
-                    }
-                    break;
-                case "!":
-                    /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
-
-                    l.next().a("important");
-                    important.is = true;
-                    break;
-                default:
-                    if (term) {
-                        if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
-                        let v = d$1(l, definitions, productions, true);
-                        term = _Jux_(productions, term, v);
-                    } else {
-                        let v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx);
-                        l.next();
-                        term = v;
-                    }
-            }
-        }
-
-        return term;
-    }
-
-    function _Jux_(productions, term, new_term = null) {
-        if (term) {
-            if (!(term instanceof productions.NR)) {
-                let nr = new productions.NR();
-                nr.terms.push(term);
-                term = nr;
-            }
-            if (new_term) {
-                term.seal();
-                term.terms.push(new_term);
-            }
-            return term;
-        }
-        return new_term;
-    }
-
-    class Segment {
-        constructor(parent) {
-            this.parent = null;
-
-            this.css_val = "";
-
-            this.val = document.createElement("span");
-            this.val.classList.add("css_ui_val");
-
-            this.list = document.createElement("div");
-            this.list.classList.add("css_ui_list");
-            //this.list.style.display = "none"
-
-            this.ext = document.createElement("button");
-            this.ext.classList.add("css_ui_ext");
-            this.ext.innerHTML = "+";
-            this.ext.style.display = "none";
-
-            this.menu = document.createElement("span");
-            this.menu.classList.add("css_ui_menu");
-            this.menu.innerHTML = "+";
-            this.menu.style.display = "none";
-            this.menu.appendChild(this.list);
-
-            this.element = document.createElement("span");
-            this.element.classList.add("css_ui_seg");
-
-            this.element.appendChild(this.menu);
-            this.element.appendChild(this.val);
-            this.element.appendChild(this.ext);
-
-            this.value_list = [];
-            this.subs = [];
-            this.old_subs = [];
-            this.sib = null;
-            this.value_set;
-            this.HAS_VALUE = false;
-            this.DEMOTED = false;
-
-            this.element.addEventListener("mouseover", e => {
-                //this.setList();
-            });
-        }
-
-        destroy() {
-            this.parent = null;
-            this.element = null;
-            this.val = null;
-            this.list = null;
-            this.ext = null;
-            this.menu = null;
-            this.subs.forEach(e => e.destroy());
-            this.subs = null;
-        }
-
-        reset() {
-            this.list.innerHTML = "";
-            this.val.innerHTML = "";
-            //this.subs.forEach(e => e.destroy);
-            this.subs = [];
-            this.setElement = null;
-            this.changeEvent = null;
-        }
-
-        replaceSub(old_sub, new_sub) {
-            for (let i = 0; i < this.subs.length; i++) {
-                if (this.subs[i] == old_sub) {
-                    this.sub[i] = new_sub;
-                    this.val.replaceChild(old_sub.element, new_sub.element);
-                    return;
-                }
-            }
-        }
-
-        mount(element) {
-            element.appendChild(this.element);
-        }
-
-
-        addSub(seg) {
-            seg.parent = this;
-            this.subs.push(seg);
-            this.val.appendChild(seg.element);
-        }
-
-        removeSub(seg) {
-            if (seg.parent == this) {
-                for (let i = 0; i < this.subs.length; i++) {
-                    if (this.subs[i] == seg) {
-                        this.val.removeChild(seg.element);
-                        seg.parent = null;
-                        break;
-                    }
-                }
-            }
-            return seg;
-        }
-
-        setList() {
-            if(this.DEMOTED) debugger
-            if (this.prod && this.list.innerHTML == "") {
-                if (this.DEMOTED || !this.prod.buildList(this.list, this))
-                    this.menu.style.display = "none";
-                else
-                    this.menu.style.display = "inline-block";
-            }
-        }
-        change(e) {
-            if (this.changeEvent)
-                this.changeEvent(this.setElement, this, e);
-        }
-
-        setValueHandler(element, change_event_function) {
-            this.val.innerHTML = "";
-            this.val.appendChild(element);
-
-            if (change_event_function) {
-                this.setElement = element;
-                this.changeEvent = change_event_function;
-                this.setElement.onchange = this.change.bind(this);
-            }
-
-            this.HAS_VALUE = true;
-            //this.menu.style.display = "none";
-            this.setList();
-        }
-
-        set value(v) {
-            this.val.innerHTML = v;
-            this.css_val = v;
-            this.HAS_VALUE = true;
-            this.setList();
-        }
-
-        get value_count() {
-            if (this.subs.length > 0)
-                return this.subs.length
-            return (this.HAS_VALUE) ? 1 : 0;
-        }
-
-        promote() {
-
-        }
-
-        demote() {
-            let seg = new Segment;
-            seg.prod = this.prod;
-            seg.css_val = this.css_val;
-
-            if (this.change_event_function) {
-                seg.changeEvent = this.changeEvent;
-                seg.setElement = this.setElement;
-                seg.setElement.onchange = seg.change.bind(seg);
-            }
-
-            let subs = this.subs;
-
-            if (subs.length > 0) {
-
-                for (let i = 0; i < this.subs.length; i++) {
-                    console.log(this.subs[i].element);
-                    seg.addSub(this.subs[i]);
-                }
-            } else {
-
-
-                let children = this.val.childNodes;
-
-                if (children.length > 0) {
-                    for (let i = 0, l = children.length; i < l; i++) {
-                        seg.val.appendChild(children[0]);
-                    }
-                } else {
-                    seg.val.innerHTML = this.val.innerHTML;
-                }
-            }
-
-
-            this.menu.innerHTML = "";
-            this.menu.style.display = "none";
-            this.list.innerHTML = "";
-
-            this.reset();
-
-            this.addSub(seg);
-            seg.setList();
-            
-            this.DEMOTED = true;
-        }
-
-        addRepeat(seg) {
-            if (!this.DEMOTED)
-                //Turn self into own sub seg
-                this.demote();
-            this.addSub(seg);
-            seg.setList();
-        }
-
-        repeat(prod = this.prod) {
-            if (this.value_count <= this.end && this.start + this.end !== 2) {
-                this.ext.style.display = "inline-block";
-
-                let root_x = 0;
-                let width = 0;
-                let diff_width = 0;
-
-                const move = (e) => {
-
-                    let diff = e.clientX - root_x;
-                    let min_diff = diff + diff_width;
-
-                    if (diff > 15 && this.value_count < this.end) {
-                        let bb = this.element;
-
-                        if (!this.DEMOTED) {
-                            //Turn self into own sub seg
-                            this.demote();
-                        }
-
-                        if (this.old_subs.length > 1) {
-                            this.addSub(this.old_subs.pop());
-                        } else {
-                            prod.default(this, true);
-                        }
-
-                        let w = this.element.clientWidth;
-                        diff_width = w - width;
-                        width = w;
-                        root_x += diff_width;
-
-                        return;
-                    }
-
-                    let last_sub = this.subs[this.subs.length - 1];
-
-                    if (diff < -5 - last_sub.width && this.value_count > 1) {
-                        const sub = this.subs[this.subs.length - 1];
-                        this.old_subs.push(sub);
-                        this.removeSub(sub);
-                        this.subs.length = this.subs.length - 1;
-
-                        let w = this.element.clientWidth;
-                        diff_width = w - width;
-                        width = w;
-
-                        root_x += diff_width;
-                    }
-                };
-
-                const up = (e) => {
-                    window.removeEventListener("pointermove", move);
-                    window.removeEventListener("pointerup", up);
-                };
-
-                this.ext.onpointerdown = e => {
-                    width = this.element.clientWidth;
-                    root_x = e.clientX;
-                    window.addEventListener("pointermove", move);
-                    window.addEventListener("pointerup", up);
-                };
-
-
-                /*
-                this.ext.onclick = e => {
-                    if (this.subs.length == 0)
-                        //Turn self into own sub seg
-                        this.demote()
-
-                    prod.default(this, true);
-
-                    if (this.value_count >= this.end)
-                        this.ext.style.display = "none";
-                }
-                */
-            } else {
-                this.ext.style.display = "none";
-            }
-            this.setList();
-            this.update();
-        }
-
-        get width() {
-            return this.element.clientWidth;
-        }
-
-        update() {
-            if (this.parent)
-                this.parent.update(this);
-            else {
-                let val = this.getValue();
-            }
-        }
-
-        getValue() {
-            let val = "";
-
-            if (this.subs.length > 0)
-                for (let i = 0; i < this.subs.length; i++)
-                    val += " " + this.subs[i].getValue();
-            else
-                val = this.css_val;
-            return val;
-        }
-
-        toString() {
-            return this.getValue();
         }
     }
 
@@ -5049,6 +4811,7 @@ ${is_iws}`;
         }
 
         buildInput(repeat = 1, lex) {
+            this.last_segment = null;
             let seg = new Segment;
             seg.start = this.start;
             seg.end = this.end;
@@ -5180,7 +4943,7 @@ ${is_iws}`;
                 //User "factorial" expression to isolate used results in a continous match. 
                 while(true){
                     for (let i = 0, l = this.terms.length; i < l; i++) {
-                        if(this.terms[i].count == this.count) continue
+                        //if(this.terms[i].count == this.count) continue
 
                         if (this.terms[i].parseInput(lx, seg, true)) {
                             this.terms[i].count = this.count;
@@ -5318,198 +5081,249 @@ ${is_iws}`;
         SymbolTerm: SymbolTerm$1
     });
 
-    const props = Object.assign({}, property_definitions);
-    const productions = { NR, AND, OR, ONE_OF };
+    const standard_productions = {
+        NR,
+        AND,
+        OR,
+        ONE_OF,
+        LiteralTerm,
+        ValueTerm,
+        SymbolTerm
+    };
+    function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null, productions = standard_productions) {
 
+        let prop = definitions[property_name];
 
-    class UIValue {
+        if (prop) {
 
-        constructor(type, value, parent) {
-            this.type = type;
-
-            this.parent = parent;
-
-            let pp = getPropertyParser(type, undefined, props, ui_productions);
-            
-            this.setupElement(pp, value);
-
-            this.mount(this.parent.element);
+            if (typeof(prop) == "string")
+                prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
+            prop.name = property_name;
+            return prop;
         }
 
-        mount(element) {
-            if (element instanceof HTMLElement)
-                this.element.mount(element);
+        if (!definitions.__virtual)
+            definitions.__virtual = Object.assign({}, virtual_property_definitions);
+
+        prop = definitions.__virtual[property_name];
+
+        if (prop) {
+
+            IS_VIRTUAL.is = true;
+
+            if (typeof(prop) == "string"){
+                prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
+                prop.name = property_name;
+            }
+
+            return prop;
         }
 
-        update(value) {
-            console.log(value.toString());
-            this.parent.update(this.type, value.toString());
-        }
-
-        setupElement(pp, value) {
-            this.element = pp.buildInput(1, whind$1(value));
-            this.element.parent = this;
-        }
+        return null;
     }
 
-    /**
-     * Used to _bind_ a rule to a CSS selector.
-     * @param      {string}  selector        The raw selector string value
-     * @param      {array}  selector_array  An array of selector group identifiers.
-     * @memberof module:wick~internals.css
-     * @alias CSSSelector
-     */
-    class CSSSelector {
 
-        constructor(selectors /* string */ , selectors_arrays /* array */ ) {
+    function CreatePropertyParser(notation, name, definitions, productions) {
 
-            /**
-             * The raw selector string value
-             * @package
-             */
+        const l = whind$1(notation);
 
-            this.v = selectors;
+        const important = { is: false };
 
-            /**
-             * Array of separated selector strings in reverse order.
-             * @package
-             */
+        let n = d$1(l, definitions, productions);
+        n.seal();
 
-            this.a = selectors_arrays;
+        //if (n instanceof productions.NR && n.terms.length == 1 && n.r[1] < 2)
+        //    n = n.terms[0];
 
-            /**
-             * The CSSRule.
-             * @package
-             */
-            this.r = null;
-        }
+        n.prop = name;
+        n.IMP = important.is;
 
-        get id() {
-            return this.v.join("");
-        }
-        /**
-         * Returns a string representation of the object.
-         * @return     {string}  String representation of the object.
-         */
-        toString(off = 0) {
-            let offset = ("    ").repeat(off);
-
-            let str = `${offset}${this.v.join(", ")} {\n`;
-
-            if (this.r)
-                str += this.r.toString(off + 1);
-
-            return str + `${offset}}\n`;
-        }
-
-        addProp(string) {
-            let root = this.r.root;
-            if (root) {
-                let lex = whind$1(string);
-                while (!lex.END)
-                    root.parseProperty(lex, this.r, property_definitions);
-            }
-        }
-
-        removeRule(){
-            if(this.r)
-                this.r.decrementRef();
-
-            this.r = null;
-        }
-
-        addRule(rule = null){
-            
-            this.removeRule();
-
-            if(rule !== null)
-                rule.incrementRef();
-
-            this.r = rule;
-        }
-
+        return n;
     }
 
-    /**
-     * Holds a set of rendered CSS properties.
-     * @memberof module:wick~internals.css
-     * @alias CSSRule
-     */
-    class CSSRule {
-        constructor(root) {
-            /**
-             * Collection of properties held by this rule.
-             * @public
-             */
-            this.props = {};
-            this.LOADED = false;
-            this.root = root;
+    function d$1(l, definitions, productions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
+        let term, nt;
+        const { NR: NR$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
 
-            //Reference Counting
-            this.refs = 0;
-
-            //Versioning
-            this.ver = 0;
-        }
-
-        incrementRef(){
-            this.refs++;
-        }
-
-        decrementRef(){
-            this.refs--;
-            if(this.refs <= 0){
-                //TODO: remove from rules entries.
-                debugger
-            }
-        }
-
-        addProperty(prop, rule) {
-            if (prop)
-                this.props[prop.name] = prop.value;
-        }
-
-
-
-        toString(off = 0, rule = "") {
-            let str = [],
-                offset = ("    ").repeat(off);
-
-            if (rule) {
-                if (this.props[rule]) {
-                    if (Array.isArray(this.props[rule]))
-                        str.push(this.props[rule].join(" "));
+        while (!l.END) {
+            switch (l.ch) {
+                case "]":
+                    if (term) return term;
                     else
-                        str.push(this.props[rule].toString());
-                }else
-                    return "";
-            } else {
-                for (let a in this.props) {
-                    if (this.props[a] !== null) {
-                        if (Array.isArray(this.props[a]))
-                            str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
-                        else
-                            str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].toString(), ";\n");
+                        throw new Error("Expected to have term before \"]\"");
+                case "[":
+                    if (term) return term;
+                    term = d$1(l.next(), definitions, productions);
+                    l.a("]");
+                    break;
+                case "&":
+                    if (l.pk.ch == "&") {
+                        if (and_group)
+                            return term;
+
+                        nt = new AND$$1();
+
+                        nt.terms.push(term);
+
+                        l.sync().next();
+
+                        while (!l.END) {
+                            nt.terms.push(d$1(l, definitions, productions, super_term, group, need_group, true, important));
+                            if (l.ch !== "&" || l.pk.ch !== "&") break;
+                            l.a("&").a("&");
+                        }
+
+                        return nt;
                     }
-                }
-            }
+                case "|":
+                    {
+                        if (l.pk.ch == "|") {
 
-            return str.join(""); //JSON.stringify(this.props).replace(/\"/g, "").replace(/\_/g, "-");
+                            if (need_group)
+                                return term;
+
+                            nt = new OR$$1();
+
+                            nt.terms.push(term);
+
+                            l.sync().next();
+
+                            while (!l.END) {
+                                nt.terms.push(d$1(l, definitions, productions, super_term, group, true, and_group, important));
+                                if (l.ch !== "|" || l.pk.ch !== "|") break;
+                                l.a("|").a("|");
+                            }
+
+                            return nt;
+
+                        } else {
+                            if (group) {
+                                return term;
+                            }
+
+                            nt = new ONE_OF$$1();
+
+                            nt.terms.push(term);
+
+                            l.next();
+
+                            while (!l.END) {
+                                nt.terms.push(d$1(l, definitions, productions, super_term, true, need_group, and_group, important));
+                                if (l.ch !== "|") break;
+                                l.a("|");
+                            }
+
+                            return nt;
+                        }
+                    }
+                    break;
+                case "{":
+                    term = _Jux_(productions, term);
+                    term.r[0] = parseInt(l.next().tx);
+                    if (l.next().ch == ",") {
+                        l.next();
+                        if (l.pk.ch == "}") {
+
+                            term.r[1] = parseInt(l.tx);
+                            l.next();
+                        } else {
+                            term.r[1] = Infinity;
+                        }
+                    } else
+                        term.r[1] = term.r[0];
+                    l.a("}");
+                    if (super_term) return term;
+                    break;
+                case "*":
+                    term = _Jux_(productions, term);
+                    term.r[0] = 0;
+                    term.r[1] = Infinity;
+                    l.next();
+                    if (super_term) return term;
+                    break;
+                case "+":
+                    term = _Jux_(productions, term);
+                    term.r[0] = 1;
+                    term.r[1] = Infinity;
+                    l.next();
+                    if (super_term) return term;
+                    break;
+                case "?":
+                    term = _Jux_(productions, term);
+                    term.r[0] = 0;
+                    term.r[1] = 1;
+                    l.next();
+                    if (super_term) return term;
+                    break;
+                case "#":
+                    term = _Jux_(productions, term);
+                    term.terms.push(new SymbolTerm$$1(","));
+                    term.r[0] = 1;
+                    term.r[1] = Infinity;
+                    l.next();
+                    if (l.ch == "{") {
+                        term.r[0] = parseInt(l.next().tx);
+                        term.r[1] = parseInt(l.next().a(",").tx);
+                        l.next().a("}");
+                    }
+                    if (super_term) return term;
+                    break;
+                case "<":
+                    let v;
+
+                    if (term) {
+                        if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
+                        let v = d$1(l, definitions, productions, true);
+                        term = _Jux_(productions, term, v);
+                    } else {
+                        let v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
+                        l.next().a(">");
+                        term = v;
+                    }
+                    break;
+                case "!":
+                    /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
+
+                    l.next().a("important");
+                    important.is = true;
+                    break;
+                default:
+                    if (term) {
+                        if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
+                        let v = d$1(l, definitions, productions, true);
+                        term = _Jux_(productions, term, v);
+                    } else {
+                        let v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx);
+                        l.next();
+                        term = v;
+                    }
+            }
         }
 
-        merge(rule) {
-            if (rule.props) {
-                for (let n in rule.props)
-                    this.props[n] = rule.props[n];
-                this.LOADED = true;
-                this.ver++;
-            }
-        }
-
-        get _wick_type_() { return 0; }
-
-        set _wick_type_(v) {}
+        return term;
     }
+
+    function _Jux_(productions, term, new_term = null) {
+        if (term) {
+            if (!(term instanceof productions.NR)) {
+                let nr = new productions.NR();
+                nr.terms.push(term);
+                term = nr;
+            }
+            if (new_term) {
+                term.seal();
+                term.terms.push(new_term);
+            }
+            return term;
+        }
+        return new_term;
+    }
+
+    //import { UIValue } from "./ui_value.mjs";
+
+
+    const props = Object.assign({}, property_definitions);
+
 
     class UIMaster {
         constructor(css) {
@@ -5537,11 +5351,12 @@ ${is_iws}`;
                 let rule_set = rule_sets[i];
 
                 for(let i = 0; i < rule_set.rules.length; i++){
+
                     let rule = rule_set.rules[i];
                     console.log(i, rule);
 
                     if(!this.rule_map.get(rule))
-                        this.rule_map.set(rule, new UIRuleSet(rule, this));
+                        this.rule_map.set(rule, new UIPropSet(rule, this));
                     else {
                         this.rule_map.get(rule).rebuild(rule);
                     }
@@ -5570,7 +5385,6 @@ ${is_iws}`;
         }
 
         updatedCSS(css) {
-
             if(this.UPDATE_MATCHED) return void (this.UPDATE_MATCHED = false);      
             //this.element.innerHTML = "";
             this.build(css);
@@ -5598,7 +5412,7 @@ ${is_iws}`;
         }
     }
 
-    class UIRuleSet {
+    class UIPropSet {
         constructor(rule_body, parent) {
 
             this.parent = parent;
@@ -5610,6 +5424,22 @@ ${is_iws}`;
             this.selector_space = document.createElement("div");
             this.rule_space = document.createElement("div");
 
+            this.element.addEventListener("dragover", dragover);
+            this.element.addEventListener("drop", (e)=>{
+                
+                let parent = dragee.parent;
+                let value = dragee.value;
+                let type = dragee.type;
+
+                if(parent === this)
+                    return;
+
+                this.addProp(type, value);
+                parent.removeProp(type);
+
+                //move the dragee's data into this ruleset
+            });
+
             this.element.appendChild(this.selector_space);
             this.element.appendChild(this.rule_space);
 
@@ -5619,6 +5449,9 @@ ${is_iws}`;
             this.ver = rule_body;
         }
 
+        addData(){
+
+        }
         addSelector(selector){
 
             //Add to list of selectors and update UI
@@ -5646,19 +5479,19 @@ ${is_iws}`;
 
             this.rule_body = rule_body;
 
-            let i = 0;
+            let i = -1;
 
             for (let a in rule_body.props) {
                 let rule;
                 
                 //Reuse Existing Rule Bodies
-                if(i < this.rules.length){
-                    rule = this.rules[i++];
+                if(++i < this.rules.length){
+                    rule = this.rules[i];
                 }else{
-                    rule = new UIRule(a,  this);
+                    rule = new UIProp(a,  this);
                     this.rules.push(rule);
                 }
-            
+                console.log(rule_body.toString(0, a));
                 rule.build(a, rule_body.toString(0, a));
                 rule.mount(this.rule_space);
             }
@@ -5667,12 +5500,13 @@ ${is_iws}`;
         rebuild(rule_body){
             if(this.ver !== rule_body.ver){
                 this.rule_space.innerHTML = "";
+                this.rules.length = 0;
                 this.build(rule_body);
                 this.ver = this.rule_body.ver;
             }
         }
 
-        update(rule_body) {
+        update(type, value) {
             
             let lexer = whind$1(value);
             
@@ -5688,6 +5522,20 @@ ${is_iws}`;
             }
 
             this.parent.update();
+        }
+
+        addProp(type, value){
+            this.update(type, value);
+            this.rebuild(this.rule_body);
+        }
+
+        removeProp(type){
+            const rule = this.rule_body;
+            if(rule.props[type]){
+                delete rule.props[type];
+                this.parent.update();
+                this.rebuild(this.rule_body);
+            }
         }
 
         generateHash() {}
@@ -5708,6 +5556,12 @@ ${is_iws}`;
             if (element instanceof HTMLElement)
                 element.appendChild(this.element);
         }
+
+        unmount(){
+            if (this.element.parentElement)
+                this.element.parentElement.removeChild(this.element);
+        }
+
     }
     class UISelector {
         constructor(selector) {
@@ -5736,32 +5590,45 @@ ${is_iws}`;
                 this.element.parentElement.removeChild(this.element);
         }
 
+
+        rebuild(selector){
+            this.parts.forEach(e=>e.unmount());
+            this.parts.length = 0;
+            selector.v.forEach(e => {
+                this.parts.push(new UISelectorPart(e));
+            });
+            this.mount(this.parent);
+
+        }
+
         setupElement() {
             this.element = document.createElement("div");
             this.element.classList.add("cfw_css_ui_rule");
         }
-
-        generateHash() {
-
-        }
     }
 
-    class UIRule {
+
+
+    class UIProp {
         constructor(type,  parent) {
             this.hash = 0;
             this.type = type;
             this.parent = parent;
             this.setupElement();
+            this._value = null;
         }
 
         build(type, value){
             this.element.innerHTML = `${type}:`;
-            this.value = new UIValue(type, value, this);
+            let pp = getPropertyParser(type, undefined, props, ui_productions);
+            this._value = pp.buildInput(1, whind$1(value));
+            this._value.parent = this;
+            this._value.mount(this.element);
         }
 
-        update(type, value) {
-            console.log(`${type}:${value};`);
-            this.parent.update(type, value);
+        update(value) {
+            console.log(`${this.type}:${value};`);
+            this.parent.update(this.type, value.toString());
         }
 
         mount(element) {
@@ -5776,12 +5643,24 @@ ${is_iws}`;
 
         setupElement() {
             this.element = document.createElement("div");
+            this.element.setAttribute("draggable", "true");
             this.element.classList.add("cfw_css_ui_rule");
+            this.element.addEventListener("dragstart", drag.bind(this));
         }
 
-        generateHash() {
-
+        get value(){
+            return this._value.toString();
         }
+    }
+
+    var dragee = null;
+    function drag(e){
+            event.dataTransfer.setData('text/plain',null);
+        dragee = this;
+    }
+
+    function dragover(e){
+        e.preventDefault();
     }
 
     exports.default = UIMaster;

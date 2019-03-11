@@ -1,14 +1,19 @@
-import { UIValue } from "./ui_value.mjs";
+//import { UIValue } from "./ui_value.mjs";
 
+
+import whind from "@candlefw/whind";
+import * as ui_productions from "./ui_productions.mjs";
 import {
     property_definitions,
     media_feature_definitions,
     types
 } from "../properties/property_and_type_definitions.mjs";
-
-import { CSSRule as R, CSSSelector as S } from "../nodes.mjs";
+//import { CSSRule as R, CSSSelector as S } from "../nodes.mjs";
 import { getPropertyParser } from "../properties/parser.mjs";
-import whind from "@candlefw/whind";
+
+
+const props = Object.assign({}, property_definitions);
+
 
 export default class UIMaster {
     constructor(css) {
@@ -36,11 +41,12 @@ export default class UIMaster {
             let rule_set = rule_sets[i];
 
             for(let i = 0; i < rule_set.rules.length; i++){
+
                 let rule = rule_set.rules[i];
                 console.log(i, rule)
 
                 if(!this.rule_map.get(rule))
-                    this.rule_map.set(rule, new UIRuleSet(rule, this));
+                    this.rule_map.set(rule, new UIPropSet(rule, this));
                 else {
                     this.rule_map.get(rule).rebuild(rule);
                 }
@@ -69,7 +75,6 @@ export default class UIMaster {
     }
 
     updatedCSS(css) {
-
         if(this.UPDATE_MATCHED) return void (this.UPDATE_MATCHED = false);      
         //this.element.innerHTML = "";
         this.build(css);
@@ -97,7 +102,7 @@ export default class UIMaster {
     }
 }
 
-class UIRuleSet {
+class UIPropSet {
     constructor(rule_body, parent) {
 
         this.parent = parent;
@@ -109,6 +114,22 @@ class UIRuleSet {
         this.selector_space = document.createElement("div");
         this.rule_space = document.createElement("div");
 
+        this.element.addEventListener("dragover", dragover)
+        this.element.addEventListener("drop", (e)=>{
+            
+            let parent = dragee.parent;
+            let value = dragee.value;
+            let type = dragee.type;
+
+            if(parent === this)
+                return;
+
+            this.addProp(type, value);
+            parent.removeProp(type)
+
+            //move the dragee's data into this ruleset
+        })
+
         this.element.appendChild(this.selector_space);
         this.element.appendChild(this.rule_space);
 
@@ -118,6 +139,9 @@ class UIRuleSet {
         this.ver = rule_body;
     }
 
+    addData(){
+
+    }
     addSelector(selector){
 
         //Add to list of selectors and update UI
@@ -145,19 +169,19 @@ class UIRuleSet {
 
         this.rule_body = rule_body;
 
-        let i = 0;
+        let i = -1;
 
         for (let a in rule_body.props) {
             let rule;
             
             //Reuse Existing Rule Bodies
-            if(i < this.rules.length){
-                rule = this.rules[i++];
+            if(++i < this.rules.length){
+                rule = this.rules[i];
             }else{
-                rule = new UIRule(a,  this);
+                rule = new UIProp(a,  this);
                 this.rules.push(rule);
             }
-        
+            console.log(rule_body.toString(0, a))
             rule.build(a, rule_body.toString(0, a));
             rule.mount(this.rule_space)
         }
@@ -166,12 +190,13 @@ class UIRuleSet {
     rebuild(rule_body){
         if(this.ver !== rule_body.ver){
             this.rule_space.innerHTML = "";
+            this.rules.length = 0;
             this.build(rule_body);
             this.ver = this.rule_body.ver;
         }
     }
 
-    update(rule_body) {
+    update(type, value) {
         
         let lexer = whind(value);
         
@@ -187,6 +212,20 @@ class UIRuleSet {
         }
 
         this.parent.update();
+    }
+
+    addProp(type, value){
+        this.update(type, value);
+        this.rebuild(this.rule_body);
+    }
+
+    removeProp(type){
+        const rule = this.rule_body;
+        if(rule.props[type]){
+            delete rule.props[type];
+            this.parent.update();
+            this.rebuild(this.rule_body);
+        }
     }
 
     generateHash() {}
@@ -207,6 +246,12 @@ class UISelectorPart{
         if (element instanceof HTMLElement)
             element.appendChild(this.element);
     }
+
+    unmount(){
+        if (this.element.parentElement)
+            this.element.parentElement.removeChild(this.element);
+    }
+
 }
 class UISelector {
     constructor(selector) {
@@ -235,37 +280,50 @@ class UISelector {
             this.element.parentElement.removeChild(this.element);
     }
 
+
+    rebuild(selector){
+        this.parts.forEach(e=>e.unmount())
+        this.parts.length = 0;
+        selector.v.forEach(e => {
+            this.parts.push(new UISelectorPart(e))
+        })
+        this.mount(this.parent);
+
+    }
+
     setupElement() {
         this.element = document.createElement("div");
         this.element.classList.add("cfw_css_ui_rule");
     }
-
-    generateHash() {
-
-    }
 }
 
-class UIRule {
+
+
+class UIProp {
     constructor(type,  parent) {
         this.hash = 0;
         this.type = type;
         this.parent = parent;
         this.setupElement();
+        this._value = null;
     }
 
     build(type, value){
         this.element.innerHTML = `${type}:`
-        this.value = new UIValue(type, value, this);
+        let pp = getPropertyParser(type, undefined, props, ui_productions);
+        this._value = pp.buildInput(1, whind(value));
+        this._value.parent = this;
+        this._value.mount(this.element);
     }
 
-    update(type, value) {
-        console.log(`${type}:${value};`)
-        this.parent.update(type, value);
+    update(value) {
+        console.log(`${this.type}:${value};`)
+        this.parent.update(this.type, value.toString());
     }
 
     mount(element) {
         if (element instanceof HTMLElement)
-            element.appendChild(this.element);
+            element.appendChild(this.element)
     }
 
     unmount() {
@@ -275,10 +333,22 @@ class UIRule {
 
     setupElement() {
         this.element = document.createElement("div");
+        this.element.setAttribute("draggable", "true")
         this.element.classList.add("cfw_css_ui_rule");
+        this.element.addEventListener("dragstart", drag.bind(this))
     }
 
-    generateHash() {
-
+    get value(){
+        return this._value.toString();
     }
+}
+
+var dragee = null;
+function drag(e){
+        event.dataTransfer.setData('text/plain',null)
+    dragee = this;
+}
+
+function dragover(e){
+    e.preventDefault();
 }

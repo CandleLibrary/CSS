@@ -120,6 +120,7 @@ class NR extends prod.NR {
     }
 
     buildInput(repeat = 1, lex) {
+        this.last_segment = null;
         let seg = new Segment;
         seg.start = this.start;
         seg.end = this.end;
@@ -251,7 +252,7 @@ class OR extends NR {
             //User "factorial" expression to isolate used results in a continous match. 
             while(true){
                 for (let i = 0, l = this.terms.length; i < l; i++) {
-                    if(this.terms[i].count == this.count) continue
+                    //if(this.terms[i].count == this.count) continue
 
                     if (this.terms[i].parseInput(lx, seg, true)) {
                         this.terms[i].count = this.count;
