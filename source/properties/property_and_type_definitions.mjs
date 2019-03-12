@@ -90,10 +90,8 @@ export const property_definitions = {
     font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
 
 
-    /*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping `normal|italic|oblique`, */
+    /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
     font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
-    absolute_size: `xx_small|x_small|small|medium|large|x_large|xx_large`,
-    relative_size: `larger|smaller`,
     font_wight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
 
     /* Text */
@@ -246,6 +244,10 @@ export const virtual_property_definitions = {
     alphavalue: '<number>',
 
     box: `border-box|padding-box|content-box`,
+
+    /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
+    absolute_size: `xx_small|x_small|small|medium|large|x_large|xx_large`,
+    relative_size: `larger|smaller`,
 
     /*https://www.w3.org/TR/css-backgrounds-3/*/
 

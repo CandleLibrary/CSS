@@ -1145,10 +1145,10 @@ class NR { //Notation Rule
             start = isNaN(this.r[0]) ? 1 : this.r[0],
             end = isNaN(this.r[1]) ? 1 : this.r[1];
 
-        return this.___(lx, rule, out_val, r, start, end);
+        return this.innerParser(lx, rule, out_val, r, start, end);
     }
 
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = true;
         for (let j = 0; j < end && !lx.END; j++) {
 
@@ -1175,7 +1175,7 @@ class NR { //Notation Rule
 }
 
 class AND extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
 
         outer:
             for (let j = 0; j < end && !lx.END; j++) {
@@ -1190,7 +1190,7 @@ class AND extends NR {
 }
 
 class OR extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
@@ -1212,7 +1212,7 @@ class OR extends NR {
 }
 
 class ONE_OF extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
@@ -1298,6 +1298,17 @@ class Segment {
         this.subs = [];
         this.setElement = null;
         this.changeEvent = null;
+    }
+
+    clearSegments(){
+        if(this.subs.length > 0){
+            this.val.innerHTML = "";
+            for(let i = 0; i < this.subs.length; i++){
+                let sub = this.subs[i];
+                sub.destroy();
+            }   
+            this.subs.length = 0;
+        }
     }
 
     replaceSub(old_sub, new_sub) {
@@ -1395,10 +1406,9 @@ class Segment {
 
         if (subs.length > 0) {
 
-            for (let i = 0; i < this.subs.length; i++) {
-                console.log(this.subs[i].element);
+            for (let i = 0; i < this.subs.length; i++) 
                 seg.addSub(this.subs[i]);
-            }
+            
         } else {
 
 
@@ -4170,10 +4180,8 @@ const property_definitions = {
     font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
 
 
-    /*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping `normal|italic|oblique`, */
+    /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
     font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
-    absolute_size: `xx_small|x_small|small|medium|large|x_large|xx_large`,
-    relative_size: `larger|smaller`,
     font_wight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
 
     /* Text */
@@ -4327,6 +4335,10 @@ const virtual_property_definitions = {
 
     box: `border-box|padding-box|content-box`,
 
+    /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
+    absolute_size: `xx_small|x_small|small|medium|large|x_large|xx_large`,
+    relative_size: `larger|smaller`,
+
     /*https://www.w3.org/TR/css-backgrounds-3/*/
 
     bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
@@ -4454,7 +4466,7 @@ class ValueTerm {
                 this.value.virtual = true;
             return this.value;
         }
-        //this.virtual = true;
+
     }
 
     seal(){}
@@ -4484,7 +4496,7 @@ class ValueTerm {
                 } else
                     r.v = (this.virtual) ? [rn.v] : rn.v;
 
-            if (this.prop)
+            if (this.prop && !this.virtual)
                 rule[this.prop] = rn.v;
 
             return true;
@@ -4499,7 +4511,7 @@ class ValueTerm {
                 } else
                     r.v = v;
 
-            if (this.prop)
+            if (this.prop && !this.virtual)
                 rule[this.prop] = v;
 
             return true;
@@ -4537,7 +4549,7 @@ class LiteralTerm {
                 } else
                     r.v = v;
 
-            if (this.prop)
+            if (this.prop  && !this.virtual)
                 rule[this.prop] = v;
 
             return true;
@@ -4853,7 +4865,7 @@ class AND$1 extends NR$1 {
             
             slot.innerHTML = this.value;
             if (slot) {
-                slot.reset();
+                slot.clearSegments();
                 this.default(slot);
                 slot.update();
             } else {
@@ -4907,7 +4919,7 @@ class OR$1 extends NR$1 {
             
             slot.innerHTML = this.value;
             if (slot) {
-                slot.reset();
+                slot.clearSegments();
                 this.default(slot);
                 slot.update();
             } else {
@@ -4997,7 +5009,6 @@ class ONE_OF$1 extends NR$1 {
     }
 
     list(ele, slot) {
-
         let name = (this.name) ? this.name.replace(/_/g, " ") : this.terms.reduce((r, t) => r += " | " + t.name, "");
         let element = document.createElement("div");
         element.classList.add("css_ui_selection");
@@ -5005,10 +5016,10 @@ class ONE_OF$1 extends NR$1 {
         ele.appendChild(element);
 
         element.addEventListener("click", e => {
-            
+            //debugger
             slot.innerHTML = this.value;
             if (slot) {
-                slot.reset();
+                slot.clearSegments();
                 this.default(slot);
                 slot.update();
             } else {
@@ -5113,7 +5124,9 @@ function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definition
         IS_VIRTUAL.is = true;
 
         if (typeof(prop) == "string"){
+            console.log(property_name, prop, IS_VIRTUAL,definitions.__virtual);
             prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
+            prop.virtual = true;
             prop.name = property_name;
         }
 
@@ -5320,81 +5333,101 @@ function _Jux_(productions, term, new_term = null) {
     return new_term;
 }
 
-//import { UIValue } from "./ui_value.mjs";
+class UISelectorPart{
+    constructor(name){
+        this.txt = name;
 
+        this.element = document.createElement("span");
+        this.element.classList.add("selector");
+        this.element.innerHTML = this.txt;
+
+    }
+
+    mount(element){
+        if (element instanceof HTMLElement)
+            element.appendChild(this.element);
+    }
+
+    unmount(){
+        if (this.element.parentElement)
+            this.element.parentElement.removeChild(this.element);
+    }
+
+}
+
+class UISelector {
+    constructor(selector) {
+        this.selector = selector;
+        this.parts = [];
+        selector.v.forEach(e => {
+            this.parts.push(new UISelectorPart(e));
+        });
+        this.text = selector.v.join();
+    }
+
+    update(type, value) {
+        console.log(`${type}:${value};`);
+        this.parent.update(type, value);
+    }
+
+    mount(parent) {
+        this.parent = parent;
+        let selector_div = parent.selector_space;
+
+        this.parts.forEach(e=>e.mount(selector_div));
+    }
+
+    unmount() {
+        if (this.element.parentElement)
+            this.element.parentElement.removeChild(this.element);
+    }
+
+
+    rebuild(selector){
+        this.parts.forEach(e=>e.unmount());
+        this.parts.length = 0;
+        selector.v.forEach(e => {
+            this.parts.push(new UISelectorPart(e));
+        });
+        this.mount(this.parent);
+
+    }
+
+    setupElement() {
+        this.element = document.createElement("div");
+        this.element.classList.add("cfw_css_ui_rule");
+    }
+}
 
 const props = Object.assign({}, property_definitions);
 
+var dragee = null;
 
-class UIMaster {
-    constructor(css) {
-        css.addObserver(this);
-        this.css = css;
-        this.rule_sets = [];
-        this.selectors = [];
-        this.element = document.createElement("div");
+function dragstart(e){
+    event.dataTransfer.setData('text/plain',null);
+    UIProp.dragee = this;
+}
 
-
-        this.rule_map = new Map();
+class UIProp {
+    constructor(type,  parent) {
+        this.hash = 0;
+        this.type = type;
+        this.parent = parent;
+        this.setupElement();
+        this._value = null;
     }
 
-    // Builds out the UI elements from collection of rule bodies and associated selector groups. 
-    // css - A CandleFW_CSS object. 
-    // meta - internal 
-    build(css = this.css) {
-
-        //Extract rule bodies and set as keys for the rule_map. 
-        //Any existing mapped body that does not have a matching rule should be removed. 
-        
-        const rule_sets = css.children;
-
-        for(let i= 0; i < rule_sets.length; i++){
-            let rule_set = rule_sets[i];
-
-            for(let i = 0; i < rule_set.rules.length; i++){
-
-                let rule = rule_set.rules[i];
-                console.log(i, rule);
-
-                if(!this.rule_map.get(rule))
-                    this.rule_map.set(rule, new UIPropSet(rule, this));
-                else {
-                    this.rule_map.get(rule).rebuild(rule);
-                }
-            }
-
-        
-            const selector_array = rule_set._sel_a_;
-
-            for(let i = 0; i < selector_array.length; i++){
-                let selector = selector_array[i];
-                let rule_ref = selector.r;
-
-                let rule_ui = this.rule_map.get(rule_ref);
-
-                rule_ui.addSelector(selector);
-            }
-        }
-
-
-        this.css = css;
-
-        let children = css.children;
-
-        this.rule_sets = [];
-        this.selectors = [];
+    build(type, value){
+        this.element.innerHTML = `${type}:`;
+        let pp = getPropertyParser(type, undefined, props, ui_productions);
+        this._value = pp.buildInput(1, whind$1(value));
+        this._value.parent = this;
+        this._value.mount(this.element);
     }
 
-    updatedCSS(css) {
-        if(this.UPDATE_MATCHED) return void (this.UPDATE_MATCHED = false);      
-        //this.element.innerHTML = "";
-        this.build(css);
-        //this.render();
-    }
-
-    render() {
-        for (let i = 0; i < this.rule_sets.length; i++)
-            this.rule_sets.render(this.element);
+    update(value) {
+        console.log(`${this.type}:${value};`);
+        this.parent.update(this.type, value.toString());
     }
 
     mount(element) {
@@ -5407,13 +5440,20 @@ class UIMaster {
             this.element.parentElement.removeChild(this.element);
     }
 
-    update(){
-        this.UPDATE_MATCHED = true;
-    	this.css.updated();
+    setupElement() {
+        this.element = document.createElement("div");
+        this.element.setAttribute("draggable", "true");
+        this.element.classList.add("cfw_css_ui_rule");
+        this.element.addEventListener("dragstart", dragstart.bind(this));
+    }
+
+    get value(){
+        return this._value.toString();
     }
 }
 
-class UIPropSet {
+const props$1 = Object.assign({}, property_definitions);
+class UIRuleSet {
     constructor(rule_body, parent) {
 
         this.parent = parent;
@@ -5428,9 +5468,10 @@ class UIPropSet {
         this.element.addEventListener("dragover", dragover);
         this.element.addEventListener("drop", (e)=>{
             
-            let parent = dragee.parent;
-            let value = dragee.value;
-            let type = dragee.type;
+            let prop = UIProp.dragee;
+            let parent = prop.parent;
+            let value = prop.value;
+            let type = prop.type;
 
             if(parent === this)
                 return;
@@ -5527,6 +5568,9 @@ class UIPropSet {
 
     addProp(type, value){
         this.update(type, value);
+        //Increment the version of the rule_body
+        this.rule_body.ver++;
+       
         this.rebuild(this.rule_body);
     }
 
@@ -5534,6 +5578,11 @@ class UIPropSet {
         const rule = this.rule_body;
         if(rule.props[type]){
             delete rule.props[type];
+
+
+            //Increment the version of the rule_body
+            this.rule_body.ver++;
+
             this.parent.update();
             this.rebuild(this.rule_body);
         }
@@ -5542,94 +5591,82 @@ class UIPropSet {
     generateHash() {}
 }
 
-
-class UISelectorPart{
-    constructor(name){
-        this.txt = name;
-
-        this.element = document.createElement("span");
-        this.element.classList.add("selector");
-        this.element.innerHTML = this.txt;
-
-    }
-
-    mount(element){
-        if (element instanceof HTMLElement)
-            element.appendChild(this.element);
-    }
-
-    unmount(){
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
-    }
-
+function dragover(e){
+    e.preventDefault();
 }
-class UISelector {
-    constructor(selector) {
-        this.selector = selector;
-        this.parts = [];
-        selector.v.forEach(e => {
-            this.parts.push(new UISelectorPart(e));
-        });
-        this.text = selector.v.join();
-    }
 
-    update(type, value) {
-        console.log(`${type}:${value};`);
-        this.parent.update(type, value);
-    }
+//import { UIValue } from "./ui_value.mjs";
 
-    mount(parent) {
-        this.parent = parent;
-        let selector_div = parent.selector_space;
+const props$2 = Object.assign({}, property_definitions);
 
-        this.parts.forEach(e=>e.mount(selector_div));
-    }
-
-    unmount() {
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
-    }
-
-
-    rebuild(selector){
-        this.parts.forEach(e=>e.unmount());
-        this.parts.length = 0;
-        selector.v.forEach(e => {
-            this.parts.push(new UISelectorPart(e));
-        });
-        this.mount(this.parent);
-
-    }
-
-    setupElement() {
+class UIMaster {
+    constructor(css) {
+        css.addObserver(this);
+        this.css = css;
+        this.rule_sets = [];
+        this.selectors = [];
         this.element = document.createElement("div");
-        this.element.classList.add("cfw_css_ui_rule");
-    }
-}
 
 
-
-class UIProp {
-    constructor(type,  parent) {
-        this.hash = 0;
-        this.type = type;
-        this.parent = parent;
-        this.setupElement();
-        this._value = null;
+        this.rule_map = new Map();
     }
 
-    build(type, value){
-        this.element.innerHTML = `${type}:`;
-        let pp = getPropertyParser(type, undefined, props, ui_productions);
-        this._value = pp.buildInput(1, whind$1(value));
-        this._value.parent = this;
-        this._value.mount(this.element);
+    // Builds out the UI elements from collection of rule bodies and associated selector groups. 
+    // css - A CandleFW_CSS object. 
+    // meta - internal 
+    build(css = this.css) {
+
+        //Extract rule bodies and set as keys for the rule_map. 
+        //Any existing mapped body that does not have a matching rule should be removed. 
+        
+        const rule_sets = css.children;
+
+        for(let i= 0; i < rule_sets.length; i++){
+            let rule_set = rule_sets[i];
+
+            for(let i = 0; i < rule_set.rules.length; i++){
+
+                let rule = rule_set.rules[i];
+
+                if(!this.rule_map.get(rule))
+                    this.rule_map.set(rule, new UIRuleSet(rule, this));
+                else {
+                    this.rule_map.get(rule).rebuild(rule);
+                }
+            }
+
+        
+            const selector_array = rule_set._sel_a_;
+
+            for(let i = 0; i < selector_array.length; i++){
+                let selector = selector_array[i];
+                let rule_ref = selector.r;
+
+                let rule_ui = this.rule_map.get(rule_ref);
+
+                rule_ui.addSelector(selector);
+            }
+        }
+
+
+        this.css = css;
+
+        let children = css.children;
+
+        this.rule_sets = [];
+        this.selectors = [];
     }
 
-    update(value) {
-        console.log(`${this.type}:${value};`);
-        this.parent.update(this.type, value.toString());
+    updatedCSS(css) {
+        if(this.UPDATE_MATCHED) return void (this.UPDATE_MATCHED = false);      
+        //this.element.innerHTML = "";
+        this.build(css);
+        //this.render();
+    }
+
+    render() {
+        for (let i = 0; i < this.rule_sets.length; i++)
+            this.rule_sets.render(this.element);
     }
 
     mount(element) {
@@ -5642,26 +5679,10 @@ class UIProp {
             this.element.parentElement.removeChild(this.element);
     }
 
-    setupElement() {
-        this.element = document.createElement("div");
-        this.element.setAttribute("draggable", "true");
-        this.element.classList.add("cfw_css_ui_rule");
-        this.element.addEventListener("dragstart", drag.bind(this));
+    update(){
+        this.UPDATE_MATCHED = true;
+    	this.css.updated();
     }
-
-    get value(){
-        return this._value.toString();
-    }
-}
-
-var dragee = null;
-function drag(e){
-        event.dataTransfer.setData('text/plain',null);
-    dragee = this;
-}
-
-function dragover(e){
-    e.preventDefault();
 }
 
 exports.default = UIMaster;

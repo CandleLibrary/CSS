@@ -4073,10 +4073,8 @@ const property_definitions = {
     font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
 
 
-    /*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping `normal|italic|oblique`, */
+    /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
     font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
-    absolute_size: `xx_small|x_small|small|medium|large|x_large|xx_large`,
-    relative_size: `larger|smaller`,
     font_wight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
 
     /* Text */
@@ -4229,6 +4227,10 @@ const virtual_property_definitions = {
     alphavalue: '<number>',
 
     box: `border-box|padding-box|content-box`,
+
+    /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
+    absolute_size: `xx_small|x_small|small|medium|large|x_large|xx_large`,
+    relative_size: `larger|smaller`,
 
     /*https://www.w3.org/TR/css-backgrounds-3/*/
 
@@ -4533,10 +4535,10 @@ class NR { //Notation Rule
             start = isNaN(this.r[0]) ? 1 : this.r[0],
             end = isNaN(this.r[1]) ? 1 : this.r[1];
 
-        return this.___(lx, rule, out_val, r, start, end);
+        return this.innerParser(lx, rule, out_val, r, start, end);
     }
 
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = true;
         for (let j = 0; j < end && !lx.END; j++) {
 
@@ -4563,7 +4565,7 @@ class NR { //Notation Rule
 }
 
 class AND extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
 
         outer:
             for (let j = 0; j < end && !lx.END; j++) {
@@ -4578,7 +4580,7 @@ class AND extends NR {
 }
 
 class OR extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
@@ -4600,7 +4602,7 @@ class OR extends NR {
 }
 
 class ONE_OF extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
@@ -4648,7 +4650,7 @@ class ValueTerm {
                 this.value.virtual = true;
             return this.value;
         }
-        //this.virtual = true;
+
     }
 
     seal(){}
@@ -4678,7 +4680,7 @@ class ValueTerm {
                 } else
                     r.v = (this.virtual) ? [rn.v] : rn.v;
 
-            if (this.prop)
+            if (this.prop && !this.virtual)
                 rule[this.prop] = rn.v;
 
             return true;
@@ -4693,7 +4695,7 @@ class ValueTerm {
                 } else
                     r.v = v;
 
-            if (this.prop)
+            if (this.prop && !this.virtual)
                 rule[this.prop] = v;
 
             return true;
@@ -4731,7 +4733,7 @@ class LiteralTerm {
                 } else
                     r.v = v;
 
-            if (this.prop)
+            if (this.prop  && !this.virtual)
                 rule[this.prop] = v;
 
             return true;
@@ -4785,7 +4787,9 @@ function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definition
         IS_VIRTUAL.is = true;
 
         if (typeof(prop) == "string"){
+            console.log(property_name, prop, IS_VIRTUAL,definitions.__virtual);
             prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
+            prop.virtual = true;
             prop.name = property_name;
         }
 

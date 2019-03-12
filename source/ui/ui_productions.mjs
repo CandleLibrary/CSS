@@ -161,7 +161,7 @@ class AND extends NR {
             
             slot.innerHTML = this.value;
             if (slot) {
-                slot.reset();
+                slot.clearSegments();
                 this.default(slot);
                 slot.update();
             } else {
@@ -215,7 +215,7 @@ class OR extends NR {
             
             slot.innerHTML = this.value;
             if (slot) {
-                slot.reset();
+                slot.clearSegments();
                 this.default(slot);
                 slot.update();
             } else {
@@ -305,7 +305,6 @@ class ONE_OF extends NR {
     }
 
     list(ele, slot) {
-
         let name = (this.name) ? this.name.replace(/_/g, " ") : this.terms.reduce((r, t) => r += " | " + t.name, "")
         let element = document.createElement("div")
         element.classList.add("css_ui_selection");
@@ -313,10 +312,10 @@ class ONE_OF extends NR {
         ele.appendChild(element)
 
         element.addEventListener("click", e => {
-            
+            //debugger
             slot.innerHTML = this.value;
             if (slot) {
-                slot.reset();
+                slot.clearSegments();
                 this.default(slot);
                 slot.update();
             } else {

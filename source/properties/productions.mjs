@@ -41,10 +41,10 @@ class NR { //Notation Rule
             start = isNaN(this.r[0]) ? 1 : this.r[0],
             end = isNaN(this.r[1]) ? 1 : this.r[1];
 
-        return this.___(lx, rule, out_val, r, start, end);
+        return this.innerParser(lx, rule, out_val, r, start, end);
     }
 
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = true;
         for (let j = 0; j < end && !lx.END; j++) {
 
@@ -71,7 +71,7 @@ class NR { //Notation Rule
 }
 
 class AND extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
 
         outer:
             for (let j = 0; j < end && !lx.END; j++) {
@@ -86,7 +86,7 @@ class AND extends NR {
 }
 
 class OR extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
@@ -108,7 +108,7 @@ class OR extends NR {
 }
 
 class ONE_OF extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {

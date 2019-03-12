@@ -34,7 +34,9 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
         IS_VIRTUAL.is = true;
 
         if (typeof(prop) == "string"){
+            console.log(property_name, prop, IS_VIRTUAL,definitions.__virtual)
             prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
+            prop.virtual = true;
             prop.name = property_name;
         }
 

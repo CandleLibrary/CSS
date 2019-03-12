@@ -62,6 +62,17 @@ export class Segment {
         this.changeEvent = null;
     }
 
+    clearSegments(){
+        if(this.subs.length > 0){
+            this.val.innerHTML = "";
+            for(let i = 0; i < this.subs.length; i++){
+                let sub = this.subs[i];
+                sub.destroy();
+            }   
+            this.subs.length = 0;
+        }
+    }
+
     replaceSub(old_sub, new_sub) {
         for (let i = 0; i < this.subs.length; i++) {
             if (this.subs[i] == old_sub) {
@@ -157,10 +168,9 @@ export class Segment {
 
         if (subs.length > 0) {
 
-            for (let i = 0; i < this.subs.length; i++) {
-                console.log(this.subs[i].element)
+            for (let i = 0; i < this.subs.length; i++) 
                 seg.addSub(this.subs[i]);
-            }
+            
         } else {
 
 

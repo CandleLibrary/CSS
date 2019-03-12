@@ -11,13 +11,14 @@ let start = async function() {
 
 
     input.value =
-        `.test, div {
-        border : 1px solid red;
-        border-radius:2px;   
-	}
-    .test {
-        font-size:9px
-    }`
+`.test, div {
+    border : thin solid red;
+    border-radius:2px;   
+}
+
+.test {
+    font-size:larger
+}`
 
 	const css_ = await css.CSSParser(input.value)
     const uic = new ui.default(css_)
