@@ -120,6 +120,7 @@ class NR extends prod.NR {
     }
 
     buildInput(repeat = 1, lex) {
+        this.last_segment = null;
         let seg = new Segment;
         seg.start = this.start;
         seg.end = this.end;
@@ -160,7 +161,7 @@ class AND extends NR {
             
             slot.innerHTML = this.value;
             if (slot) {
-                slot.reset();
+                slot.clearSegments();
                 this.default(slot);
                 slot.update();
             } else {
@@ -214,7 +215,7 @@ class OR extends NR {
             
             slot.innerHTML = this.value;
             if (slot) {
-                slot.reset();
+                slot.clearSegments();
                 this.default(slot);
                 slot.update();
             } else {
@@ -251,7 +252,7 @@ class OR extends NR {
             //User "factorial" expression to isolate used results in a continous match. 
             while(true){
                 for (let i = 0, l = this.terms.length; i < l; i++) {
-                    if(this.terms[i].count == this.count) continue
+                    //if(this.terms[i].count == this.count) continue
 
                     if (this.terms[i].parseInput(lx, seg, true)) {
                         this.terms[i].count = this.count;
@@ -304,7 +305,6 @@ class ONE_OF extends NR {
     }
 
     list(ele, slot) {
-
         let name = (this.name) ? this.name.replace(/_/g, " ") : this.terms.reduce((r, t) => r += " | " + t.name, "")
         let element = document.createElement("div")
         element.classList.add("css_ui_selection");
@@ -312,10 +312,10 @@ class ONE_OF extends NR {
         ele.appendChild(element)
 
         element.addEventListener("click", e => {
-            
+            //debugger
             slot.innerHTML = this.value;
             if (slot) {
-                slot.reset();
+                slot.clearSegments();
                 this.default(slot);
                 slot.update();
             } else {

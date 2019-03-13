@@ -11,9 +11,14 @@ let start = async function() {
 
 
     input.value =
-        `.test {
-        border : 1px solid red;
-	}`
+`.test, div {
+    border : thin solid red;
+    border-radius:2px;   
+}
+
+.test {
+    font-size:larger
+}`
 
 	const css_ = await css.CSSParser(input.value)
     const uic = new ui.default(css_)
@@ -26,8 +31,6 @@ let start = async function() {
             input.value = css_.toString();
         }
     });
-
-
 }
 
 window.addEventListener("load", start)

@@ -4123,10 +4123,8 @@ const property_definitions = {
     font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
 
 
-    /*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping `normal|italic|oblique`, */
+    /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
     font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
-    absolute_size: `xx_small|x_small|small|medium|large|x_large|xx_large`,
-    relative_size: `larger|smaller`,
     font_wight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
 
     /* Text */
@@ -4279,6 +4277,10 @@ const virtual_property_definitions = {
     alphavalue: '<number>',
 
     box: `border-box|padding-box|content-box`,
+
+    /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
+    absolute_size: `xx_small|x_small|small|medium|large|x_large|xx_large`,
+    relative_size: `larger|smaller`,
 
     /*https://www.w3.org/TR/css-backgrounds-3/*/
 
@@ -4442,6 +4444,23 @@ class CSSSelector {
         }
     }
 
+    removeRule(){
+        if(this.r)
+            this.r.decrementRef();
+
+        this.r = null;
+    }
+
+    addRule(rule = null){
+        
+        this.removeRule();
+
+        if(rule !== null)
+            rule.incrementRef();
+
+        this.r = rule;
+    }
+
 }
 
 /**
@@ -4458,6 +4477,24 @@ class CSSRule {
         this.props = {};
         this.LOADED = false;
         this.root = root;
+
+        //Reference Counting
+        this.refs = 0;
+
+        //Versioning
+        this.ver = 0;
+    }
+
+    incrementRef(){
+        this.refs++;
+    }
+
+    decrementRef(){
+        this.refs--;
+        if(this.refs <= 0){
+            //TODO: remove from rules entries.
+            debugger
+        }
     }
 
     addProperty(prop, rule) {
@@ -4498,6 +4535,7 @@ class CSSRule {
             for (let n in rule.props)
                 this.props[n] = rule.props[n];
             this.LOADED = true;
+            this.ver++;
         }
     }
 
@@ -4547,10 +4585,10 @@ class NR { //Notation Rule
             start = isNaN(this.r[0]) ? 1 : this.r[0],
             end = isNaN(this.r[1]) ? 1 : this.r[1];
 
-        return this.___(lx, rule, out_val, r, start, end);
+        return this.innerParser(lx, rule, out_val, r, start, end);
     }
 
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = true;
         for (let j = 0; j < end && !lx.END; j++) {
 
@@ -4577,7 +4615,7 @@ class NR { //Notation Rule
 }
 
 class AND extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
 
         outer:
             for (let j = 0; j < end && !lx.END; j++) {
@@ -4592,7 +4630,7 @@ class AND extends NR {
 }
 
 class OR extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
@@ -4614,7 +4652,7 @@ class OR extends NR {
 }
 
 class ONE_OF extends NR {
-    ___(lx, rule, out_val, r, start, end) {
+    innerParser(lx, rule, out_val, r, start, end) {
         let bool = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
@@ -4662,7 +4700,7 @@ class ValueTerm {
                 this.value.virtual = true;
             return this.value;
         }
-        //this.virtual = true;
+
     }
 
     seal(){}
@@ -4692,7 +4730,7 @@ class ValueTerm {
                 } else
                     r.v = (this.virtual) ? [rn.v] : rn.v;
 
-            if (this.prop)
+            if (this.prop && !this.virtual)
                 rule[this.prop] = rn.v;
 
             return true;
@@ -4707,7 +4745,7 @@ class ValueTerm {
                 } else
                     r.v = v;
 
-            if (this.prop)
+            if (this.prop && !this.virtual)
                 rule[this.prop] = v;
 
             return true;
@@ -4745,7 +4783,7 @@ class LiteralTerm {
                 } else
                     r.v = v;
 
-            if (this.prop)
+            if (this.prop  && !this.virtual)
                 rule[this.prop] = v;
 
             return true;
@@ -4799,7 +4837,9 @@ function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definition
         IS_VIRTUAL.is = true;
 
         if (typeof(prop) == "string"){
+            console.log(property_name, prop, IS_VIRTUAL,definitions.__virtual);
             prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
+            prop.virtual = true;
             prop.name = property_name;
         }
 
@@ -5037,16 +5077,20 @@ class _mediaSelectorPart_ {
 }
 
 class CSSRuleBody {
+    
     constructor() {
+
+        // 
         this.media_selector = null;
-        /**
-         * All selectors indexed by their value
-         */
+        
+        // All selectors indexed by their value
         this._selectors_ = {};
-        /**
-         * All selectors in order of appearance
-         */
+
+        //All selectors in order of appearance
         this._sel_a_ = [];
+
+        //
+        this.rules = []; 
     }
 
     _applyProperties_(lexer, rule) {
@@ -5134,11 +5178,11 @@ class CSSRuleBody {
         return true;
     }
 
-    /**
-     * Retrieves the set of rules from all matching selectors for an element.
-     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
-     * @public
-     */
+    
+    /* 
+        Retrieves the set of rules from all matching selectors for an element.
+            element HTMLElement - An DOM element that should be matched to applicable rules. 
+    */
     getApplicableRules(element, rule = new CSSRule(), win = window) {
 
         if (!this.matchMedia(win)) return;
@@ -5334,6 +5378,7 @@ class CSSRuleBody {
                     break;
             }
         }
+
         selector_array.unshift(sel);
         selectors_array.push(selector_array);
         selectors.push(lexer.s(start).trim().slice(0));
@@ -5352,8 +5397,9 @@ class CSSRuleBody {
         if (root && !this.par) root.push(this);
 
         return new Promise((res, rej) => {
-            let selectors = [],
-                l = 0;
+            
+            let selectors = [], l = 0;
+            
             while (!lexer.END) {
                 switch (lexer.ch) {
                     case "@":
@@ -5411,7 +5457,7 @@ class CSSRuleBody {
                                      * We use that promise to hook into the existing promise returned by CSSRoot#parse,
                                      * executing a new parse sequence on the fetched string data using the existing CSSRoot instance,
                                      * and then resume the current parse sequence.
-                                     * @todo Conform to CSS spec and only parse if @import is at the top of the CSS string.
+                                     * @todo Conform to CSS spec and only parse if @import is at the head of the CSS string.
                                      */
                                     return type.fetchText().then((str) =>
                                         //Successfully fetched content, proceed to parse in the current root.
@@ -5434,11 +5480,18 @@ class CSSRuleBody {
                         lexer.next();
                         return res(this);
                     case "{":
+                        //Check to see if a rule body for the selector exists already.
+                        let MERGED = false;
                         let rule = new CSSRule(this);
                         this._applyProperties_(lexer.next(), rule);
                         for (let i = -1, sel = null; sel = selectors[++i];)
-                            if (sel.r) sel.r.merge(rule);
-                            else sel.r = rule;
+                            if (sel.r) {sel.r.merge(rule); MERGED = true;}
+                            else sel.addRule(rule);
+
+                        if(!MERGED){
+                            this.rules.push(rule);
+                        }
+                            
                         selectors.length = l = 0;
                         continue;
                 }
@@ -5521,7 +5574,9 @@ class CSSRuleBody {
             if (!this._selectors_[selector.id]) {
                 this._selectors_[selector.id] = selector;
                 this._sel_a_.push(selector);
-                selector.r = new CSSRule(this);
+                const rule = new CSSRule(this);
+                selector.addRule(rule);
+                this.rules.push(rule);
             } else
                 selector = this._selectors_[selector.id];
 

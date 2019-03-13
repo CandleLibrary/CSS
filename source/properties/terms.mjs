@@ -28,7 +28,7 @@ class ValueTerm {
                 this.value.virtual = true;
             return this.value;
         }
-        //this.virtual = true;
+
     }
 
     seal(){}
@@ -58,7 +58,7 @@ class ValueTerm {
                 } else
                     r.v = (this.virtual) ? [rn.v] : rn.v;
 
-            if (this.prop)
+            if (this.prop && !this.virtual)
                 rule[this.prop] = rn.v;
 
             return true;
@@ -73,7 +73,7 @@ class ValueTerm {
                 } else
                     r.v = v;
 
-            if (this.prop)
+            if (this.prop && !this.virtual)
                 rule[this.prop] = v;
 
             return true;
@@ -111,7 +111,7 @@ class LiteralTerm {
                 } else
                     r.v = v;
 
-            if (this.prop)
+            if (this.prop  && !this.virtual)
                 rule[this.prop] = v;
 
             return true;
