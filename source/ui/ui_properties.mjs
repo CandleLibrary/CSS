@@ -36,7 +36,6 @@ export default class UIProp {
     }
 
     update(value) {
-        console.log(`${this.type}:${value};`)
         this.parent.update(this.type, value.toString());
     }
 

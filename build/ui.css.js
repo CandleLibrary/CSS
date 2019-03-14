@@ -5332,48 +5332,101 @@ ${is_iws}`;
         return new_term;
     }
 
-    class UISelectorPart{
-        constructor(name){
-            this.txt = name;
+    function dragstart(e){
+        event.dataTransfer.setData('text/plain',null);
+        UISelectorPart.dragee = this;
+    }
 
+    function dragover(e){
+        e.preventDefault();
+    }
+
+    class UISelectorPart{
+
+        constructor(name, index){
+            this.txt = name;
+            this.index = index;
             this.element = document.createElement("span");
             this.element.classList.add("selector");
             this.element.innerHTML = this.txt;
-
+            this.element.setAttribute("draggable", true);
+            this.parent = null;
+            this.element.addEventListener("dragstart",dragstart.bind(this));
         }
 
-        mount(element){
+        mount(element, parent){
+            this.parent = parent;
             if (element instanceof HTMLElement)
                 element.appendChild(this.element);
         }
 
         unmount(){
+            this.parent = null;
             if (this.element.parentElement)
                 this.element.parentElement.removeChild(this.element);
         }
 
+        compare(other_part){
+            return other_part.txt === this.txt
+        }
+
+        toString(){
+            return this.txt;
+        }
+
+    }
+
+
+    function drop(e){
+        if(UISelectorPart.dragee){
+            const part = UISelectorPart.dragee;
+            const parent = part.parent;
+
+            loop:
+            while(parent != this){
+
+                //Ignore if part is already present in the selector area
+                for(let i = 0; i < this.parts.length; i++)
+                    if(this.parts[i].compare(part)) break loop;
+
+                part.unmount();
+                let d = parent.remove(part);
+                this.add(part, ...d);
+                part.mount(this.element, this);
+                break;
+            }
+        }
+        UISelectorPart.dragee = null;
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
     }
 
     class UISelector {
         constructor(selector) {
             this.selector = selector;
             this.parts = [];
-            selector.v.forEach(e => {
-                this.parts.push(new UISelectorPart(e));
+            
+            selector.v.forEach((e, i) => {
+                this.parts.push(new UISelectorPart(e, i));
             });
+            
             this.text = selector.v.join();
         }
 
-        update(type, value) {
-            console.log(`${type}:${value};`);
-            this.parent.update(type, value);
+        update() {
+            this.parent.update();
         }
 
         mount(parent) {
+            this.element = parent.selector_space;
+            this.element.ondrop = drop.bind(this);
+            this.element.ondragover = dragover;
+            
             this.parent = parent;
-            let selector_div = parent.selector_space;
 
-            this.parts.forEach(e=>e.mount(selector_div));
+            this.parts.forEach(e=>e.mount(this.element, this));
         }
 
         unmount() {
@@ -5381,12 +5434,29 @@ ${is_iws}`;
                 this.element.parentElement.removeChild(this.element);
         }
 
+        remove(part){
+            let index = part.index;
+            this.parts.splice(index,1);
+            this.parts.forEach((e,i)=>e.index = i);
+            const a = this.selector.a.splice(index,1)[0];
+            const v = this.selector.v.splice(index,1)[0];
+            this.update();
+            return [a,v]
+        }
+
+        add(part, a, v){
+            this.parts.push(part);
+            this.selector.a.push(a);
+            this.selector.v.push(v);
+            this.parts.forEach((e,i)=>e.index = i);
+            this.update();
+        }
 
         rebuild(selector){
-            this.parts.forEach(e=>e.unmount());
+            this.parts.forEach(e=>e.unmount(false));
             this.parts.length = 0;
-            selector.v.forEach(e => {
-                this.parts.push(new UISelectorPart(e));
+            selector.v.forEach((e,i) => {
+                this.parts.push(new UISelectorPart(e, i));
             });
             this.mount(this.parent);
 
@@ -5402,7 +5472,7 @@ ${is_iws}`;
 
     var dragee = null;
 
-    function dragstart(e){
+    function dragstart$1(e){
         event.dataTransfer.setData('text/plain',null);
         UIProp.dragee = this;
     }
@@ -5425,7 +5495,6 @@ ${is_iws}`;
         }
 
         update(value) {
-            console.log(`${this.type}:${value};`);
             this.parent.update(this.type, value.toString());
         }
 
@@ -5443,7 +5512,7 @@ ${is_iws}`;
             this.element = document.createElement("div");
             this.element.setAttribute("draggable", "true");
             this.element.classList.add("cfw_css_ui_rule");
-            this.element.addEventListener("dragstart", dragstart.bind(this));
+            this.element.addEventListener("dragstart", dragstart$1.bind(this));
         }
 
         get value(){
@@ -5464,7 +5533,7 @@ ${is_iws}`;
             this.selector_space = document.createElement("div");
             this.rule_space = document.createElement("div");
 
-            this.element.addEventListener("dragover", dragover);
+            this.element.addEventListener("dragover", dragover$1);
             this.element.addEventListener("drop", (e)=>{
                 
                 let prop = UIProp.dragee;
@@ -5493,6 +5562,13 @@ ${is_iws}`;
         addData(){
 
         }
+
+        updateSelectors(obj){
+            if(obj.parts.length < 1){
+                //remove selector from the rule set.
+            }
+        }
+
         addSelector(selector){
 
             //Add to list of selectors and update UI
@@ -5548,18 +5624,21 @@ ${is_iws}`;
         }
 
         update(type, value) {
-            
-            let lexer = whind$1(value);
-            
-            const IS_VIRTUAL = {
-                is: false
-            };
-            
-            const parser = getPropertyParser(type, IS_VIRTUAL, property_definitions);
-            const rule = this.rule_body;
-            if (parser && !IS_VIRTUAL.is) {
-                if (!rule.props) rule.props = {};
-                parser.parse(lexer, rule.props);
+
+            if(type && value){
+
+                let lexer = whind$1(value);
+                
+                const IS_VIRTUAL = {
+                    is: false
+                };
+                
+                const parser = getPropertyParser(type, IS_VIRTUAL, property_definitions);
+                const rule = this.rule_body;
+                if (parser && !IS_VIRTUAL.is) {
+                    if (!rule.props) rule.props = {};
+                    parser.parse(lexer, rule.props);
+                }
             }
 
             this.parent.update();
@@ -5590,7 +5669,7 @@ ${is_iws}`;
         generateHash() {}
     }
 
-    function dragover(e){
+    function dragover$1(e){
         e.preventDefault();
     }
 

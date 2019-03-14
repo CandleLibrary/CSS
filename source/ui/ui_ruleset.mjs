@@ -54,6 +54,13 @@ export default class UIRuleSet {
     addData(){
 
     }
+
+    updateSelectors(obj){
+        if(obj.parts.length < 1){
+            //remove selector from the rule set.
+        }
+    }
+
     addSelector(selector){
 
         //Add to list of selectors and update UI
@@ -109,18 +116,21 @@ export default class UIRuleSet {
     }
 
     update(type, value) {
-        
-        let lexer = whind(value);
-        
-        const IS_VIRTUAL = {
-            is: false
-        };
-        
-        const parser = getPropertyParser(type, IS_VIRTUAL, property_definitions);
-        const rule = this.rule_body;
-        if (parser && !IS_VIRTUAL.is) {
-            if (!rule.props) rule.props = {};
-            parser.parse(lexer, rule.props);
+
+        if(type && value){
+
+            let lexer = whind(value);
+            
+            const IS_VIRTUAL = {
+                is: false
+            };
+            
+            const parser = getPropertyParser(type, IS_VIRTUAL, property_definitions);
+            const rule = this.rule_body;
+            if (parser && !IS_VIRTUAL.is) {
+                if (!rule.props) rule.props = {};
+                parser.parse(lexer, rule.props);
+            }
         }
 
         this.parent.update();

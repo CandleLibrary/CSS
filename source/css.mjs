@@ -1,11 +1,13 @@
 import  ll  from "@candlefw/ll";
 import  whind from "@candlefw/whind";
 
-import { CSSRule as R, CSSSelector as S } from "./nodes";
+import {CSSRule } from "./rule.mjs";
+import {CSSSelector} from "./selector.mjs";
+
 import { types } from "./properties/property_and_type_definitions";
 import { CSSRuleBody } from "./body";
 
-export { R as CSSRule, S as CSSSelector };
+export { CSSRule, CSSSelector };
 
 
 
@@ -77,7 +79,7 @@ class CSSRootNode {
      * @param      {HTMLElement}  element - An element to retrieve CSS rules.
      * @public
      */
-    getApplicableRules(element, rule = new R(), win = window) {
+    getApplicableRules(element, rule = new CSSRule(), win = window) {
         for (let node = this.fch; node; node = this.getNextChild(node))
             node.getApplicableRules(element, rule, win);
         return rule;
