@@ -23,13 +23,13 @@ class NR extends prod.NR {
 
         if (!slot) {
             let element = document.createElement("div")
-            element.classList.add("css_ui_slot")
+            element.classList.add("prop_slot")
             slot = element;
         }
 
         if (!list) {
             list = document.createElement("div");
-            list.classList.add("css_ui_slot")
+            list.classList.add("prop_slot")
             slot.appendChild(list);
         }
         let count = 0;
@@ -153,7 +153,7 @@ class AND extends NR {
 
         let name = (this.name) ? this.name.replace("\_\g", " ") : this.terms.reduce((r, t) => r += " | " + t.name, "")
         let element = document.createElement("div")
-        element.classList.add("css_ui_selection");
+        element.classList.add("option");
         element.innerHTML = name;
         ele.appendChild(element)
 
@@ -207,7 +207,7 @@ class OR extends NR {
 
         let name = this.terms.reduce((r, t) => r += " | " + t.name, "")
         let element = document.createElement("div")
-        element.classList.add("css_ui_selection");
+        element.classList.add("option");
         element.innerHTML = name;
         ele.appendChild(element)
 
@@ -307,7 +307,7 @@ class ONE_OF extends NR {
     list(ele, slot) {
         let name = (this.name) ? this.name.replace(/_/g, " ") : this.terms.reduce((r, t) => r += " | " + t.name, "")
         let element = document.createElement("div")
-        element.classList.add("css_ui_selection");
+        element.classList.add("option");
         element.innerHTML = name;
         ele.appendChild(element)
 

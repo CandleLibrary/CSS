@@ -48,7 +48,7 @@ export class ValueTerm extends terms.ValueTerm {
 
     list(ele, slot) {
         let element = document.createElement("div")
-        element.classList.add("css_ui_selection");
+        element.classList.add("option");
         element.innerHTML = this.value.name;
         ele.appendChild(element)
 
@@ -93,7 +93,7 @@ export class LiteralTerm extends terms.LiteralTerm {
     list(ele, slot) {
         let element = document.createElement("div")
         element.innerHTML = this.value;
-        element.classList.add("css_ui_selection");
+        element.classList.add("option");
         ele.appendChild(element) 
         element.addEventListener("click", e => {
             slot.value = this.value + "";

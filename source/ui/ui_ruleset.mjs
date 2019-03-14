@@ -22,8 +22,11 @@ export default class UIRuleSet {
         this.selectors = null;
 
         this.element = document.createElement("div");
+        this.element.classList.add("rule")
         this.selector_space = document.createElement("div");
+        this.selector_space.classList.add("rule_selectors")
         this.rule_space = document.createElement("div");
+        this.rule_space.classList.add("rule_body")
 
         this.element.addEventListener("dragover", dragover)
         this.element.addEventListener("drop", (e)=>{

@@ -21,6 +21,7 @@ export default class UIMaster {
         this.rule_sets = [];
         this.selectors = [];
         this.element = document.createElement("div");
+        this.element.classList.add("cfw_css");
 
 
         this.rule_map = new Map();

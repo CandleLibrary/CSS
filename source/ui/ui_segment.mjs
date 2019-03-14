@@ -5,25 +5,25 @@ export class Segment {
         this.css_val = "";
 
         this.val = document.createElement("span");
-        this.val.classList.add("css_ui_val");
+        this.val.classList.add("prop_value");
 
         this.list = document.createElement("div");
-        this.list.classList.add("css_ui_list");
+        this.list.classList.add("prop_list");
         //this.list.style.display = "none"
 
         this.ext = document.createElement("button");
-        this.ext.classList.add("css_ui_ext");
+        this.ext.classList.add("prop_extender");
         this.ext.innerHTML = "+"
         this.ext.style.display = "none";
 
         this.menu = document.createElement("span");
-        this.menu.classList.add("css_ui_menu");
+        this.menu.classList.add("prop_list_icon");
         this.menu.innerHTML = "+"
         this.menu.style.display = "none";
         this.menu.appendChild(this.list);
 
         this.element = document.createElement("span");
-        this.element.classList.add("css_ui_seg");
+        this.element.classList.add("prop_segment");
 
         this.element.appendChild(this.menu);
         this.element.appendChild(this.val);

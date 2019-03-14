@@ -137,9 +137,4 @@ export default class UISelector {
         this.mount(this.parent);
 
     }
-
-    setupElement() {
-        this.element = document.createElement("div");
-        this.element.classList.add("cfw_css_ui_rule");
-    }
 }

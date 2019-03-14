@@ -1243,25 +1243,25 @@ class Segment {
         this.css_val = "";
 
         this.val = document.createElement("span");
-        this.val.classList.add("css_ui_val");
+        this.val.classList.add("prop_value");
 
         this.list = document.createElement("div");
-        this.list.classList.add("css_ui_list");
+        this.list.classList.add("prop_list");
         //this.list.style.display = "none"
 
         this.ext = document.createElement("button");
-        this.ext.classList.add("css_ui_ext");
+        this.ext.classList.add("prop_extender");
         this.ext.innerHTML = "+";
         this.ext.style.display = "none";
 
         this.menu = document.createElement("span");
-        this.menu.classList.add("css_ui_menu");
+        this.menu.classList.add("prop_list_icon");
         this.menu.innerHTML = "+";
         this.menu.style.display = "none";
         this.menu.appendChild(this.list);
 
         this.element = document.createElement("span");
-        this.element.classList.add("css_ui_seg");
+        this.element.classList.add("prop_segment");
 
         this.element.appendChild(this.menu);
         this.element.appendChild(this.val);
@@ -4619,7 +4619,7 @@ class ValueTerm$1 extends ValueTerm {
 
     list(ele, slot) {
         let element = document.createElement("div");
-        element.classList.add("css_ui_selection");
+        element.classList.add("option");
         element.innerHTML = this.value.name;
         ele.appendChild(element);
 
@@ -4664,7 +4664,7 @@ class LiteralTerm$1 extends LiteralTerm {
     list(ele, slot) {
         let element = document.createElement("div");
         element.innerHTML = this.value;
-        element.classList.add("css_ui_selection");
+        element.classList.add("option");
         ele.appendChild(element); 
         element.addEventListener("click", e => {
             slot.value = this.value + "";
@@ -4727,13 +4727,13 @@ class NR$1 extends NR {
 
         if (!slot) {
             let element = document.createElement("div");
-            element.classList.add("css_ui_slot");
+            element.classList.add("prop_slot");
             slot = element;
         }
 
         if (!list) {
             list = document.createElement("div");
-            list.classList.add("css_ui_slot");
+            list.classList.add("prop_slot");
             slot.appendChild(list);
         }
         let count = 0;
@@ -4857,7 +4857,7 @@ class AND$1 extends NR$1 {
 
         let name = (this.name) ? this.name.replace("\_\g", " ") : this.terms.reduce((r, t) => r += " | " + t.name, "");
         let element = document.createElement("div");
-        element.classList.add("css_ui_selection");
+        element.classList.add("option");
         element.innerHTML = name;
         ele.appendChild(element);
 
@@ -4911,7 +4911,7 @@ class OR$1 extends NR$1 {
 
         let name = this.terms.reduce((r, t) => r += " | " + t.name, "");
         let element = document.createElement("div");
-        element.classList.add("css_ui_selection");
+        element.classList.add("option");
         element.innerHTML = name;
         ele.appendChild(element);
 
@@ -5011,7 +5011,7 @@ class ONE_OF$1 extends NR$1 {
     list(ele, slot) {
         let name = (this.name) ? this.name.replace(/_/g, " ") : this.terms.reduce((r, t) => r += " | " + t.name, "");
         let element = document.createElement("div");
-        element.classList.add("css_ui_selection");
+        element.classList.add("option");
         element.innerHTML = name;
         ele.appendChild(element);
 
@@ -5462,11 +5462,6 @@ class UISelector {
         this.mount(this.parent);
 
     }
-
-    setupElement() {
-        this.element = document.createElement("div");
-        this.element.classList.add("cfw_css_ui_rule");
-    }
 }
 
 const props = Object.assign({}, property_definitions);
@@ -5478,21 +5473,35 @@ function dragstart$1(e){
     UIProp.dragee = this;
 }
 
+const UIPropCache = null;
+
 class UIProp {
     constructor(type,  parent) {
+        debugger
+        // Predefine all members of this object.
         this.hash = 0;
+        this.type = "";
+        this.parent = null;
+        this._value = null;
+        this.next = null;
+
         this.type = type;
         this.parent = parent;
-        this.setupElement();
-        this._value = null;
+        
+        if(!this.CACHED)
+            this.setupElement(type);
     }
 
     build(type, value){
-        this.element.innerHTML = `${type}:`;
+        this.element.innerHTML ="";
+        this.element.appendChild(this.label);
         let pp = getPropertyParser(type, undefined, props, ui_productions);
         this._value = pp.buildInput(1, whind$1(value));
         this._value.parent = this;
         this._value.mount(this.element);
+    }
+    destroy(){
+
     }
 
     update(value) {
@@ -5509,17 +5518,55 @@ class UIProp {
             this.element.parentElement.removeChild(this.element);
     }
 
-    setupElement() {
+    setupElement(type) {
         this.element = document.createElement("div");
         this.element.setAttribute("draggable", "true");
-        this.element.classList.add("cfw_css_ui_rule");
+        this.element.classList.add("prop");
         this.element.addEventListener("dragstart", dragstart$1.bind(this));
+        this.label = document.createElement("span");
+        this.label.classList.add("prop");
+        this.label.innerHTML = `${type.replace(/[\-\_]/g, " ")}`;
     }
 
     get value(){
         return this._value.toString();
     }
 }
+
+(function(cacher){
+    const cache = null;
+
+    let constr = cacher.constructor.bind(cacher);
+    console.log(cacher, constr);
+    cacher.constructor = function(...args){
+        debugger
+            let r;
+        if(cache){
+            r = cache;
+            cache = cache.next_cached;
+            r.next_cached = null;
+            constr.call(r,...args);
+        }else{
+            r = new constr(...args);
+            r.next_cached = null;
+            r.CACHED = true;
+        }
+        return r;
+    };
+
+    let destroy = cacher.prototype.destroy;
+
+    cacher.prototype.destroy = function(...args){
+
+        if(destroy)
+            destroy.call(this, ...args);
+
+        this.next_cached = cache;
+        cache = this;
+    };
+})(UIProp);
+
+console.log(UIProp.prototype);
 
 const props$1 = Object.assign({}, property_definitions);
 class UIRuleSet {
@@ -5531,8 +5578,11 @@ class UIRuleSet {
         this.selectors = null;
 
         this.element = document.createElement("div");
+        this.element.classList.add("rule");
         this.selector_space = document.createElement("div");
+        this.selector_space.classList.add("rule_selectors");
         this.rule_space = document.createElement("div");
+        this.rule_space.classList.add("rule_body");
 
         this.element.addEventListener("dragover", dragover$1);
         this.element.addEventListener("drop", (e)=>{
@@ -5685,6 +5735,7 @@ class UIMaster {
         this.rule_sets = [];
         this.selectors = [];
         this.element = document.createElement("div");
+        this.element.classList.add("cfw_css");
 
 
         this.rule_map = new Map();
