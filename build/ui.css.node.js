@@ -5514,6 +5514,36 @@ class UISelector {
     }
 }
 
+function createCache(cacher){
+    let cache = null;
+    const destroy = cacher.prototype.destroy;
+    const init = cacher.prototype.init;
+
+    cacher.prototype.destroy = function(...args){
+
+        if(destroy)
+            destroy.call(this, ...args);
+
+        this.next_cached = cache;
+        cache = this;
+    };
+
+    return function(...args){
+            let r;
+        if(cache){
+            r = cache;
+            cache = cache.next_cached;
+            r.next_cached = null;
+            init.call(r,...args);
+        }else{
+            r = new cacher(...args);
+            r.next_cached = null;
+            r.CACHED = true;
+        }
+        return r;
+    };
+}
+
 const props = Object.assign({}, property_definitions);
 
 var dragee = null;
@@ -5523,23 +5553,30 @@ function dragstart$1(e){
     UIProp.dragee = this;
 }
 
-const UIPropCache = null;
-
 class UIProp {
     constructor(type,  parent) {
-        debugger
         // Predefine all members of this object.
         this.hash = 0;
         this.type = "";
         this.parent = null;
         this._value = null;
-        this.next = null;
+        this.setupElement(type);
+        this.init(type, parent);
+    }
 
+    init(type,  parent){
         this.type = type;
         this.parent = parent;
-        
-        if(!this.CACHED)
-            this.setupElement(type);
+    }
+
+    destroy(){
+        this.hash = 0;
+        this.type = "";
+        this.parent = null;
+        this._value = null;
+        this.type = null;
+        this.parent = null;
+        this.unmount();
     }
 
     build(type, value){
@@ -5549,9 +5586,6 @@ class UIProp {
         this._value = pp.buildInput(1, whind$1(value));
         this._value.parent = this;
         this._value.mount(this.element);
-    }
-    destroy(){
-
     }
 
     update(value) {
@@ -5583,40 +5617,11 @@ class UIProp {
     }
 }
 
-(function(cacher){
-    const cache = null;
-
-    let constr = cacher.constructor.bind(cacher);
-    console.log(cacher, constr);
-    cacher.constructor = function(...args){
-        debugger
-            let r;
-        if(cache){
-            r = cache;
-            cache = cache.next_cached;
-            r.next_cached = null;
-            constr.call(r,...args);
-        }else{
-            r = new constr(...args);
-            r.next_cached = null;
-            r.CACHED = true;
-        }
-        return r;
-    };
-
-    let destroy = cacher.prototype.destroy;
-
-    cacher.prototype.destroy = function(...args){
-
-        if(destroy)
-            destroy.call(this, ...args);
-
-        this.next_cached = cache;
-        cache = this;
-    };
-})(UIProp);
+UIProp = createCache(UIProp);
 
 console.log(UIProp.prototype);
+
+var UIProp$1 = UIProp;
 
 const props$1 = Object.assign({}, property_definitions);
 class UIRuleSet {
@@ -5637,7 +5642,7 @@ class UIRuleSet {
         this.element.addEventListener("dragover", dragover$1);
         this.element.addEventListener("drop", (e)=>{
             
-            let prop = UIProp.dragee;
+            let prop = UIProp$1.dragee;
             let parent = prop.parent;
             let value = prop.value;
             let type = prop.type;
@@ -5706,7 +5711,7 @@ class UIRuleSet {
             if(++i < this.rules.length){
                 rule = this.rules[i];
             }else{
-                rule = new UIProp(a,  this);
+                rule = new UIProp$1(a,  this);
                 this.rules.push(rule);
             }
             console.log(rule_body.toString(0, a));
