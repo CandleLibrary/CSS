@@ -6,10 +6,10 @@ import {
     media_feature_definitions,
     types
 } from "./properties/property_and_type_definitions";
-import { CSSRule as R, CSSSelector as S } from "./nodes";
+import {CSSSelector} from "./selector.mjs";
+import {CSSRule} from "./rule.mjs";
 import { getPropertyParser } from "./properties/parser";
-
-export { R as CSSRule, S as CSSSelector };
+export { CSSRule, CSSSelector };
 
 /**
  * Checks to make sure token is an Identifier.
@@ -24,7 +24,7 @@ function _eID_(lexer) {
  * The empty CSSRule instance
  * @alias module:wick~internals.css.empty_rule
  */
-const er = Object.freeze(new R());
+const er = Object.freeze(new CSSRule());
 
 class _selectorPart_ {
     constructor() {
@@ -148,7 +148,7 @@ export class CSSRuleBody {
         Retrieves the set of rules from all matching selectors for an element.
             element HTMLElement - An DOM element that should be matched to applicable rules. 
     */
-    getApplicableRules(element, rule = new R(), win = window) {
+    getApplicableRules(element, rule = new CSSRule(), win = window) {
 
         if (!this.matchMedia(win)) return;
 
@@ -269,7 +269,7 @@ export class CSSRuleBody {
                     selector_array = [];
                     selectors.push(lexer.s(start).trim().slice(0));
                     sel = new _selectorPart_();
-                    if (RETURN) return new S(selectors, selectors_array, this);
+                    if (RETURN) return new CSSSelector(selectors, selectors_array, this);
                     lexer.next();
                     start = lexer.pos;
                     break;
@@ -347,7 +347,7 @@ export class CSSRuleBody {
         selector_array.unshift(sel);
         selectors_array.push(selector_array);
         selectors.push(lexer.s(start).trim().slice(0));
-        return new S(selectors, selectors_array, this);
+        return new CSSSelector(selectors, selectors_array, this);
     }
 
     /**
@@ -447,7 +447,7 @@ export class CSSRuleBody {
                     case "{":
                         //Check to see if a rule body for the selector exists already.
                         let MERGED = false;
-                        let rule = new R(this);
+                        let rule = new CSSRule(this);
                         this._applyProperties_(lexer.next(), rule);
                         for (let i = -1, sel = null; sel = selectors[++i];)
                             if (sel.r) {sel.r.merge(rule); MERGED = true}
@@ -539,7 +539,7 @@ export class CSSRuleBody {
             if (!this._selectors_[selector.id]) {
                 this._selectors_[selector.id] = selector;
                 this._sel_a_.push(selector);
-                const rule = new R(this);
+                const rule = new CSSRule(this);
                 selector.addRule(rule);
                 this.rules.push(rule)
             } else
