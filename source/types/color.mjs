@@ -163,6 +163,9 @@ export default class CSS_Color extends Color {
     toString(){
         return `#${("0"+this.r.toString(16)).slice(-2)}${("0"+this.g.toString(16)).slice(-2)}${("0"+this.b.toString(16)).slice(-2)}`
     }
+    toRGBString(){
+        return `rgba(${this.r.toString()},${this.g.toString()},${this.b.toString()},${this.a.toString()})`   
+    }
 } {
 
     let _$ = (r = 0, g = 0, b = 0, a = 1) => ({ r, g, b, a });

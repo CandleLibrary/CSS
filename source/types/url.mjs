@@ -9,7 +9,7 @@ export default class CSS_URL extends URL {
                 v = l.tx.slice(1,-1);
                 l.next().a(")");
             } else {
-                let p = l.p;
+                const p = l.peek();
                 while (!p.END && p.next().tx !== ")") { /* NO OP */ }
                 v = p.slice(l);
                 l.sync().a(")");

@@ -189,4 +189,5 @@ export const CSSParser = (css_string, root = null) => (root = (!root || !(root i
 CSSParser.types = types;
 
 export default CSSParser;
+export {CSSRuleBody}
 

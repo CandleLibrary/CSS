@@ -11,8 +11,8 @@ export class ValueTerm extends terms.ValueTerm {
             if(value)
                 seg.css_val = value + "";
                 seg.setValueHandler(element, (ele, seg, event)=>{
-                seg.css_val = element.value;
-                seg.update();
+                    seg.css_val = element.css_value;
+                    seg.update();
             });
         }else{
             let sub = new Segment();
@@ -49,7 +49,7 @@ export class ValueTerm extends terms.ValueTerm {
     list(ele, slot) {
         let element = document.createElement("div")
         element.classList.add("option");
-        element.innerHTML = this.value.name;
+        element.innerHTML = this.value.label_name || this.value.name;
         ele.appendChild(element)
 
         element.addEventListener("click", e => {

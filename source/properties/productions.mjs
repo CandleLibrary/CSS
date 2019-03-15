@@ -57,7 +57,7 @@ class NR { //Notation Rule
 
                 this.sp(r.v, rule);
 
-                if (j < start)
+                if (j <= start)
                     return false;
                 else
                     return true;
@@ -95,7 +95,7 @@ class OR extends NR {
             for (let i = 0, l = this.terms.length; i < l; i++)
                 if (this.terms[i].parse(lx, rule, r)) bool = true;
 
-            if (!bool && j < start) {
+            if (!bool && j <= start) {
                 this.sp(r.v, rule);
                 return false;
             }
@@ -120,7 +120,7 @@ class ONE_OF extends NR {
             }
 
             if (!bool)
-                if (j < start) {
+                if (j <= start) {
                     this.sp(r.v, rule);
                     return false;
                 }

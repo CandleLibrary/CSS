@@ -7,6 +7,8 @@ chai.should();
 const path = require("path");
 const fs = require("fs");
 
+if (typeof(Location) == "undefined") global.Location = class {};
+
 describe('CandleFW CSS tests', function() {
 
         before(function() {
@@ -92,7 +94,7 @@ a {
                 let rule = og.getRule("a");
                 rule.should.have.property("props");
                 rule.props.should.have.property("border_top_color");
-                rule.props.border_top_color.toString().should.equal("rgba(0,128,0,1)");
+                rule.props.border_top_color.toRGBString().should.equal("rgba(0,128,0,1)");
                 done();
             }).catch(e => done(e));
         })
@@ -112,7 +114,7 @@ a {
                 let span = ele.getElementsByTagName("span")[0];
                 let rule = og.getApplicableRules(span);
                 rule.props.font_size.should.equal(2);
-                rule.props.color.toString().should.equal("rgba(255,255,0,1)");
+                rule.props.color.toRGBString().should.equal("rgba(255,255,0,1)");
                 done();
             }).catch(e => done(e));
         })
@@ -123,10 +125,10 @@ a {
             .three{color:#FFFFFF}
             .four{color:white}
             `).then(css => {
-                css.getRule(".one").props.color.toString().should.equal("rgba(255,255,255,0.5)")
-                css.getRule(".two").props.color.toString().should.equal("rgba(255,255,255,1)")
-                css.getRule(".three").props.color.toString().should.equal("rgba(255,255,255,1)")
-                css.getRule(".four").props.color.toString().should.equal("rgba(255,255,255,1)")
+                css.getRule(".one").props.color.toRGBString().should.equal("rgba(255,255,255,0.5)")
+                css.getRule(".two").props.color.toRGBString().should.equal("rgba(255,255,255,1)")
+                css.getRule(".three").props.color.toRGBString().should.equal("rgba(255,255,255,1)")
+                css.getRule(".four").props.color.toRGBString().should.equal("rgba(255,255,255,1)")
         }))
 
         describe("Handles @media", function() {
@@ -144,7 +146,7 @@ a {
                         let rule = og.getApplicableRules(span);
                         rule.props.should.have.property("color");
                         rule.props.should.have.property("font_size");
-                        rule.props.color.toString().should.equal("rgba(0,128,0,1)")
+                        rule.props.color.toRGBString().should.equal("rgba(0,128,0,1)")
                         rule.props.font_size.should.equal(2);
                         done();
                     }).catch(e => done(e));
@@ -161,9 +163,11 @@ a {
                         ele.innerHTML = `<a></a>`;
                         let rule = og.getApplicableRules(ele.getElementsByTagName("a")[0]);
                         rule.props.font_size.should.equal(2);
-                        rule.props.color.toString().should.equal("rgba(255,255,0,1)")
+                        rule.props.color.toRGBString().should.equal("rgba(255,255,0,1)")
                         done()
                     }).catch(e => done(e));
             })
         })
+
+        require("./css_properties_level_1.js")
 })

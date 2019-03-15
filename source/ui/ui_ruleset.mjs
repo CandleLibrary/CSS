@@ -103,7 +103,6 @@ export default class UIRuleSet {
                 rule = new UIProp(a,  this);
                 this.rules.push(rule);
             }
-            console.log(rule_body.toString(0, a))
             rule.build(a, rule_body.toString(0, a));
             rule.mount(this.rule_space)
         }

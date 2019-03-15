@@ -22,36 +22,13 @@
 
 		.cfw_css {
 			font-size: 12px;
-			line-height: 12px;
-			padding: 0;
-			margin: 0;
-			border: none;
 			color:white;
 			position: absolute;
-		}
-
-		.cfw_css input {
-			border: none;
-		    text-decoration: none;
-		    font-size: 12px;
-		    margin: 0;
-		    top: 0;
-		    margin: 0;
-		    padding: 0;
-		    background: none;
-		    /* color: white; */
-	    	outline: none;
-	    	width: unset;
-		    max-width: 60px;
-
 		}
 
 		.cfw_css .rule {
 			background-color: rgb(230,230,230);
 			border-radius: 5px;
-			width:fit-content;
-			margin: 5px;
-
 		}
 
 		.cfw_css .rule_selectors {
@@ -80,12 +57,12 @@
 		.cfw_css .rule_body .prop {
 			width: fit-content;
 			position: relative;
-			margin-left: 100px;
+			padding: 2px 6px;
+			margin: 2px 0 2px 100px;
 			border: 2px solid rgb(230,230,230);
 			border-radius: 20px;
 			background-color: rgb(230,230,230);
 			font-weight: 700;
-			padding-bottom: 8px;
 		}
 
 		.cfw_css .rule_body .prop_label{
@@ -108,7 +85,7 @@
 			font-weight: normal;
 			color: black;
 			position: absolute;
-			top: 5px;
+			top: 15px;
 			display: none;
 			background-color: white;
 			padding: 4px;
@@ -124,33 +101,19 @@
 		}
 
 		.cfw_css .rule_body .prop_list_icon{
-			position: absolute;
-	    	text-anchor: middle;
-	    	display: inline-block;
-	  		border-radius: 5px;
+			text-anchor: middle;
+			display: inline-block;
+			width: 15px;
+			border-radius: 5px;
 			background-color: rgba(0,0,0,0.1);
 			color: rgba(0,0,0,0.1);
 			font-weight: 800;
 			text-align: center;
-			width: 100%;
-			height: 6px;
-	   		 bottom: -8px;
-	   		 left:0;
+			margin-right: 3px;
 		}
 
 		.cfw_css .rule_body .prop_list_icon[superset=true]{
-			position: relative;
-			text-anchor: middle;
-			display: inline-block;
-			width: 15px;
-			height: 15px;
-			border-radius: 5px;
-			color: rgba(0,0,0,0.1);
-			font-weight: 800;
-			text-align: center;
-			margin-right: 3px;
-			top:0;
-			background-color: rgba(0,120,50,0.8);
+			background-color: rgba(0,255,150,0.1);
 		}
 
 		.cfw_css .rule_body .prop_list_icon:hover {
@@ -166,14 +129,12 @@
 		}
 
 		.cfw_css .rule_body .prop_segment{
-			vertical-align: top;
 			font-weight: normal;;
 			position: relative;
 			display: inline-block;
 			top:0;
 			left:0;
-			padding: 0 0px;
-			margin: 0 4px;
+			padding: 0 4px;
 			background-color:rgba(0,255,0,0.01);
 		}
 

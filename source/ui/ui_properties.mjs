@@ -74,7 +74,7 @@ class UIProp {
         this.element.classList.add("prop");
         this.element.addEventListener("dragstart", dragstart.bind(this));
         this.label = document.createElement("span")
-        this.label.classList.add("prop")
+        this.label.classList.add("prop_label")
         this.label.innerHTML = `${type.replace(/[\-\_]/g, " ")}`;
     }
 
@@ -84,7 +84,5 @@ class UIProp {
 }
 
 UIProp = createCache(UIProp);
-
-console.log(UIProp.prototype)
 
 export default UIProp

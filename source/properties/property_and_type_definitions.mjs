@@ -92,7 +92,7 @@ export const property_definitions = {
 
     /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
     font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
-    font_wight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
+    font_weight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
 
     /* Text */
     word_spacing: `normal|<length>`,
@@ -246,7 +246,7 @@ export const virtual_property_definitions = {
     box: `border-box|padding-box|content-box`,
 
     /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
-    absolute_size: `xx_small|x_small|small|medium|large|x_large|xx_large`,
+    absolute_size: `xx-small|x-small|small|medium|large|x-large|xx-large`,
     relative_size: `larger|smaller`,
 
     /*https://www.w3.org/TR/css-backgrounds-3/*/

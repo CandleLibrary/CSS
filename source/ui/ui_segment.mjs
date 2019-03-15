@@ -16,16 +16,17 @@ export class Segment {
         this.ext.innerHTML = "+"
         this.ext.style.display = "none";
 
-        this.menu = document.createElement("span");
-        this.menu.classList.add("prop_list_icon");
-        this.menu.innerHTML = "+"
-        this.menu.style.display = "none";
-        this.menu.appendChild(this.list);
+        this.menu_icon = document.createElement("span");
+        this.menu_icon.classList.add("prop_list_icon");
+        //this.menu_icon.innerHTML = "+"
+        this.menu_icon.style.display = "none";
+        this.menu_icon.setAttribute("superset", false)
+        this.menu_icon.appendChild(this.list);
 
         this.element = document.createElement("span");
         this.element.classList.add("prop_segment");
 
-        this.element.appendChild(this.menu);
+        this.element.appendChild(this.menu_icon);
         this.element.appendChild(this.val);
         this.element.appendChild(this.ext);
 
@@ -48,7 +49,7 @@ export class Segment {
         this.val = null;
         this.list = null;
         this.ext = null;
-        this.menu = null;
+        this.menu_icon = null;
         this.subs.forEach(e => e.destroy())
         this.subs = null;
     }
@@ -89,6 +90,7 @@ export class Segment {
 
 
     addSub(seg) {
+        this.menu_icon.setAttribute("superset", true)
         seg.parent = this;
         this.subs.push(seg);
         this.val.appendChild(seg.element)
@@ -111,9 +113,9 @@ export class Segment {
         if(this.DEMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
             if (this.DEMOTED || !this.prod.buildList(this.list, this))
-                this.menu.style.display = "none";
+                this.menu_icon.style.display = "none";
             else
-                this.menu.style.display = "inline-block";
+                this.menu_icon.style.display = "inline-block";
         }
     }
     change(e) {
@@ -132,7 +134,7 @@ export class Segment {
         }
 
         this.HAS_VALUE = true;
-        //this.menu.style.display = "none";
+        //this.menu_icon.style.display = "none";
         this.setList();
     }
 
@@ -186,8 +188,9 @@ export class Segment {
         }
 
 
-        this.menu.innerHTML = ""
-        this.menu.style.display = "none";
+        this.menu_icon.innerHTML = ""
+        this.menu_icon.style.display = "none";
+        this.menu_icon.setAttribute("superset", false)
         this.list.innerHTML = "";
 
         this.reset();

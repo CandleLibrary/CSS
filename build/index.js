@@ -17,7 +17,8 @@ let start = async function() {
 }
 
 .test {
-    font-size:larger
+    font-size:larger;
+    font-family:"Arial"
 }`
 
 	const css_ = await css.CSSParser(input.value)
