@@ -15,12 +15,12 @@ class NR { //Notation Rule
         this.virtual = false;
     }
 
-    seal(){
+    seal() {
 
     }
 
     sp(value, rule) { //Set Property
-        if (this.prop){
+        if (this.prop) {
             if (value)
                 if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
                     rule[this.prop] = value[0];
@@ -41,6 +41,7 @@ class NR { //Notation Rule
             start = isNaN(this.r[0]) ? 1 : this.r[0],
             end = isNaN(this.r[1]) ? 1 : this.r[1];
 
+
         return this.innerParser(lx, rule, out_val, r, start, end);
     }
 
@@ -49,18 +50,15 @@ class NR { //Notation Rule
         for (let j = 0; j < end && !lx.END; j++) {
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parse(lx, rule, r);
-                if (!bool) break;
-            }
+                if (!this.terms[i].parse(lx, rule, r)) {
 
-            if (!bool) {
+                    this.sp(r.v, rule);
 
-                this.sp(r.v, rule);
-
-                if (j <= start)
-                    return false;
-                else
-                    return true;
+                    if (j < start && start > 0)
+                        return false;
+                    else
+                        return true;
+                }
             }
         }
 
@@ -73,11 +71,15 @@ class NR { //Notation Rule
 class AND extends NR {
     innerParser(lx, rule, out_val, r, start, end) {
 
-        outer:
-            for (let j = 0; j < end && !lx.END; j++) {
-                for (let i = 0, l = this.terms.length; i < l; i++)
-                    if (!this.terms[i].parse(lx, rule, r)) return false;
+        outer: for (let j = 0; j < end && !lx.END; j++) {
+            for (let i = 0, l = this.terms.length; i < l; i++){
+                console.log(i)
+                if (!this.terms[i].parse(lx, rule, r)) {
+                    console.log("AAAPL", i)
+                    return false;
+                }
             }
+        }
 
         this.sp(r.v, rule);
 
@@ -111,19 +113,36 @@ class ONE_OF extends NR {
     innerParser(lx, rule, out_val, r, start, end) {
         let bool = false;
 
-        for (let j = 0; j < end && !lx.END; j++) {
+        console.log(start, bool, end)
+
+        let j;
+        for (j = 0; j < end && !lx.END; j++) {
             bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
+                if (!this.terms[i]) console.log(this)
                 bool = this.terms[i].parse(lx, rule, r);
                 if (bool) break;
             }
 
-            if (!bool)
-                if (j <= start) {
+            if (!bool) {
+                if (j <= start && start > 0) {
                     this.sp(r.v, rule);
                     return false;
+                } else {
+                    return true;
                 }
+            }
+        }
+
+        if(lx.END && !bool){
+            console.log("AA", j, start)
+            if (j <= start && start > 0) {
+                this.sp(r.v, rule);
+                return false;
+            } else {
+                return true;
+            }
         }
 
         this.sp(r.v, rule);

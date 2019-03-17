@@ -170,4 +170,10 @@ a {
         })
 
         require("./css_properties_level_1.js")
+        require("./css_properties_level_2_1.js")
+        require("./css_text_properties_level_3.js")
+        require("./css_flexbox_properties_level_1.js")
+        require("./css_writing_mode_properties_level_3.js")
+        require("./css_position_properties_level_3.js")
+        require("./css_box_model_properties_level_3.js")
 })

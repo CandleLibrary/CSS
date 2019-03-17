@@ -1,5 +1,7 @@
-var ui = (function (exports) {
+var ui = (function (exports,util) {
     'use strict';
+
+    util = util && util.hasOwnProperty('default') ? util['default'] : util;
 
     const A = 65;
     const a = 97;
@@ -575,7 +577,7 @@ var ui = (function (exports) {
         /**
         Creates and error message with a diagrame illustrating the location of the error. 
         */
-        errorMessage(message = ""){
+        errorMessage(message = "") {
             const arrow = String.fromCharCode(0x2b89),
                 trs = String.fromCharCode(0x2500),
                 line = String.fromCharCode(0x2500),
@@ -606,7 +608,7 @@ ${is_iws}`;
          */
         throw (message, DEFER = false) {
             const error = new Error(this.errorMessage(message));
-            if(DEFER)
+            if (DEFER)
                 return error;
             throw error;
         }
@@ -681,101 +683,133 @@ ${is_iws}`;
                 return marker;
             }
 
-            for (;;) {
+            const USE_CUSTOM_SYMBOLS = !!this.symbol_map;
+            let NORMAL_PARSE = true;
 
-                base = off;
+            if (USE_CUSTOM_SYMBOLS) {
 
-                length = 1;
+                let code = str.charCodeAt(off);
+                let off2 = off;
+                let map = this.symbol_map,
+                    m$$1;
+                let i$$1 = 0;
 
-                const code = str.charCodeAt(off);
+                while(code == 32 && IWS)
+                    (code = str.charCodeAt(++off2), off++);
 
-                if (code < 128) {
+                while ((m$$1 = map.get(code))) {
+                    map = m$$1;
+                    off2 += 1;
+                    code = str.charCodeAt(off2);
+                }
 
-                    switch (jump_table[code]) {
-                        case 0: //NUMBER
-                            while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)])) ;
+                if (map.IS_SYM) {
+                   NORMAL_PARSE = false;
+                   base = off;
+                   length = off2 - off;
+                   char += length;
+                }
+            }
 
-                            if (str[off] == "e" || str[off] == "E") {
-                                off++;
-                                if (str[off] == "-") off++;
-                                marker.off = off;
-                                marker.tl = 0;
-                                marker.next();
-                                off = marker.off + marker.tl;
-                                //Add e to the number string
-                            }
+            if (NORMAL_PARSE) {
 
-                            type = number;
-                            length = off - base;
 
-                            break;
-                        case 1: //IDENTIFIER
-                            while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)]))) ;
-                            type = identifier;
-                            length = off - base;
-                            break;
-                        case 2: //QUOTED STRING
-                            if (this.PARSE_STRING) {
+                for (;;) {
+
+                    base = off;
+
+                    length = 1;
+
+                    const code = str.charCodeAt(off);
+
+                    if (code < 128) {
+
+                        switch (jump_table[code]) {
+                            case 0: //NUMBER
+                                while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
+
+                                if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off+1)])) {
+                                    off++;
+                                    if (str[off] == "-") off++;
+                                    marker.off = off;
+                                    marker.tl = 0;
+                                    marker.next();
+                                    off = marker.off + marker.tl;
+                                    //Add e to the number string
+                                }
+
+                                type = number;
+                                length = off - base;
+
+                                break;
+                            case 1: //IDENTIFIER
+                                while (++off < l$$1 && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
+                                type = identifier;
+                                length = off - base;
+                                break;
+                            case 2: //QUOTED STRING
+                                if (this.PARSE_STRING) {
+                                    type = symbol;
+                                } else {
+                                    while (++off < l$$1 && str.charCodeAt(off) !== code);
+                                    type = string;
+                                    length = off - base + 1;
+                                }
+                                break;
+                            case 3: //SPACE SET
+                                while (++off < l$$1 && str.charCodeAt(off) === SPACE);
+                                type = white_space;
+                                length = off - base;
+                                break;
+                            case 4: //TAB SET
+                                while (++off < l$$1 && str[off] === HORIZONTAL_TAB);
+                                type = white_space;
+                                length = off - base;
+                                break;
+                            case 5: //CARIAGE RETURN
+                                length = 2;
+                                //Intentional
+                            case 6: //LINEFEED
+                                type = new_line;
+                                char = 0;
+                                line++;
+                                off += length;
+                                break;
+                            case 7: //SYMBOL
                                 type = symbol;
-                            } else {
-                                while (++off < l$$1 && str.charCodeAt(off) !== code) ;
-                                type = string;
-                                length = off - base + 1;
-                            }
-                            break;
-                        case 3: //SPACE SET
-                            while (++off < l$$1 && str.charCodeAt(off) === SPACE) ;
-                            type = white_space;
-                            length = off - base;
-                            break;
-                        case 4: //TAB SET
-                            while (++off < l$$1 && str[off] === HORIZONTAL_TAB) ;
-                            type = white_space;
-                            length = off - base;
-                            break;
-                        case 5: //CARIAGE RETURN
-                            length = 2;
-                            //Intentional
-                        case 6: //LINEFEED
-                            type = new_line;
-                            char = 0;
-                            line++;
-                            off += length;
-                            break;
-                        case 7: //SYMBOL
+                                break;
+                            case 8: //OPERATOR
+                                type = operator;
+                                break;
+                            case 9: //OPEN BRACKET
+                                type = open_bracket;
+                                break;
+                            case 10: //CLOSE BRACKET
+                                type = close_bracket;
+                                break;
+                            case 11: //Data Link Escape
+                                type = data_link;
+                                length = 4; //Stores two UTF16 values and a data link sentinel
+                                break;
+                        }
+                    }
+
+                    if (IWS && (type & white_space_new_line)) {
+                        if (off < l$$1) {
+                            char += length;
                             type = symbol;
-                            break;
-                        case 8: //OPERATOR
-                            type = operator;
-                            break;
-                        case 9: //OPEN BRACKET
-                            type = open_bracket;
-                            break;
-                        case 10: //CLOSE BRACKET
-                            type = close_bracket;
-                            break;
-                        case 11: //Data Link Escape
-                            type = data_link;
-                            length = 4; //Stores two UTF16 values and a data link sentinel
-                            break;
+                            continue;
+                        } else {
+                            //Trim white space from end of string
+                            base = l$$1 - length;
+                            marker.sl -= length;
+                            length = 0;
+                            char -= base - off;
+                        }
                     }
-                }
 
-                if (IWS && (type & white_space_new_line)) {
-                    if (off < l$$1) {
-                        char += length;
-                        type = symbol;
-                        continue;
-                    } else {
-                        //Trim white space from end of string
-                        base = l$$1 - length;
-                        marker.sl -= length;
-                        length = 0;
-                        char -= base - off;
-                    }
+                    break;
                 }
-
-                break;
             }
 
             marker.type = type;
@@ -950,6 +984,25 @@ ${is_iws}`;
             return lex;
         }
 
+        /** Adds symbol to symbol_map. This allows custom symbols to be defined and tokenized by parser. **/
+        addSymbol(sym) {
+            if (!this.symbol_map)
+                this.symbol_map = new Map;
+
+
+            let map = this.symbol_map;
+
+            for (let i$$1 = 0; i$$1 < sym.length; i$$1++) {
+                let code = sym.charCodeAt(i$$1);
+                let m$$1 = map.get(code);
+                if (!m$$1){
+                    m$$1 = map.set(code, new Map).get(code);
+                }
+                map = m$$1;
+            }
+            map.IS_SYM = true;
+        }
+
         /*** Getters and Setters ***/
         get string() {
             return this.str;
@@ -1036,7 +1089,6 @@ ${is_iws}`;
 
         set type(value) {
             //assuming power of 2 value.
-
             this.masked_values = (this.masked_values & ~TYPE_MASK) | ((getNumbrOfTrailingZeroBitsFromPowerOf2(value)) & TYPE_MASK);
         }
 
@@ -1118,12 +1170,12 @@ ${is_iws}`;
             this.virtual = false;
         }
 
-        seal(){
+        seal() {
 
         }
 
         sp(value, rule) { //Set Property
-            if (this.prop){
+            if (this.prop) {
                 if (value)
                     if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
                         rule[this.prop] = value[0];
@@ -1144,6 +1196,7 @@ ${is_iws}`;
                 start = isNaN(this.r[0]) ? 1 : this.r[0],
                 end = isNaN(this.r[1]) ? 1 : this.r[1];
 
+
             return this.innerParser(lx, rule, out_val, r, start, end);
         }
 
@@ -1152,18 +1205,15 @@ ${is_iws}`;
             for (let j = 0; j < end && !lx.END; j++) {
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
-                    bool = this.terms[i].parse(lx, rule, r);
-                    if (!bool) break;
-                }
+                    if (!this.terms[i].parse(lx, rule, r)) {
 
-                if (!bool) {
+                        this.sp(r.v, rule);
 
-                    this.sp(r.v, rule);
-
-                    if (j <= start)
-                        return false;
-                    else
-                        return true;
+                        if (j < start && start > 0)
+                            return false;
+                        else
+                            return true;
+                    }
                 }
             }
 
@@ -1176,11 +1226,15 @@ ${is_iws}`;
     class AND extends NR {
         innerParser(lx, rule, out_val, r, start, end) {
 
-            outer:
-                for (let j = 0; j < end && !lx.END; j++) {
-                    for (let i = 0, l = this.terms.length; i < l; i++)
-                        if (!this.terms[i].parse(lx, rule, r)) return false;
+            outer: for (let j = 0; j < end && !lx.END; j++) {
+                for (let i = 0, l = this.terms.length; i < l; i++){
+                    console.log(i);
+                    if (!this.terms[i].parse(lx, rule, r)) {
+                        console.log("AAAPL", i);
+                        return false;
+                    }
                 }
+            }
 
             this.sp(r.v, rule);
 
@@ -1214,19 +1268,36 @@ ${is_iws}`;
         innerParser(lx, rule, out_val, r, start, end) {
             let bool = false;
 
-            for (let j = 0; j < end && !lx.END; j++) {
+            console.log(start, bool, end);
+
+            let j;
+            for (j = 0; j < end && !lx.END; j++) {
                 bool = false;
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
+                    if (!this.terms[i]) console.log(this);
                     bool = this.terms[i].parse(lx, rule, r);
                     if (bool) break;
                 }
 
-                if (!bool)
-                    if (j <= start) {
+                if (!bool) {
+                    if (j <= start && start > 0) {
                         this.sp(r.v, rule);
                         return false;
+                    } else {
+                        return true;
                     }
+                }
+            }
+
+            if(lx.END && !bool){
+                console.log("AA", j, start);
+                if (j <= start && start > 0) {
+                    this.sp(r.v, rule);
+                    return false;
+                } else {
+                    return true;
+                }
             }
 
             this.sp(r.v, rule);
@@ -1753,12 +1824,11 @@ ${is_iws}`;
                     
                     let num = parseInt(value,16);
 
-                    
                     out = { r: 0, g: 0, b: 0, a: 1 };
                     if(value.length == 3){
-                        out.r = (num >> 8) & 0xF;
-                        out.g = (num >> 4) & 0xF;
-                        out.b = (num) & 0xF;
+                        out.r = ((num >> 8) & 0xF) << 4;
+                        out.g = ((num >> 4) & 0xF) << 4;
+                        out.b = ((num) & 0xF) << 4;
                     }else{
                         if(value.length == 6){
                             out.r = (num >> 16) & 0xFF;
@@ -1775,33 +1845,52 @@ ${is_iws}`;
                     break;
                 case "r":
                     let tx = l.tx;
-                    if (tx == "rgba") {
-                        out = { r: 0, g: 0, b: 0, a: 1 };
+
+                    const RGB_TYPE = tx === "rgba"  ? 1 : tx === "rgb" ? 2 : 0;
+                    
+                    if(RGB_TYPE > 0){
+
                         l.next(); // (
+                        
                         out.r = parseInt(l.next().tx);
-                        l.next(); // ,
+                        
+                        l.next(); // , or  %
+
+                        if(l.ch == "%"){
+                            l.next(); out.r = out.r * 255 / 100;
+                        }
+                        
+                        
                         out.g = parseInt(l.next().tx);
-                        l.next(); // ,
+                        
+                        l.next(); // , or  %
+                       
+                        if(l.ch == "%"){
+                            l.next(); out.g = out.g * 255 / 100;
+                        }
+                        
+                        
                         out.b = parseInt(l.next().tx);
-                        l.next(); // ,
-                        out.a = parseFloat(l.next().tx);
-                        l.next().a(")");
+                        
+                        l.next(); // , or ) or %
+                        
+                        if(l.ch == "%")
+                            l.next(), out.b = out.b * 255 / 100;
+
+                        if(RGB_TYPE < 2){
+                            out.a = parseFloat(l.next().tx);
+
+                            l.next();
+                            
+                            if(l.ch == "%")
+                                l.next(), out.a = out.a * 255 / 100;
+                        }
+
+                        l.a(")");
                         c = new CSS_Color();
                         c.set(out);
                         return c;
-                    } else if (tx == "rgb") {
-                        out = { r: 0, g: 0, b: 0, a: 1 };
-                        l.next(); // (
-                        out.r = parseInt(l.next().tx);
-                        l.next(); // ,
-                        out.g = parseInt(l.next().tx);
-                        l.next(); // ,
-                        out.b = parseInt(l.next().tx);
-                        l.next().a(")");
-                        c = new CSS_Color();
-                        c.set(out);
-                        return c;
-                    } // intentional
+                    }  // intentional
                 default:
 
                     let string = l.tx;
@@ -2932,14 +3021,14 @@ ${is_iws}`;
     /* https://www.w3.org/TR/css-shapes-1/#typedef-basic-shape */
     class CSS_Shape extends Array {
         static parse(l, rule, r) {
-            if (l.tx == "inset" || l.tx == "circle" || l.tx == "ellipse" || l.tx == "polygon") {
+            if (l.tx == "inset" || l.tx == "circle" || l.tx == "ellipse" || l.tx == "polygon" || l.tx == "rect") {
                 l.next().a("(");
                 let v = "";
                 if (l.ty == l.types.str) {
                     v = l.tx.slice(1,-1);
                     l.next().a(")");
                 } else {
-                    let p = l.p;
+                    let p = l.pk;
                     while (!p.END && p.next().tx !== ")") { /* NO OP */ }
                     v = p.slice(l);
                     l.sync().a(")");
@@ -4184,186 +4273,242 @@ ${is_iws}`;
      * @enum {string}
      */
     const property_definitions = {
-        //https://www.w3.org/TR/2018/REC-css-color-3-20180619//
-        
-        color: `<color>`,
+        /* https://drafts.csswg.org/css-cascade/#inherited-property */
+            default:'|initial|inherit|unset|revert',
 
-        opacity: `<alphavalue>|inherit`,
+        /* https://drafts.csswg.org/css-writing-modes-3/ */
+            direction:"ltr|rtl",
+            unicode_bidi:"normal|embed|isolate|bidi-override|isolate-override|plaintext",
+            writing_mode:"horizontal-tb|vertical-rl|vertical-lr",
+            text_orientation:"mixed|upright|sideways",
+            glyph_orientation_vertical:"auto|0deg|90deg|0|90",
+            text_combine_upright:"none|all",
 
+        /* https://www.w3.org/TR/css-position-3 */ 
+            position: "static|relative|absolute|sticky|fixed",
+            top: `<length>|<percentage>|auto`,
+            left: `<length>|<percentage>|auto`,
+            bottom: `<length>|<percentage>|auto`,
+            right: `<length>|<percentage>|auto`,
+            offset_before: `<length>|<percentage>|auto`,
+            offset_after: `<length>|<percentage>|auto`,
+            offset_start: `<length>|<percentage>|auto`,
+            offset_end: `<length>|<percentage>|auto`,
+            z_index:"auto|<integer>",
 
-        /*https://www.w3.org/TR/css-backgrounds-3/*/
-        /* Background */
-        background_color: `<color>`,
-        background_image: `<bg_image>#`,
-        background_repeat: `<repeat_style>#`,
-        background_attachment: `scroll|fixed|local`,
-        background_position: `[<percentage>|<length>]{1,2}|[top|center|bottom]||[left|center|right]`,
-        background_clip: `<box>#`,
-        background_origin: `<box>#`,
-        background_size: `<bg_size>#`,
-        background: `<bg_layer>#,<final_bg_layer>`,
+        /* https://www.w3.org/TR/css-display-3/ */
+            display: `[ <display_outside> || <display_inside> ] | <display_listitem> | <display_internal> | <display_box> | <display_legacy>`,
 
-        /* Font https://www.w3.org/TR/css-fonts-4*/
-        font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
-        font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
-        font_variant: `normal|small-caps`,
-        font_style: `normal | italic | oblique <angle>?`,
-        font_kerning: ` auto | normal | none`,
-        font_variant_ligatures:`normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values> ]`,
-        font_variant_position:`normal|sub|super`,
-        font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
+        /* https://www.w3.org/TR/css-box-3 */
+            margin: `[<length>|<percentage>|0|auto]{1,4}`,
+            margin_top: `<length>|<percentage>|0|auto`,
+            margin_right: `<length>|<percentage>|0|auto`,
+            margin_bottom: `<length>|<percentage>|0|auto`,
+            margin_left: `<length>|<percentage>|0|auto`,
 
+            margin_trim:"none|in-flow|all",
 
-        /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
-        font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
-        font_weight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
+            padding: `[<length>|<percentage>|0|auto]{1,4}`,
+            padding_top: `<length>|<percentage>|0|auto`,
+            padding_right: `<length>|<percentage>|0|auto`,
+            padding_bottom: `<length>|<percentage>|0|auto`,
+            padding_left: `<length>|<percentage>|0|auto`,
 
-        /* Text */
-        word_spacing: `normal|<length>`,
-        letter_spacing: `normal|<length>`,
-        text_decoration: `none|[underline||overline||line-through||blink]`,
-        text_transform: `capitalize|uppercase|lowercase|none`,
-        text_align: `left|right|center|justify`,
-        text_indent: `<length>|<percentage>`,
+        /* https://www.w3.org/TR/CSS2/visuren.html */
+            float: `left|right|none`,
+            clear: `left|right|both|none`,
 
+        /* https://drafts.csswg.org/css-sizing-3 todo:implement fit-content(%) function */
+            box_sizing: `content-box | border-box`,
+            width: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
+            height: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
+            min_width: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
+            max_width: `<length>|<percentage>|min-content|max-content|fit-content|auto|none`,
+            min_height: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
+            max_height: `<length>|<percentage>|min-content|max-content|fit-content|auto|none`,
 
-        /* Border  https://www.w3.org/TR/css-backgrounds-3 */
-        border_color: `<color>{1,4}`,
-        border_top_color: `<color>`,
-        border_right_color: `<color>`,
-        border_bottom_color: `<color>`,
-        border_left_color: `<color>`,
+        /* https://www.w3.org/TR/2018/REC-css-color-3-20180619 */
+            color: `<color>`,
+            opacity: `<alphavalue>`,
 
-        border_width: `<line_width>{1,4}`,
-        border_top_width: `<line_width>`,
-        border_right_width: `<line_width>`,
-        border_bottom_width: `<line_width>`,
-        border_left_width: `<line_width>`,
+        /* https://www.w3.org/TR/css-backgrounds-3/ */
+            background_color: `<color>`,
+            background_image: `<bg_image>#`,
+            background_repeat: `<repeat_style>#`,
+            background_attachment: `scroll|fixed|local`,
+            background_position: `[<percentage>|<length>]{1,2}|[top|center|bottom]||[left|center|right]`,
+            background_clip: `<box>#`,
+            background_origin: `<box>#`,
+            background_size: `<bg_size>#`,
+            /*background: `<bg_layer>#,<final_bg_layer>`,*/
+            border_color: `<color>{1,4}`,
+            border_top_color: `<color>`,
+            border_right_color: `<color>`,
+            border_bottom_color: `<color>`,
+            border_left_color: `<color>`,
 
-        border_style: `<line_style>{1,4}`,
-        border_top_style: `<line_style>`,
-        border_right_style: `<line_style>`,
-        border_bottom_style: `<line_style>`,
-        border_left_style: `<line_style>`,
+            border_top_width: `<line_width>`,
+            border_right_width: `<line_width>`,
+            border_bottom_width: `<line_width>`,
+            border_left_width: `<line_width>`,
+            border_width: `<line_width>{1,4}`,
 
-        border_top: `<line_width>||<line_style>||<color>`,
-        border_right: `<line_width>||<line_style>||<color>`,
-        border_bottom: `<line_width>||<line_style>||<color>`,
-        border_left: `<line_width>||<line_style>||<color>`,
+            border_style: `<line_style>{1,4}`,
+            border_top_style: `<line_style>`,
+            border_right_style: `<line_style>`,
+            border_bottom_style: `<line_style>`,
+            border_left_style: `<line_style>`,
 
-        border_radius: `<length_percentage>{1,4}[/<length_percentage>{1,4}]?`,
-        border_top_left_radius: `<length_percentage>{1,2}`,
-        border_top_right_radius: `<length_percentage>{1,2}`,
-        border_bottom_right_radius: `<length_percentage>{1,2}`,
-        border_bottom_left_radius: `<length_percentage>{1,2}`,
+            border_top: `<line_width>||<line_style>||<color>`,
+            border_right: `<line_width>||<line_style>||<color>`,
+            border_bottom: `<line_width>||<line_style>||<color>`,
+            border_left: `<line_width>||<line_style>||<color>`,
 
-        border_image: `<border_image_source>||<border_image_slice>[/<border_image_width>|/<border_image_width>?/<border_image_outset>]?||<border_image_repeat>`,
-        border_image_source: `none|<image>`,
-        border_image_slice: `[<number>|<percentage>]{1,4}&&fill?`,
-        border_image_width: `[<length_percentage>|<number>|auto]{1,4}`,
-        border_image_outset: `[<length>|<number>]{1,4}`,
-        border_image_repeat: `[stretch|repeat|round|space]{1,2}`,
+            border_radius: `<length_percentage>{1,4}[ / <length_percentage>{1,4}]?`,
+            border_top_left_radius: `<length_percentage>{1,2}`,
+            border_top_right_radius: `<length_percentage>{1,2}`,
+            border_bottom_right_radius: `<length_percentage>{1,2}`,
+            border_bottom_left_radius: `<length_percentage>{1,2}`,
 
-        box_shadow: `none|<shadow>#`,
+            border: `<line_width>||<line_style>||<color>`,
 
-        border: `<line_width>||<line_style>||<color>`,
+            border_image: `<border_image_source>||<border_image_slice>[/<border_image_width>|/<border_image_width>?/<border_image_outset>]?||<border_image_repeat>`,
+            border_image_source: `none|<image>`,
+            border_image_slice: `[<number>|<percentage>]{1,4}&&fill?`,
+            border_image_width: `[<length_percentage>|<number>|auto]{1,4}`,
+            border_image_outset: `[<length>|<number>]{1,4}`,
+            border_image_repeat: `[stretch|repeat|round|space]{1,2}`,
+            box_shadow: `none|<shadow>#`,
+            line_height: `normal|<percentage>|<length>|<number>`,
+            overflow: 'visible|hidden|scroll|auto',
 
-        width: `<length>|<percentage>|auto|inherit`,
-        height: `<length>|<percentage>|auto|inherit`,
-        float: `left|right|none`,
-        clear: `left|right|both`,
+        /* https://www.w3.org/TR/css-fonts-4 */
+            font_display: "auto|block|swap|fallback|optional",
+            font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
+            font_language_override:"normal|<string>",
+            font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
+            font_max_size: `<absolute_size>|<relative_size>|<length>|<percentage>|infinity`,
+            font_min_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
+            font_optical_sizing: `auto|none`,
+            font_pallette: `normal|light|dark|<identifier>`,
+            font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
+            font_stretch:"<percentage>|normal|ultra-condensed|extra-condensed|condensed|semi-condensed|semi-expanded|expanded|extra-expanded|ultra-expanded",
+            font_style: `normal | italic | oblique <angle>?`,
+            font_synthesis:"none|[weight||style]",
+            font_synthesis_small_caps:"auto|none",
+            font_synthesis_style:"auto|none",
+            font_synthesis_weight:"auto|none",
+            font_variant_alternates:"normal|[stylistic(<feature-value-name>)||historical-forms||styleset(<feature-value-name>#)||character-variant(<feature-value-name>#)||swash(<feature-value-name>)||ornaments(<feature-value-name>)||annotation(<feature-value-name>)]",
+            font_variant_emoji:"auto|text|emoji|unicode",
+            font_variation_settings:" normal|[<string><number>]#",
+            font_size_adjust: `<number>|none`,
+            
+            font_weight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
 
-        /* Classification */
+        /* https://www.w3.org/TR/css-fonts-3/ */
+            font_kerning: ` auto | normal | none`,
+            font_variant: `normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values>||[small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps]||<numeric-figure-values>||<numeric-spacing-values>||<numeric-fraction-values>||ordinal||slashed-zero||<east-asian-variant-values>||<east-asian-width-values>||ruby||[sub|super]]`,
+            font_variant_ligatures:`normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values> ]`,
+            font_variant_position:`normal|sub|super`,
+            font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
+            font_variant_numeric: "normal | [ <numeric-figure-values> || <numeric-spacing-values> || <numeric-fraction-values> || ordinal || slashed-zero ]",
+            font_variant_east_asian:" normal | [ <east-asian-variant-values> || <east-asian-width-values> || ruby ]",
 
-        display: `[ <display_outside> || <display_inside> ] | <display_listitem> | <display_internal> | <display_box> | <display_legacy>`,
-        white_space: `normal|pre|nowrap`,
-        list_style_type: `disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman|lower-greek|lower-latin|upper-latin|armenian|georgian|lower-alpha|upper-alpha|none|inherit`,
+        /* https://drafts.csswg.org/css-text-3 */
+            hanging_punctuation : "none|[first||[force-end|allow-end]||last]",
+            hyphens : "none|manual|auto",
+            letter_spacing: `normal|<length>`,
+            line_break : "auto|loose|normal|strict|anywhere",
+            overflow_wrap : "normal|break-word|anywhere",
+            tab_size : "<length>|<number>",
+            text_align : "start|end|left|right|center|justify|match-parent|justify-all",
+            text_align_all : "start|end|left|right|center|justify|match-parent",
+            text_align_last : "auto|start|end|left|right|center|justify|match-parent",
+            text_indent : "[[<length>|<percentage>]&&hanging?&&each-line?]",
+            text_justify : "auto|none|inter-word|inter-character",
+            text_transform : "none|[capitalize|uppercase|lowercase]||full-width||full-size-kana",
+            white_space : "normal|pre|nowrap|pre-wrap|break-spaces|pre-line",
+            word_break : " normal|keep-all|break-all|break-word",
+            word_spacing : "normal|<length>",
+            word_wrap : "  normal | break-word | anywhere",
+
+        /* https://drafts.csswg.org/css-text-decor-3 */
+            text_decoration: "<text-decoration-line>||<text-decoration-style>||<color>",
+            text_decoration_color:"<color>",
+            text_decoration_line:"none|[underline||overline||line-through||blink]",
+            text_decoration_style:"solid|double|dotted|dashed|wavy",
+            text_emphasis:"<text-emphasis-style>||<text-emphasis-color>",
+            text_emphasis_color:"<color>",
+            text_emphasis_position:"[over|under]&&[right|left]?",
+            text_emphasis_style:"none|[[filled|open]||[dot|circle|double-circle|triangle|sesame]]|<string>",
+            text_shadow:"none|[<color>?&&<length>{2,3}]#",
+            text_underline_position:"auto|[under||[left|right]]",
+
+        /* Flex Box https://www.w3.org/TR/css-flexbox-1/ */
+            align_content: `flex-start | flex-end | center | space-between | space-around | stretch`,
+            align_items: `flex-start | flex-end | center | baseline | stretch`,
+            align_self: `auto | flex-start | flex-end | center | baseline | stretch`,
+            flex:`none|[<flex-grow> <flex-shrink>?||<flex-basis>]`,
+            flex_basis:`content|<width>`,
+            flex_direction:`row | row-reverse | column | column-reverse`,
+            flex_flow:`<flex-direction>||<flex-wrap>`,
+            flex_grow:`<number>`,
+            flex_shrink:`<number>`,
+            flex_wrap:`nowrap|wrap|wrap-reverse`,
+            justify_content :"flex-start | flex-end | center | space-between | space-around",
+            order:`<integer>`,
+
+        /* https://drafts.csswg.org/css-transitions-1/ */
+            transition: `<single_transition>#`,
+            transition_delay: `<time>#`,
+            transition_duration: `<time>#`,
+            transition_property: `none|<single_transition_property>#`,
+            transition_timing_function: `<timing_function>#`,
+
+        /* CSS3 Animation https://drafts.csswg.org/css-animations-1/ */
+            animation: `<single_animation>#`,
+            animation_name: `[none|<keyframes_name>]#`,
+            animation_duration: `<time>#`,
+            animation_timing_function: `<timing_function>#`,
+            animation_iteration_count: `<single_animation_iteration_count>#`,
+            animation_direction: `<single_animation_direction>#`,
+            animation_play_state: `<single_animation_play_state>#`,
+            animation_delayed: `<time>#`,
+            animation_fill_mode: `<single_animation_fill_mode>#`,
+
+        /* https://svgwg.org/svg2-draft/interact.html#PointerEventsProperty */
+            pointer_events : `visiblePainted|visibleFill|visibleStroke|visible|painted|fill|stroke|all|none|auto`,
+
+        /* https://drafts.csswg.org/css-ui-3 */
+            caret_color :"auto|<color>",
+            cursor:"[[<url> [<number><number>]?,]*[auto|default|none|context-menu|help|pointer|progress|wait|cell|crosshair|text|vertical-text|alias|copy|move|no-drop|not-allowed|grab|grabbing|e-resize|n-resize|ne-resize|nw-resize|s-resize|se-resize|sw-resize|w-resize|ew-resize|ns-resize|nesw-resize|nwse-resize|col-resize|row-resize|all-scroll|zoom-in|zoom-out]]",
+            outline:"[<outline-color>||<outline-style>||<outline-width>]",
+            outlinecolor:"<color>|invert",
+            outlineoffset:"<length>",
+            outlinestyle:"auto|<border-style>",
+            outlinewidth:"<line-width>",
+            resize:"none|both|horizontal|vertical",
+            text_overflow:"clip|ellipsis",
+
+        list_style_type: `disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman|lower-greek|lower-latin|upper-latin|armenian|georgian|lower-alpha|upper-alpha|none`,
         list_style_image: `<url>|none`,
         list_style_position: `inside|outside`,
         list_style: `[disc|circle|square|decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|none]||[inside|outside]||[<url>|none]`,
-        vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>|inherit`,
-
-        /* Layout https://www.w3.org/TR/css-position-3 */ 
-        position: "static|relative|absolute|sticky|fixed",
-        top: `<length>|<percentage>|auto|inherit`,
-        left: `<length>|<percentage>|auto|inherit`,
-        bottom: `<length>|<percentage>|auto|inherit`,
-        right: `<length>|<percentage>|auto|inherit`,
-
-        
-        /* Box Model https://www.w3.org/TR/css-box-3 */
-        margin: `[<length>|<percentage>|0|auto]{1,4}`,
-        margin_top: `<length>|<percentage>|0|auto`,
-        margin_right: `<length>|<percentage>|0|auto`,
-        margin_bottom: `<length>|<percentage>|0|auto`,
-        margin_left: `<length>|<percentage>|0|auto`,
-
-        padding: `[<length>|<percentage>|0|auto]{1,4}`,
-        padding_top: `<length>|<percentage>|0|auto`,
-        padding_right: `<length>|<percentage>|0|auto`,
-        padding_bottom: `<length>|<percentage>|0|auto`,
-        padding_left: `<length>|<percentage>|0|auto`,
-
-        min_width: `<length>|<percentage>|inherit`,
-        max_width: `<length>|<percentage>|none|inherit`,
-        min_height: `<length>|<percentage>|inherit`,
-        max_height: `<length>|<percentage>|none|inherit`,
-        line_height: `normal|<number>|<length>|<percentage>|inherit`,
-        overflow: 'visible|hidden|scroll|auto|inherit',
-
-        /* Flex Box https://www.w3.org/TR/css-flexbox-1/ */
-        align_items: `flex-start | flex-end | center | baseline | stretch`,
-        align_self: `auto | flex-start | flex-end | center | baseline | stretch`,
-        align_content: `flex-start | flex-end | center | space-between | space-around | stretch`,
-        flex_direction:`row | row-reverse | column | column-reverse`,
-        flex_flow:`<flex-direction>||<flex-wrap>`,
-        flex_wrap:`nowrap|wrap|wrap-reverse`,
-        order:`<integer>`,
-        flex:`none|[<flex-grow> <flex-shrink>?||<flex-basis>]`,
-        flex_grow:`<number>`,
-        flex_shrink:`<number>`,
-        flex_basis:`content|<width>`,
-        width:`<length>|<percentage>|auto|inherit`,
-
-        box_sizing: `content-box | border-box`,
+        vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>`,
 
         /* Visual Effects */
-        clip: '<shape>|auto|inherit',
-        visibility: `visible|hidden|collapse|inherit`,
-        content: `normal|none|[<string>|<uri>|<counter>|attr(<identifier>)|open-quote|close-quote|no-open-quote|no-close-quote]+|inherit`,
-        quotas: `[<string><string>]+|none|inherit`,
-        counter_reset: `[<identifier><integer>?]+|none|inherit`,
-        counter_increment: `[<identifier><integer>?]+|none|inherit`,
-
-        /* CSS3 Animation https://drafts.csswg.org/css-animations-1/ */
-        animation: `<single_animation>#`,
-
-        animation_name: `[none|<keyframes_name>]#`,
-        animation_duration: `<time>#`,
-        animation_timing_function: `<timing_function>#`,
-        animation_iteration_count: `<single_animation_iteration_count>#`,
-        animation_direction: `<single_animation_direction>#`,
-        animation_play_state: `<single_animation_play_state>#`,
-        animation_delayed: `<time>#`,
-        animation_fill_mode: `<single_animation_fill_mode>#`,
-
-        /* https://drafts.csswg.org/css-transitions-1/ */
-
-        transition: `<single_transition>#`,
-        transition_property: `none|<single_transition_property>#`,
-        transition_duration: `<time>#`,
-        transition_timing_function: `<timing_function>#`,
-        transition_delay: `<time>#`,
-
-        
-        /* https://www.w3.org/TR/SVG11/interact.html#PointerEventsProperty */
-        pointer_events : `visiblePainted|visibleFill|visibleStroke|visible|painted|fill|stroke|all|none|inherit|auto`,
+        clip: '<shape>|auto',
+        visibility: `visible|hidden|collapse`,
+        content: `normal|none|[<string>|<uri>|<counter>|attr(<identifier>)|open-quote|close-quote|no-open-quote|no-close-quote]+`,
+        quotas: `[<string><string>]+|none`,
+        counter_reset: `[<identifier><integer>?]+|none`,
+        counter_increment: `[<identifier><integer>?]+|none`,
     };
 
     /* Properties that are not directly accessible by CSS prop creator */
 
     const virtual_property_definitions = {
-
+        east_asian_variant_values : "[ jis78 | jis83 | jis90 | jis04 | simplified | traditional ",
 
         alphavalue: '<number>',
 
@@ -5142,8 +5287,10 @@ ${is_iws}`;
 
         if (prop) {
 
-            if (typeof(prop) == "string")
-                prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
+            if (typeof(prop) == "string") {
+                const def = definitions.default;
+                prop = definitions[property_name] = CreatePropertyParser(prop + def, property_name, definitions, productions);
+            }
             prop.name = property_name;
             return prop;
         }
@@ -5157,7 +5304,7 @@ ${is_iws}`;
 
             IS_VIRTUAL.is = true;
 
-            if (typeof(prop) == "string"){
+            if (typeof(prop) == "string") {
                 prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
                 prop.virtual = true;
                 prop.name = property_name;
@@ -5177,6 +5324,7 @@ ${is_iws}`;
         const important = { is: false };
 
         let n = d$1(l, definitions, productions);
+        console.log(util.inspect(n, { showHidden: false, depth: null }));
         n.seal();
 
         //if (n instanceof productions.NR && n.terms.length == 1 && n.r[1] < 2)
@@ -5189,33 +5337,69 @@ ${is_iws}`;
     }
 
     function d$1(l, definitions, productions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
-        let term, nt;
+        let term, nt, v;
         const { NR: NR$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
 
+        let GROUP_BREAK = false;
+
         while (!l.END) {
+
             switch (l.ch) {
-                case "]":
-                    if (term) return term;
-                    else
-                        throw new Error("Expected to have term before \"]\"");
-                case "[":
-                    if (term) return term;
-                    term = d$1(l.next(), definitions, productions);
-                    l.a("]");
+                case "!":
+                    /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
+                    l.next().a("important");
+                    important.is = true;
                     break;
+                case "]":
+
+                    return term;
+                    break;
+
+                case "[":
+                    v = d$1(l.next(), definitions, productions, true);
+                    l.assert("]");
+                    v = checkExtensions(l, v, productions);
+
+                    if (term) {
+                        if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
+                        term = _Jux_(productions, term, v);
+                    } else
+                        term = v;
+
+                    break;
+
+                case "<":
+
+                    v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
+                    l.next().assert(">");
+                    v = checkExtensions(l, v, productions);
+
+                    if (term) {
+                        if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
+                        term = _Jux_(productions, term, v);
+                    } else {
+                        term = v;
+                    }
+
+                    break;
+
                 case "&":
+
                     if (l.pk.ch == "&") {
+
                         if (and_group)
                             return term;
 
                         nt = new AND$$1();
+
+                        if (!term) throw new Error("missing term!");
 
                         nt.terms.push(term);
 
                         l.sync().next();
 
                         while (!l.END) {
-                            nt.terms.push(d$1(l, definitions, productions, super_term, group, need_group, true, important));
+                            nt.terms.push(d$1(l, definitions, productions, super_term, false, false, true, important));
                             if (l.ch !== "&" || l.pk.ch !== "&") break;
                             l.a("&").a("&");
                         }
@@ -5223,6 +5407,7 @@ ${is_iws}`;
                         return nt;
                     }
                 case "|":
+
                     {
                         if (l.pk.ch == "|") {
 
@@ -5236,7 +5421,7 @@ ${is_iws}`;
                             l.sync().next();
 
                             while (!l.END) {
-                                nt.terms.push(d$1(l, definitions, productions, super_term, group, true, and_group, important));
+                                nt.terms.push(d$1(l, definitions, productions, super_term, false, true, false, important));
                                 if (l.ch !== "|" || l.pk.ch !== "|") break;
                                 l.a("|").a("|");
                             }
@@ -5244,9 +5429,9 @@ ${is_iws}`;
                             return nt;
 
                         } else {
-                            if (group) {
+
+                            if (group)
                                 return term;
-                            }
 
                             nt = new ONE_OF$$1();
 
@@ -5255,7 +5440,7 @@ ${is_iws}`;
                             l.next();
 
                             while (!l.END) {
-                                nt.terms.push(d$1(l, definitions, productions, super_term, true, need_group, and_group, important));
+                                nt.terms.push(d$1(l, definitions, productions, super_term, true, false, false, important));
                                 if (l.ch !== "|") break;
                                 l.a("|");
                             }
@@ -5264,89 +5449,73 @@ ${is_iws}`;
                         }
                     }
                     break;
-                case "{":
-                    term = _Jux_(productions, term);
-                    term.r[0] = parseInt(l.next().tx);
-                    if (l.next().ch == ",") {
-                        l.next();
-                        if (l.pk.ch == "}") {
-
-                            term.r[1] = parseInt(l.tx);
-                            l.next();
-                        } else {
-                            term.r[1] = Infinity;
-                        }
-                    } else
-                        term.r[1] = term.r[0];
-                    l.a("}");
-                    if (super_term) return term;
-                    break;
-                case "*":
-                    term = _Jux_(productions, term);
-                    term.r[0] = 0;
-                    term.r[1] = Infinity;
-                    l.next();
-                    if (super_term) return term;
-                    break;
-                case "+":
-                    term = _Jux_(productions, term);
-                    term.r[0] = 1;
-                    term.r[1] = Infinity;
-                    l.next();
-                    if (super_term) return term;
-                    break;
-                case "?":
-                    term = _Jux_(productions, term);
-                    term.r[0] = 0;
-                    term.r[1] = 1;
-                    l.next();
-                    if (super_term) return term;
-                    break;
-                case "#":
-                    term = _Jux_(productions, term);
-                    term.terms.push(new SymbolTerm$$1(","));
-                    term.r[0] = 1;
-                    term.r[1] = Infinity;
-                    l.next();
-                    if (l.ch == "{") {
-                        term.r[0] = parseInt(l.next().tx);
-                        term.r[1] = parseInt(l.next().a(",").tx);
-                        l.next().a("}");
-                    }
-                    if (super_term) return term;
-                    break;
-                case "<":
-                    let v;
-
-                    if (term) {
-                        if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
-                        let v = d$1(l, definitions, productions, true);
-                        term = _Jux_(productions, term, v);
-                    } else {
-                        let v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
-                        l.next().a(">");
-                        term = v;
-                    }
-                    break;
-                case "!":
-                    /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
-
-                    l.next().a("important");
-                    important.is = true;
-                    break;
                 default:
+
+                    v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx);
+                    l.next();
+                    v = checkExtensions(l, v, productions);
+
                     if (term) {
                         if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
-                        let v = d$1(l, definitions, productions, true);
                         term = _Jux_(productions, term, v);
                     } else {
-                        let v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx);
-                        l.next();
                         term = v;
                     }
             }
         }
 
+        return term;
+    }
+
+    function checkExtensions(l, term, productions) {
+        switch (l.ch) {
+            case "{":
+                term = _Jux_(productions, term);
+                term.r[0] = parseInt(l.next().tx);
+                if (l.next().ch == ",") {
+                    l.next();
+                    if (l.pk.ch == "}") {
+
+                        term.r[1] = parseInt(l.tx);
+                        l.next();
+                    } else {
+                        term.r[1] = Infinity;
+                    }
+                } else
+                    term.r[1] = term.r[0];
+                l.a("}");
+                break;
+            case "*":
+                term = _Jux_(productions, term);
+                term.r[0] = 0;
+                term.r[1] = Infinity;
+                l.next();
+                break;
+            case "+":
+                term = _Jux_(productions, term);
+                term.r[0] = 1;
+                term.r[1] = Infinity;
+                l.next();
+                break;
+            case "?":
+                term = _Jux_(productions, term);
+                term.r[0] = 0;
+                term.r[1] = 1;
+                l.next();
+                break;
+            case "#":
+                term = _Jux_(productions, term);
+                term.terms.push(new SymbolTerm(","));
+                term.r[0] = 1;
+                term.r[1] = Infinity;
+                l.next();
+                if (l.ch == "{") {
+                    term.r[0] = parseInt(l.next().tx);
+                    term.r[1] = parseInt(l.next().a(",").tx);
+                    l.next().a("}");
+                }
+                break;
+        }
         return term;
     }
 
@@ -5854,4 +6023,4 @@ ${is_iws}`;
 
     return exports;
 
-}({}));
+}({},util));

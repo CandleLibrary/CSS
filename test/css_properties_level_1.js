@@ -1,220 +1,532 @@
-import {CSSRuleBody} from "../source/css.mjs";
-import whind from "@candlefw/whind";
+/*** 
+
+	Tests for parsing of CSS level 1 properties https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#box-properties 
+
+***/
+
+import { textSpread, checkText, checkArray, checkColor, checkLength, checkPercentage, checkNumber, checkURL, test,px,
+mm,
+cm,
+_in,
+pc,
+pt,
+ch,
+em,
+ex,
+rem,
+vh,
+vw,
+vmin,
+vmax,
+deg
+} from "./test_tools.js"
+
+const color = checkColor;
+const text = checkText;
+const url = checkURL;
+
+describe("CSS Level 1", () => {
+    describe("Font Properties: https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#font-properties", () => {
+
+        test.value = `font-family: Arial, Times New Roman, sans-serif`;
+        test.check = ["font_family", checkText("Arial"), checkText("Times New Roman"), checkText("sans-serif")];
 
 
-function checkColor(name, val){
-	return function(props){
-		const prop = checkProp(name)(props)
-		prop.toRGBString().should.equal(val)
-	}
-}
+        textSpread(
+            "font-style",
+            "normal",
+            "italic",
+            "oblique"
+        )
 
-function checkLength(name, val, type){
-	return function(props){
-		const prop = checkProp(name)(props)
-		prop.should.equal(val);
-		prop.unit.should.equal(type);
-	}
-}
-function checkProp(name){
-	return function(props){
-		props.should.have.property(name);
-		return props[name];
-	}
-}
-function checkText(name, val){
-	return function(props){
-		if(typeof(props) == "string"){
-			props.should.equal(name);
-		}else{
-			props.should.have.property(name, val)
-		}
-	}
-}
+        textSpread(
+            "font-variant",
+            "normal",
+            "small-caps"
+        )
 
-function textSpread(name, ...rest){
-	let prop_name = name.replace(/\-/g, "_");
-	for(let i = 0; i < rest.length; i++){
-		let text = rest[i];
-		test.value = `${name}:${text}`
-		test.check = checkText( prop_name, text);
-	}
-}
+        textSpread(
+            "font-weight",
+            "normal",
+            "bold",
+            "bolder",
+            "lighter",
+            "100",
+            "200",
+            "300",
+            "400",
+            "500",
+            "600",
+            "700",
+            "800",
+            "900"
+        )
 
-function checkArray(name, ...rest){
-	return function(props){
-		props.should.have.property(name);
+        textSpread(
+            "font-size",
+            "xx-small",
+            "x-small",
+            "small",
+            "medium",
+            "large",
+            "x-large",
+            "xx-large",
+            "larger",
+            "smaller"
+        );
 
-		const array = props[name];
-		
-		array.should.have.property("length", rest.length);
+        test.value = "font-size:90px"
+        test.check = checkLength(90, "px");
 
-		for(let i = 0; i < rest.length; i++){
-			let func = rest[i];
-			let prop = array[i];
+        test.value = "font-size:90em"
+        test.check = checkLength(90, "em");
 
-			func(prop);
-		}
-	}
-}
+        test.value = "font-size:90em"
+        test.check = checkLength(90, "em");
 
-/*** Font Family ***/
-const test = {
-	v:null, 
-	set value(v){
-		this.v = v;
-	},
-	set check(f){
-		if(!this.v)
-			throw new Error("Please provide CSS property value before defining a check funcition.")
-		const v = this.v;
-		it(`Parses property {${v}}`, async ()=>{
-			const body = new CSSRuleBody();
-			await body.parse(whind(`{${v}}`));
-			f(body.rules[0].props);
-		});
-		this.v = "";
-	}
-}
+        test.value = "font:italic 30px Arial, sans-serif";
+    })
 
-describe("CSS Level 1", ()=>{
+    describe("Color and Background Properties: https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#color-and-background-properties", () => {
 
+        test.value = "color: red"
+        test.check = color(255);
 
+        test.value = "color: #FF0000"
+        test.check = color(255);
 
+        test.value = "color: #F00"
+        test.check = color(255);
 
-describe("Font Properties: https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#font-properties", ()=>{
+        test.value = "color: rgb(255, 0, 0)";
+        test.check = color(255);
 
-	test.value = `font-family: Arial, Times New Roman, sans-serif`;
-	test.check = checkArray("font_family", checkText("Arial"), checkText("Times New Roman"), checkText("sans-serif"))
+        test.value = "color: rgb(100%, 0%, 0%)";
+        test.check = color(255);
 
+        test.value = "background-color: transparent";
+        test.check = color(0,0,0,0);
 
-	textSpread(
-		"font-style", 
-		"normal",
-		"italic",
-		"oblique"
-	)
+        test.value = "background-color: #FF0000";
+        test.check = color(255);
 
-	textSpread(
-		"font-variant", 
-		"normal",
-		"small-caps"
-	)
-	
-	textSpread(
-		"font-weight",
-		"normal",
-		"bold",
-		"bolder",
-		"lighter",
-		"100",
-		"200",
-		"300",
-		"400",
-		"500",
-		"600",
-		"700",
-		"800",
-		"900"
-	)
+        test.value = "background-image:none";
+        test.check = checkText("none");
 
-	textSpread(
-		"font-size",
-		"xx-small",
-		"x-small",
-		"small",
-		"medium",
-		"large",
-		"x-large",
-		"xx-large",
-		"larger",
-		"smaller"
-	);
+        test.value = "background-image:url(test.me:8080)";
+        test.check = checkURL("test.me:8080")
 
-	test.value = "font-size:90px"
-	test.check = checkLength( "font_size", 90, "px");
+        textSpread(
+            "background-repeat",
+            "repeat",
+            "repeat-x",
+            "repeat-y",
+            "no-repeat"
+        );
 
-	test.value = "font-size:90em"
-	test.check = checkLength( "font_size", 90, "em");
+        textSpread(
+            "background-attachment",
+            "scroll",
+            "fixed"
+        );
 
-	test.value = "font-size:90em"
-	test.check = checkLength( "font_size", 90, "em");
+        test.value = "background-position:0% 0%";
+        test.check = [checkPercentage(0), checkPercentage(0)];
 
-	test.value = "font:italic 30px Arial, sans-serif";
-})
+        test.value = "background-position:top right";
+        test.check = [checkText("top"), checkText("right")];
 
-describe("Color and Background Properties: https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#color-and-background-properties", ()=>{
-	
-	test.value = "color: red"
-	test.check = checkColor("color", "rgba(255,0,0,1)");
-	
-	test.value = "color: #FF0000"
-	test.check = checkColor("color", "rgba(255,0,0,1)");
-	
-	test.value = "color: rgb(255, 0, 0)";
-	test.check = checkColor("color", "rgba(255,0,0,1)");
-	
-	test.value = "color: rgb(100%, 0%, 0%)";
-	test.check = checkColor("color", "rgba(255,0,0,1)");
+        test.value = "background: red url(bg.ck:12) scroll"
+        test.check = ["red", url("bg.ck:12"), "scroll"]
+    })
 
-	test.value = "background-color: transparent";
-	test.check = checkColor("background_color", "rgba(0,0,0,0)");
+    describe("Text Properties: https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#text-properties", () => {
 
-	test.value = "background-color: #FF0000";
-	test.check = checkColor("background_color", "rgba(255,0,0,1)");
+        test.value = "word-spacing:normal";
+        test.check = checkText("normal");
 
-	test.value = "background-image:none";
-	test.check = checkText("background_color", "none");
+        test.value = "word-spacing:20px";
+        test.check = checkLength(20, "px");
 
-	test.value = "background-image:url(test.me:8080)";
-	test.check = (props)=> (props.should.have.property("background_image"),props.background_image.host.should.equal("test.me"),props.background_image.port.should.equal(8080));
+        test.value = "letter-spacing:normal";
+        test.check = checkText("normal");
 
-	test.value = "background-repeat:repeat";
-	test.check = (props)=> props.should.have.property("background_repeat", "repeat");
+        test.value = "letter-spacing:20px";
+        test.check = checkLength(20, "px");
 
-	test.value = "background-repeat:repeat-x";
-	test.check = (props)=> props.should.have.property("background_repeat", "repeat-x");
+        test.value = "letter-spacing:201pt";
+        test.check = checkLength(201, "pt");
 
-	test.value = "background-repeat:repeat-y";
-	test.check = (props)=> props.should.have.property("background_repeat", "repeat-y");
+        textSpread(
+            "text-decoration",
+            "none",
+            "underline",
+            "overline",
+            "line-through",
+            "blink"
+        );
 
-	test.value = "background-repeat:no-repeat";
-	test.check = (props)=> props.should.have.property("background_repeat", "no-repeat");
+        test.value = "text-decoration: underline blink";
+        test.check = ["underline", "blink"];
 
-	test.value = "background-attachement:scroll";
-	test.check = (props)=> props.should.have.property("background_attachement", "scroll");
+        textSpread(
+            "vertical-align",
+            "baseline",
+            "middle",
+            "sub",
+            "super",
+            "text-top",
+            "text-bottom",
+        );
 
-	test.value = "background-attachement:fixed";
-	test.check = (props)=> props.should.have.property("background_attachement", "fixed");
+        test.value = "vertical-align:120%"
+        test.check = checkPercentage(120);
 
-	test.value = "background-position:0% 0%";
-	test.check = (props)=> (props.should.have.property("background_position"));
+        textSpread(
+            "text-transform",
+            "capitalize",
+            "uppercase",
+            "lowercase",
+            "none"
+        );
 
-	test.value = "background-position:top right";
-	test.check = (props)=> (props.should.have.property("background_position"));
-})
+        textSpread("text-align","left","right","center","justify");
 
-describe("Text Properties: https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#text-properties", ()=>{
+        
+        test.value = "text-indent:120%"
+        test.only();
+        test.check = checkPercentage(120);
+        
 
-	test.value = "word-spacing:normal";
-	test.check = checkText("word_spacing", "normal");
+        test.value = "text-indent:148rem"
+        test.check = checkLength(148, "rem");
 
-	test.value = "word-spacing:20px";
-	test.check = checkLength("word_spacing", 20, "px");
+        textSpread(
+            "line-height",
+            "normal"
+        );
 
-	test.value = "letter-spacing:normal";
-	test.check = checkText("letter_spacing", "normal");
+        test.value = "line-height:102%"
+        test.check = checkPercentage(102);
 
-	test.value = "letter-spacing:20px";
-	test.check = checkLength("letter_spacing", 20, "px");
+        test.value = "line-height:14px"
+        test.check = checkLength(14, "px");
 
-	test
-})
+        test.value = "line-height:1412"
+        test.check = checkNumber(1412);
+    })
 
-/** Position Tests **/
-test.value = `position:absolute`;
-test.check = (props)=> props.should.have.property("position", "absolute");
+    describe("Box Properties: https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#box-properties", () => {
+        textSpread(
+            "margin-top",
+            "auto"
+        );
 
-test.value = `position:relative`;
-test.check = (props)=> props.should.have.property("position", "relative");
+        test.value = "margin-top:102%"
+        test.check = checkPercentage(102);
+
+        test.value = "margin-top:14mm"
+        test.check = checkLength(14, "mm");
+
+        textSpread(
+            "margin-right",
+            "auto"
+        );
+
+        test.value = "margin-right:140%"
+        test.check = checkPercentage(140);
+
+        test.value = "margin-right:14cm"
+        test.check = checkLength(14, "cm");
+
+        textSpread(
+            "margin-bottom",
+            "auto"
+        );
+
+        test.value = "margin-bottom:140%"
+        test.check = checkPercentage(140);
+
+        test.value = "margin-bottom:14vh"
+        test.check = checkLength(14, "vh");
+
+        textSpread(
+            "margin-left",
+            "auto"
+        );
+
+        test.value = "margin-left:140%"
+        test.check = checkPercentage(140);
+
+        test.value = "margin-left:14vh"
+        test.check = checkLength(14, "vh");
+
+        textSpread(
+            "margin",
+            "auto"
+        );
+
+        test.value = "margin: 30%"
+        test.check = checkPercentage(30)
+
+        test.value = "margin: 2px 100%"
+        test.check = [checkLength(2,"px"), checkPercentage(100)];
+
+        test.value = "margin: 2px 4px 8px 9px"
+        test.check = [checkLength(2,"px"),checkLength(4,"px"), checkLength(8,"px"), checkLength(9,"px")];
+
+        test.value = "padding-top:102%"
+        test.check = checkPercentage(102);
+
+        test.value = "padding-top:14mm"
+        test.check = checkLength(14, "mm");
+
+        test.value = "padding-right:140%"
+        test.check = checkPercentage(140);
+
+        test.value = "padding-right:14cm"
+        test.check = checkLength(14, "cm");
+
+        test.value = "padding-bottom:140%"
+        test.check = checkPercentage(140);
+
+        test.value = "padding-bottom:14vh"
+        test.check = checkLength(14, "vh");
+
+        test.value = "padding-left:140%"
+        test.check = checkPercentage(140);
+
+        test.value = "padding-left:14vh"
+        test.check = checkLength(14, "vh");
+
+        test.value = "padding: 30%"
+        test.check = checkPercentage(30)
+
+        test.value = "padding: 2px 100%"
+        test.check = [checkLength(2,"px"), checkPercentage(100)];
+
+        test.value = "padding: 2px 4px 8px 9px"
+        test.check = [px(2),px(4),px(8),px(9)];
+
+         textSpread(
+            "border-top-width",
+            "thin",
+            "medium",
+            "thick"
+        );
+
+        test.value = "border-top-width:14vmax"
+        test.check = checkLength(14, "vmax");
+
+        textSpread(
+            "border-right-width",
+            "thin",
+            "medium",
+            "thick"
+        );
+
+        test.value = "border-right-width:14px"
+        test.check = checkLength(14, "px");
+
+        textSpread(
+            "border-bottom-width",
+            "thin",
+            "medium",
+            "thick"
+        );
+
+        test.value = "border-bottom-width:14rem"
+        test.check = checkLength(14, "rem");
+
+        textSpread(
+            "border-left-width",
+            "thin",
+            "medium",
+            "thick"
+        );
+
+        test.value = "border-left-width:14deg"
+        test.check = checkLength(14, "deg");
+
+        textSpread(
+            "border-width",
+            "thin",
+            "medium",
+            "thick"
+        );
+
+        test.value = "border-width: 2px 100px"
+        test.check = [checkLength(2,"px"), checkLength(100, "px")];
+
+        test.value = "border-width: 2px 4px 8px 9px"
+        test.check = [checkLength(2,"px"),checkLength(4,"px"), checkLength(8,"px"), checkLength(9,"px")];
+
+        test.value = "border-color: red green blue"
+        test.check = [color(255), color(0,128), color(0,0,255)];
+
+        test.value = "border-color: teal"
+        test.check = color(0,128,128)
+
+        textSpread(
+            "border-style",
+            "none",
+            "dotted",
+            "dashed",
+            "solid",
+            "double",
+            "groove",
+            "ridge",
+            "inset",
+            "outset"
+        );
+
+        test.value = "border-top: 2px double blue"
+        test.check = [px(2), "double", color(0,0,255)];
+
+        test.value = "border-top: 2px"
+        test.check = px(2);
+
+        test.value = "border-top: double"
+        test.check = "double";
+
+        test.value = "border-top: #FF00FF"
+        test.check = color(255,0,255);
+
+        test.value = "border-right: 2px double blue"
+        test.check = [px(2), "double", color(0,0,255)];
+
+        test.value = "border-right: 2px"
+        test.check = px(2);
+
+        test.value = "border-right: double"
+        test.check = "double";
+
+        test.value = "border-right: #FF00FF"
+        test.check = color(255,0,255);
+
+        test.value = "border-bottom: 2px double blue"
+        test.check = [px(2), "double", color(0,0,255)];
+
+        test.value = "border-bottom: 2px"
+        test.check = px(2);
+
+        test.value = "border-bottom: double"
+        test.check = "double";
+
+        test.value = "border-bottom: #FF00FF"
+        test.check = color(255,0,255);
+
+        test.value = "border-left: 2px double blue"
+        test.check = [px(2), "double", color(0,0,255)];
+
+        test.value = "border-left: 2px"
+        test.check = px(2);
+
+        test.value = "border-left: double"
+        test.check = "double";
+
+        test.value = "border-left: #FF00FF"
+        test.check = color(255,0,255);
+
+        test.value = "border: 2px double blue"
+        test.check = [px(2), "double", color(0,0,255)];
+
+        test.value = "border: 2px"
+        test.check = px(2);
+
+        test.value = "border: double"
+        test.check = "double";
+
+        test.value = "border: #FF00FF"
+        test.check = color(255,0,255);
+
+        test.value = "width:auto"
+        test.check = "auto";
+
+        test.value = "width:20%"
+        test.check = checkPercentage(20);
+
+        test.value = "width:180vh"
+        test.check = vh(180);
+
+        test.value = "height:auto"
+        test.check = "auto";
+
+        test.value = "height:180vh"
+        test.check = vh(180);
+
+        textSpread(
+            "float",
+            "left",
+            "right",
+            "none"
+        );
+
+        textSpread(
+            "clear",
+            "left",
+            "right",
+            "both",
+            "none"
+        );
+
+        textSpread(
+            "display",
+            "block",
+            "inline",
+            "list-item",
+            "none"
+        );
+
+        textSpread(
+            "white-space",
+            "normal",
+            "pre",
+            "nowrap"
+        );
+
+        textSpread(
+            "list-style-type",
+            "disc" , 
+            "circle" , 
+            "square" , 
+            "decimal" , 
+            "lower-roman" , 
+            "upper-roman" , 
+            "lower-alpha" , 
+            "upper-alpha" , 
+            "none"
+        );
+
+        test.value = "list-style-image:none";
+        test.check = "none";
+
+        test.value = "list-style-image:url(rockwell.org:3030)";
+        test.check = url("rockwell.org:3030");
+
+        textSpread(
+            "list-style-position",
+            "inside" , 
+            "outside" 
+        );
+
+        textSpread(
+            "list-style",
+            "disc" , 
+            "circle" , 
+            "square" , 
+            "decimal" , 
+            "lower-roman" , 
+            "upper-roman" , 
+            "lower-alpha" , 
+            "upper-alpha" , 
+            "none"
+        );
+
+        test.value = "list-style:disc inside none"
+        test.check = ["disc", "inside", "none"];
+
+        test.value = "list-style:disc inside url(https://crankle.org.net.com:443)"
+        test.check = ["disc", "inside", url("https://crankle.org.net.com:443")];
+    })
 })

@@ -86,12 +86,11 @@ export default class CSS_Color extends Color {
                 
                 let num = parseInt(value,16);
 
-                
                 out = { r: 0, g: 0, b: 0, a: 1 };
                 if(value.length == 3){
-                    out.r = (num >> 8) & 0xF;
-                    out.g = (num >> 4) & 0xF;
-                    out.b = (num) & 0xF;
+                    out.r = ((num >> 8) & 0xF) << 4;
+                    out.g = ((num >> 4) & 0xF) << 4;
+                    out.b = ((num) & 0xF) << 4;
                 }else{
                     if(value.length == 6){
                         out.r = (num >> 16) & 0xFF;
@@ -108,33 +107,52 @@ export default class CSS_Color extends Color {
                 break;
             case "r":
                 let tx = l.tx;
-                if (tx == "rgba") {
-                    out = { r: 0, g: 0, b: 0, a: 1 };
+
+                const RGB_TYPE = tx === "rgba"  ? 1 : tx === "rgb" ? 2 : 0;
+                
+                if(RGB_TYPE > 0){
+
                     l.next(); // (
+                    
                     out.r = parseInt(l.next().tx);
-                    l.next(); // ,
+                    
+                    l.next(); // , or  %
+
+                    if(l.ch == "%"){
+                        l.next(); out.r = out.r * 255 / 100;
+                    }
+                    
+                    
                     out.g = parseInt(l.next().tx);
-                    l.next(); // ,
+                    
+                    l.next(); // , or  %
+                   
+                    if(l.ch == "%"){
+                        l.next(); out.g = out.g * 255 / 100;
+                    }
+                    
+                    
                     out.b = parseInt(l.next().tx);
-                    l.next(); // ,
-                    out.a = parseFloat(l.next().tx);
-                    l.next().a(")");
+                    
+                    l.next(); // , or ) or %
+                    
+                    if(l.ch == "%")
+                        l.next(), out.b = out.b * 255 / 100;
+
+                    if(RGB_TYPE < 2){
+                        out.a = parseFloat(l.next().tx);
+
+                        l.next()
+                        
+                        if(l.ch == "%")
+                            l.next(), out.a = out.a * 255 / 100;
+                    }
+
+                    l.a(")");
                     c = new CSS_Color();
                     c.set(out);
                     return c;
-                } else if (tx == "rgb") {
-                    out = { r: 0, g: 0, b: 0, a: 1 };
-                    l.next(); // (
-                    out.r = parseInt(l.next().tx);
-                    l.next(); // ,
-                    out.g = parseInt(l.next().tx);
-                    l.next(); // ,
-                    out.b = parseInt(l.next().tx);
-                    l.next().a(")");
-                    c = new CSS_Color();
-                    c.set(out);
-                    return c;
-                } // intentional
+                }  // intentional
             default:
 
                 let string = l.tx;

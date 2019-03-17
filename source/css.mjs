@@ -188,6 +188,9 @@ export const CSSParser = (css_string, root = null) => (root = (!root || !(root i
 
 CSSParser.types = types;
 
+import CSS_Length from "./types/length.mjs";
+import CSS_URL from "./types/url.mjs";
+
 export default CSSParser;
-export {CSSRuleBody}
+export {CSSRuleBody, CSS_Length, CSS_URL}
 
