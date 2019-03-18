@@ -129,6 +129,7 @@ class JUX extends prod.JUX {
                     let blank = new BlankTerm();
                     blank.parseInput(segment);
                     segment.prod = this;
+                    
                     segment.repeat();
                     ele.addSub(segment)
                 }

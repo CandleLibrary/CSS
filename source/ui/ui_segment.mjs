@@ -210,7 +210,8 @@ export class Segment {
     }
 
     repeat(prod = this.prod) {
-        if (this.value_count <= this.end && this.start + this.end !== 2) {
+        
+        if (this.value_count <= this.end && this.prod.end > 1) {
             this.ext.style.display = "inline-block";
 
             let root_x = 0;

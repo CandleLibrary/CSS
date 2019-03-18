@@ -1234,9 +1234,9 @@ class JUX { /* Juxtaposition */
 
             bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
 
-            if (!lx.END)
-                return false;
-            else
+            //if (!lx.END)
+            //    return false;
+            //else
                 this.sp(r.v, rule);
         } else
             bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
@@ -1433,7 +1433,7 @@ class ONE_OF extends JUX {
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
                 ////if (!this.terms[i]) console.log(this)
-                if (this.terms[i].parse(copy, rule, r, false)) {
+                if (this.terms[i].parse(copy, rule, temp_r, false)) {
                     bool = true;
                     break;
                 }
@@ -1443,7 +1443,7 @@ class ONE_OF extends JUX {
                 break;
 
             lx.sync(copy);
-
+            
             if (temp_r.v)
                 this.mergeValues(r, temp_r);
 
@@ -1671,7 +1671,8 @@ class Segment {
     }
 
     repeat(prod = this.prod) {
-        if (this.value_count <= this.end && this.start + this.end !== 2) {
+        
+        if (this.value_count <= this.end && this.prod.end > 1) {
             this.ext.style.display = "inline-block";
 
             let root_x = 0;
@@ -2346,6 +2347,9 @@ class CSS_Length extends Number {
         let ele = document.createElement("input");
         ele.type = "number";
         ele.value = (value) ? value + 0 : 0;
+        ele.addEventListener("change", (e)=>{
+            ele.css_value = ele.value + "px";
+        });
         return ele;
     }
 
@@ -3226,6 +3230,9 @@ class CSS_Number extends Number {
         let ele = document.createElement("input");
         ele.type = "number";
         ele.value = (value) ? value + 0 : 0;
+        ele.addEventListener("change", (e)=>{
+            ele.css_value = ele.value;
+        });
         return ele;
     }
 
@@ -5097,7 +5104,7 @@ class ValueTerm$1 extends ValueTerm {
                 sub.css_val = value + "";
             
             sub.setValueHandler(element, (ele, seg, event)=>{
-                seg.css_val = element.value;
+                seg.css_val = element.css_value;
                 seg.update();
             });
             //sub.prod = list;
@@ -5134,6 +5141,7 @@ class ValueTerm$1 extends ValueTerm {
             if (slot) {
                 let element = this.value.valueHandler();
                 element.addEventListener("change", e => {
+
                     let value = element.value;
                     slot.css_val = value;
                     slot.update();
@@ -5366,6 +5374,7 @@ class JUX$1 extends JUX {
                     let blank = new BlankTerm();
                     blank.parseInput(segment);
                     segment.prod = this;
+                    
                     segment.repeat();
                     ele.addSub(segment);
                 }

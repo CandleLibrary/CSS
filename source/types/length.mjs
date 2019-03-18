@@ -8,6 +8,9 @@ export default class CSS_Length extends Number {
         let ele = document.createElement("input")
         ele.type = "number";
         ele.value = (value) ? value + 0 : 0;
+        ele.addEventListener("change", (e)=>{
+            ele.css_value = ele.value + "px";
+        })
         return ele;
     }
 

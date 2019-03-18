@@ -17,10 +17,10 @@ let start = async function() {
 
     input.value =
 `test div {
-    font-family:serif;
-    background-color:green;
-    color:white;
-
+    font-family:cursive;
+    background-color:#008000;
+    color:#ffffff;
+    border-radius:2px;
 }`
 
 	const css_ = await css.CSSParser(input.value)

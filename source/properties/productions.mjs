@@ -76,9 +76,9 @@ class JUX { /* Juxtaposition */
 
             bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
 
-            if (!lx.END)
-                return false;
-            else
+            //if (!lx.END)
+            //    return false;
+            //else
                 this.sp(r.v, rule);
         } else
             bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
@@ -275,7 +275,7 @@ class ONE_OF extends JUX {
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
                 ////if (!this.terms[i]) console.log(this)
-                if (this.terms[i].parse(copy, rule, r, false)) {
+                if (this.terms[i].parse(copy, rule, temp_r, false)) {
                     bool = true;
                     break;
                 }
@@ -285,7 +285,7 @@ class ONE_OF extends JUX {
                 break;
 
             lx.sync(copy)
-
+            
             if (temp_r.v)
                 this.mergeValues(r, temp_r)
 

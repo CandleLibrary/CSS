@@ -21,7 +21,7 @@ export class ValueTerm extends terms.ValueTerm {
                 sub.css_val = value + "";
             
             sub.setValueHandler(element, (ele, seg, event)=>{
-                seg.css_val = element.value;
+                seg.css_val = element.css_value;
                 seg.update();
             });
             //sub.prod = list;
@@ -58,6 +58,7 @@ export class ValueTerm extends terms.ValueTerm {
             if (slot) {
                 let element = this.value.valueHandler();
                 element.addEventListener("change", e => {
+
                     let value = element.value;
                     slot.css_val = value;
                     slot.update();
