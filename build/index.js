@@ -1,24 +1,26 @@
 let start = async function() {
 
+    let style = document.createElement("style")
     let input = document.getElementById("input");
+
+    document.head.appendChild(style);
 
     input.addEventListener("change", async (e) => {
         console.log(1)
         let value = e.target.value;
         css_.parse(value, true);
+        
     })
 
 
 
-    input.value =
-`.test, div {
-    border : thin solid red;
-    border-radius:2px;   
-}
 
-.test {
-    font-size:larger;
-    font-family:"Arial"
+    input.value =
+`test div {
+    font-family:serif;
+    background-color:green;
+    color:white;
+
 }`
 
 	const css_ = await css.CSSParser(input.value)
@@ -29,7 +31,7 @@ let start = async function() {
 
     css_.addObserver({
         updatedCSS : ()=>{
-            input.value = css_.toString();
+            style.innerHTML = input.value = css_.toString();
         }
     });
 }

@@ -2,7 +2,7 @@ import whind from "@candlefw/whind";
 import { JUX, AND, OR, ONE_OF } from "./productions";
 import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms";
 import { virtual_property_definitions } from "./property_and_type_definitions";
-import util from "util"
+//import util from "util"
 const standard_productions = {
     JUX,
     AND,
@@ -90,8 +90,8 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX && term.isRepeating()) term = _Jux_(productions, new JUX, term);
-                    term = _Jux_(productions, term, v);
+                    if (term instanceof JUX && term.isRepeating()) term = foldIntoProduction(productions, new JUX, term);
+                    term = foldIntoProduction(productions, term, v);
                 } else
                     term = v;
                 break;
@@ -104,8 +104,8 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX /*&& term.isRepeating()*/) term = _Jux_(productions, new JUX, term);
-                    term = _Jux_(productions, term, v);
+                    if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
+                    term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
                 }
@@ -185,8 +185,8 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                 v = checkExtensions(l, v, productions)
 
                 if (term) {
-                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = _Jux_(productions, new JUX, term);
-                    term = _Jux_(productions, term, v);
+                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
+                    term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
                 }
@@ -207,7 +207,7 @@ function checkExtensions(l, term, productions) {
                 l.next();
                 continue outer;
             case "{":
-                term = _Jux_(productions, term);
+                term = foldIntoProduction(productions, term);
                 term.r[0] = parseInt(l.next().tx);
                 if (l.next().ch == ",") {
                     l.next();
@@ -223,25 +223,25 @@ function checkExtensions(l, term, productions) {
                 l.a("}");
                 break;
             case "*":
-                term = _Jux_(productions, term);
+                term = foldIntoProduction(productions, term);
                 term.r[0] = 0;
                 term.r[1] = Infinity;
                 l.next();
                 break;
             case "+":
-                term = _Jux_(productions, term);
+                term = foldIntoProduction(productions, term);
                 term.r[0] = 1;
                 term.r[1] = Infinity;
                 l.next();
                 break;
             case "?":
-                term = _Jux_(productions, term);
+                term = foldIntoProduction(productions, term);
                 term.r[0] = 0;
                 term.r[1] = 1;
                 l.next();
                 break;
             case "#":
-                term = _Jux_(productions, term);
+                term = foldIntoProduction(productions, term);
                 term.terms.push(new SymbolTerm(","));
                 term.r[0] = 1;
                 term.r[1] = Infinity;
@@ -259,7 +259,7 @@ function checkExtensions(l, term, productions) {
     return term;
 }
 
-function _Jux_(productions, term, new_term = null) {
+function foldIntoProduction(productions, term, new_term = null) {
     if (term) {
         if (!(term instanceof productions.JUX)) {
             let nr = new productions.JUX();

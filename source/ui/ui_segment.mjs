@@ -13,8 +13,8 @@ export class Segment {
 
         this.ext = document.createElement("button");
         this.ext.classList.add("prop_extender");
-        this.ext.innerHTML = "+"
         this.ext.style.display = "none";
+        this.ext.setAttribute("action","ext")
 
         this.menu_icon = document.createElement("span");
         this.menu_icon.classList.add("prop_list_icon");
@@ -220,9 +220,19 @@ export class Segment {
             const move = (e) => {
 
                 let diff = e.clientX - root_x;
-                let min_diff = diff + diff_width;
+                let min_diff = diff + diff_width;   
 
-                if (diff > 15 && this.value_count < this.end) {
+                let EXTENDABLE = this.value_count < this.end;
+                let RETRACTABLE = this.value_count > 1;
+
+                if(EXTENDABLE && RETRACTABLE)
+                    this.ext.setAttribute("action","both")
+                else if(EXTENDABLE)
+                    this.ext.setAttribute("action","ext")
+                else
+                    this.ext.setAttribute("action","ret")
+
+                if (diff > 15 && EXTENDABLE) {
                     let bb = this.element
 
                     if (!this.DEMOTED) {
@@ -246,7 +256,7 @@ export class Segment {
 
                 let last_sub = this.subs[this.subs.length - 1];
 
-                if (diff < -5 - last_sub.width && this.value_count > 1) {
+                if (diff < -5 - last_sub.width && RETRACTABLE) {
                     const sub = this.subs[this.subs.length - 1];
                     this.old_subs.push(sub);
                     this.removeSub(sub);

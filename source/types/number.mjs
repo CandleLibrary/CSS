@@ -1,4 +1,23 @@
 export default class CSS_Number extends Number {
+
+    static valueHandler(value){
+        let ele = document.createElement("input")
+        ele.type = "number";
+        ele.value = (value) ? value + 0 : 0;
+        return ele;
+    }
+
+    static setInput(input, value){
+        input.type = "number";
+        input.value = value;
+    }
+
+    static buildInput(){
+        let ele = document.createElement("input")
+        ele.type = "number";
+        return ele;
+    }
+
     static parse(l, rule, r) {
         
         let sign = 1;

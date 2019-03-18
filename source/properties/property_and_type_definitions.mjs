@@ -301,19 +301,15 @@ export const property_definitions = {
 
 	/* https://drafts.csswg.org/css-lists-3 */
 		counter_increment:"[<custom-ident> <integer>?]+ | none",
-		counter_reset:"[<custom-ident><integer>?]+|none",
-		counter_set:"[<custom-ident><integer>?]+|none",
+		counter_reset:"[<custom-ident> <integer>?]+|none",
+		counter_set:"[<custom-ident> <integer>?]+|none",
 		list_style:"<list-style-type>||<list-style-position>||<list-style-image>",
-		list_style_image:"<image>|none",
+		list_style_image:"<url>|none",
 		list_style_position:"inside|outside",
 		list_style_type:"<counter-style>|<string>|none",
 		marker_side:"list-item|list-container",
 
 
-	list_style_type:`disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman|lower-greek|lower-latin|upper-latin|armenian|georgian|lower-alpha|upper-alpha|none`,
-	list_style_image: `<url>|none`,
-	list_style_position: `inside|outside`,
-	list_style: `[disc|circle|square|decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|none]||[inside|outside]||[<url>|none]`,
 	vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>`,
 
 	/* Visual Effects */
@@ -328,6 +324,23 @@ export const property_definitions = {
 /* Properties that are not directly accessible by CSS prop creator */
 
 export const virtual_property_definitions = {
+    /* https://drafts.csswg.org/css-counter-styles-3 */
+        /*system:`cyclic|numeric|alphabetic|symbolic|additive|[fixed<integer>?]|[extends<counter-style-name>]`,
+        negative:`<symbol><symbol>?`,
+        prefix:`<symbol>`,
+        suffix:`<symbol>`,
+        range:`[[<integer>|infinite]{2}]#|auto`,
+        pad:`<integer>&&<symbol>`,
+        fallback:`<counter-style-name>`
+        symbols:`<symbol>+`,*/
+
+        counter_style:`<numeric_counter_style>|<alphabetic_counter_style>|<symbolic_counter_style>|<japanese_counter_style>|<korean_counter_style>|<chinese_counter_style>|ethiopic-numeric`,
+        numeric_counter_style:`decimal|decimal-leading-zero|arabic-indic|armenian|upper-armenian|lower-armenian|bengali|cambodian|khmer|cjk-decimal|devanagari|georgian|gujarati|gurmukhi|hebrew|kannada|lao|malayalam|mongolian|myanmar|oriya|persian|lower-roman|upper-roman|tamil|telugu|thai|tibetan`,
+        symbolic_counter_style:`disc|circle|square|disclosure-open|disclosure-closed`,
+        alphabetic_counter_style:`lower-alpha|lower-latin|upper-alpha|upper-latin|cjk-earthly-branch|cjk-heavenly-stem|lower-greek|hiragana|hiragana-iroha|katakana|katakana-iroha`,
+        japanese_counter_style:`japanese-informal|japanese-formal`,
+        korean_counter_style:`korean-hangul-formal|korean-hanja-informal|and korean-hanja-formal`,
+        chinese_counter_style:`simp-chinese-informal|simp-chinese-formal|trad-chinese-informal|and trad-chinese-formal`,
 
 	/* https://drafts.csswg.org/css-content-3/ */
 		content_list:"[<string>|contents|<image>|<quote>|<target>|<leader()>]+",

@@ -78,6 +78,34 @@ export class ValueTerm extends terms.ValueTerm {
     }
 }
 
+export class BlankTerm extends terms.LiteralTerm {
+
+    default (seg, APPEND = false) {
+
+        if(!APPEND){
+            seg.value = "  ";
+        }else{
+            let sub = new Segment();
+            sub.value = "";
+            seg.addSub(sub);
+        }
+    }
+
+    list(ele, slot) {
+        let element = document.createElement("div")
+        element.innerHTML = this.value;
+        element.classList.add("option");
+//        ele.appendChild(element) 
+
+        return 1;
+    }
+
+    parseInput(seg, APPEND = false) {
+        this.default(seg, APPEND)
+        return false;
+    }
+}
+
 export class LiteralTerm extends terms.LiteralTerm {
 
 	default (seg, APPEND = false) {

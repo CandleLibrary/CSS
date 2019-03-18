@@ -2,8 +2,6 @@
 
 Object.defineProperty(exports, '__esModule', { value: true });
 
-require('util');
-
 const A = 65;
 const a = 97;
 const ACKNOWLEDGE = 6;
@@ -553,6 +551,7 @@ class Lexer {
         destination.line = this.line;
         destination.sl = this.sl;
         destination.masked_values = this.masked_values;
+        destination.symbol_map = this.symbol_map;
         return destination;
     }
 
@@ -686,7 +685,7 @@ ${is_iws}`;
 
         const USE_CUSTOM_SYMBOLS = !!this.symbol_map;
         let NORMAL_PARSE = true;
-
+        
         if (USE_CUSTOM_SYMBOLS) {
 
             let code = str.charCodeAt(off);
@@ -697,13 +696,13 @@ ${is_iws}`;
 
             while(code == 32 && IWS)
                 (code = str.charCodeAt(++off2), off++);
-
+            
             while ((m$$1 = map.get(code))) {
                 map = m$$1;
                 off2 += 1;
                 code = str.charCodeAt(off2);
             }
-
+            
             if (map.IS_SYM) {
                NORMAL_PARSE = false;
                base = off;
@@ -729,7 +728,7 @@ ${is_iws}`;
                         case 0: //NUMBER
                             while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
 
-                            if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off+1)])) {
+                            if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off)])) {
                                 off++;
                                 if (str[off] == "-") off++;
                                 marker.off = off;
@@ -895,6 +894,7 @@ ${is_iws}`;
         peek_marker.tl = marker.tl;
         peek_marker.char = marker.char;
         peek_marker.line = marker.line;
+        peek_marker.symbol_map = marker.symbol_map;
         this.next(peek_marker);
         return peek_marker;
     }
@@ -987,6 +987,7 @@ ${is_iws}`;
 
     /** Adds symbol to symbol_map. This allows custom symbols to be defined and tokenized by parser. **/
     addSymbol(sym) {
+
         if (!this.symbol_map)
             this.symbol_map = new Map;
 
@@ -1473,8 +1474,8 @@ class Segment {
 
         this.ext = document.createElement("button");
         this.ext.classList.add("prop_extender");
-        this.ext.innerHTML = "+";
         this.ext.style.display = "none";
+        this.ext.setAttribute("action","ext");
 
         this.menu_icon = document.createElement("span");
         this.menu_icon.classList.add("prop_list_icon");
@@ -1680,9 +1681,19 @@ class Segment {
             const move = (e) => {
 
                 let diff = e.clientX - root_x;
-                let min_diff = diff + diff_width;
+                let min_diff = diff + diff_width;   
 
-                if (diff > 15 && this.value_count < this.end) {
+                let EXTENDABLE = this.value_count < this.end;
+                let RETRACTABLE = this.value_count > 1;
+
+                if(EXTENDABLE && RETRACTABLE)
+                    this.ext.setAttribute("action","both");
+                else if(EXTENDABLE)
+                    this.ext.setAttribute("action","ext");
+                else
+                    this.ext.setAttribute("action","ret");
+
+                if (diff > 15 && EXTENDABLE) {
                     let bb = this.element;
 
                     if (!this.DEMOTED) {
@@ -1706,7 +1717,7 @@ class Segment {
 
                 let last_sub = this.subs[this.subs.length - 1];
 
-                if (diff < -5 - last_sub.width && this.value_count > 1) {
+                if (diff < -5 - last_sub.width && RETRACTABLE) {
                     const sub = this.subs[this.subs.length - 1];
                     this.old_subs.push(sub);
                     this.removeSub(sub);
@@ -1910,6 +1921,9 @@ class CSS_Color extends Color {
         let ele = document.createElement("input");
         ele.type = "color";
         ele.value = (existing_value) ? existing_value+ "" : "#000000";
+        ele.addEventListener("change", (e)=>{
+            ele.css_value = ele.value;
+        });
         return ele;
     }
 
@@ -3207,6 +3221,25 @@ class CSS_Shape extends Array {
 }
 
 class CSS_Number extends Number {
+
+    static valueHandler(value){
+        let ele = document.createElement("input");
+        ele.type = "number";
+        ele.value = (value) ? value + 0 : 0;
+        return ele;
+    }
+
+    static setInput(input, value){
+        input.type = "number";
+        input.value = value;
+    }
+
+    static buildInput(){
+        let ele = document.createElement("input");
+        ele.type = "number";
+        return ele;
+    }
+
     static parse(l, rule, r) {
         
         let sign = 1;
@@ -4587,7 +4620,7 @@ const property_definitions = {
 		font_display: "auto|block|swap|fallback|optional",
 		font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
 		font_language_override:"normal|<string>",
-		font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
+		font: `[[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>]|caption|icon|menu|message-box|small-caption|status-bar`,
 		font_max_size: `<absolute_size>|<relative_size>|<length>|<percentage>|infinity`,
 		font_min_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
 		font_optical_sizing: `auto|none`,
@@ -4714,20 +4747,16 @@ const property_definitions = {
 		widows:"<integer>",
 
 	/* https://drafts.csswg.org/css-lists-3 */
-		counter_increment:"[ <custom-ident> <integer>?]+|none",
-		counter_reset:"[<custom-ident><integer>?]+|none",
-		counter_set:"[<custom-ident><integer>?]+|none",
+		counter_increment:"[<custom-ident> <integer>?]+ | none",
+		counter_reset:"[<custom-ident> <integer>?]+|none",
+		counter_set:"[<custom-ident> <integer>?]+|none",
 		list_style:"<list-style-type>||<list-style-position>||<list-style-image>",
-		list_style_image:"<image>|none",
+		list_style_image:"<url>|none",
 		list_style_position:"inside|outside",
 		list_style_type:"<counter-style>|<string>|none",
 		marker_side:"list-item|list-container",
 
 
-	list_style_type:`disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman|lower-greek|lower-latin|upper-latin|armenian|georgian|lower-alpha|upper-alpha|none`,
-	list_style_image: `<url>|none`,
-	list_style_position: `inside|outside`,
-	list_style: `[disc|circle|square|decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|none]||[inside|outside]||[<url>|none]`,
 	vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>`,
 
 	/* Visual Effects */
@@ -4742,6 +4771,23 @@ const property_definitions = {
 /* Properties that are not directly accessible by CSS prop creator */
 
 const virtual_property_definitions = {
+    /* https://drafts.csswg.org/css-counter-styles-3 */
+        /*system:`cyclic|numeric|alphabetic|symbolic|additive|[fixed<integer>?]|[extends<counter-style-name>]`,
+        negative:`<symbol><symbol>?`,
+        prefix:`<symbol>`,
+        suffix:`<symbol>`,
+        range:`[[<integer>|infinite]{2}]#|auto`,
+        pad:`<integer>&&<symbol>`,
+        fallback:`<counter-style-name>`
+        symbols:`<symbol>+`,*/
+
+        counter_style:`<numeric_counter_style>|<alphabetic_counter_style>|<symbolic_counter_style>|<japanese_counter_style>|<korean_counter_style>|<chinese_counter_style>|ethiopic-numeric`,
+        numeric_counter_style:`decimal|decimal-leading-zero|arabic-indic|armenian|upper-armenian|lower-armenian|bengali|cambodian|khmer|cjk-decimal|devanagari|georgian|gujarati|gurmukhi|hebrew|kannada|lao|malayalam|mongolian|myanmar|oriya|persian|lower-roman|upper-roman|tamil|telugu|thai|tibetan`,
+        symbolic_counter_style:`disc|circle|square|disclosure-open|disclosure-closed`,
+        alphabetic_counter_style:`lower-alpha|lower-latin|upper-alpha|upper-latin|cjk-earthly-branch|cjk-heavenly-stem|lower-greek|hiragana|hiragana-iroha|katakana|katakana-iroha`,
+        japanese_counter_style:`japanese-informal|japanese-formal`,
+        korean_counter_style:`korean-hangul-formal|korean-hanja-informal|and korean-hanja-formal`,
+        chinese_counter_style:`simp-chinese-informal|simp-chinese-formal|trad-chinese-informal|and trad-chinese-formal`,
 
 	/* https://drafts.csswg.org/css-content-3/ */
 		content_list:"[<string>|contents|<image>|<quote>|<target>|<leader()>]+",
@@ -4950,7 +4996,7 @@ class ValueTerm {
                 } else
                     r.v = v;
 
-            if (this.prop && !this.virtual && root)
+            if (this.prop && !this.virtual && ROOT)
                 rule[this.prop] = v;
 
             return true;
@@ -5108,6 +5154,34 @@ class ValueTerm$1 extends ValueTerm {
     }
 }
 
+class BlankTerm extends LiteralTerm {
+
+    default (seg, APPEND = false) {
+
+        if(!APPEND){
+            seg.value = "  ";
+        }else{
+            let sub = new Segment();
+            sub.value = "";
+            seg.addSub(sub);
+        }
+    }
+
+    list(ele, slot) {
+        let element = document.createElement("div");
+        element.innerHTML = this.value;
+        element.classList.add("option");
+//        ele.appendChild(element) 
+
+        return 1;
+    }
+
+    parseInput(seg, APPEND = false) {
+        this.default(seg, APPEND);
+        return false;
+    }
+}
+
 class LiteralTerm$1 extends LiteralTerm {
 
 	default (seg, APPEND = false) {
@@ -5182,6 +5256,11 @@ class JUX$1 extends JUX {
         return segment
     }
 
+    insertBlank(seg){
+        let blank = new BlankTerm;
+        blank.parseInput(seg);
+    }
+
     buildList(list, slot) {
 
         if (!slot) {
@@ -5228,61 +5307,74 @@ class JUX$1 extends JUX {
     }
 
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
-
-        //List
+        
         let segment = this.createSegment();
 
-        let bool = true,
+        let bool = false,
             j = 0,
             last_segment = null,
             first;
 
-        for (; j < end && !lx.END; j++) {
-            const REPEAT = j > 0;
+        repeat:
+            for (let j = 0; j < end && !lx.END; j++) {
+                const REPEAT = j > 0;
 
-            let seg = (REPEAT) ? new Segment : segment;
+                let copy = lx.copy();
 
-            seg.prod = this;
+                let seg = (REPEAT) ? new Segment : segment;
 
-            outer:
-            
+                seg.prod = this;
+
                 for (let i = 0, l = this.terms.length; i < l; i++) {
-                    bool = this.terms[i].parseInput(lx, seg, l > 1);
 
-                    if (!bool) {
-                        bool = false;
-                        //segment = segment.prev;
-                        
+                    let term = this.terms[i];
+
+                    if (!term.parseInput(copy, seg, l > 1)) {
+                        if (!term.OPTIONAL) {
+                            break repeat;
+                        }
                     }
-                    //We know that this is in the original input, so we'll create an input for this object. 
                 }
-            
 
-            if (!bool) {
+                lx.sync(copy);
 
-                if (j < start)
-                    bool = false;
-                else
-                    bool = true;
-                break;
+                bool = true;
+
+                if (!this.checkForComma(lx))
+                    break;
+
+                if (REPEAT)
+                    segment.addRepeat(seg);
             }
 
-            if (REPEAT)
-                segment.addRepeat(seg);
-        }
+            this.capParse(segment, ele, bool);
+            
+            return bool;
+    }
 
+    capParse(segment, ele, bool){
         if (bool) {
             segment.repeat();
             if (ele)
                 ele.addSub(segment);
             this.last_segment = segment;
+        }else {
+            segment.destroy();
+            if(this.OPTIONAL){
+                if(ele){
+                    let segment = this.createSegment();
+                    let blank = new BlankTerm();
+                    blank.parseInput(segment);
+                    segment.prod = this;
+                    segment.repeat();
+                    ele.addSub(segment);
+                }
+            }
         }
-
-
-        return (!bool && start === 0) ? true : bool;
     }
 
     buildInput(repeat = 1, lex) {
+
         this.last_segment = null;
         let seg = new Segment;
         seg.start = this.start;
@@ -5292,12 +5384,8 @@ class JUX$1 extends JUX {
         return this.last_segment;
     }
 
-    get start() {
-        return isNaN(this.r[0]) ? 1 : this.r[0];
-    }
-
-    get end() {
-        return isNaN(this.r[1]) ? 1 : this.r[1];
+    list(){
+        
     }
 }
 
@@ -5529,14 +5617,9 @@ class ONE_OF$1 extends JUX$1 {
 
         }
 
-        if (bool) {
-            segment.repeat();
-            if (ele)
-                ele.addSub(segment);
-            this.last_segment = segment;
-        }
+        this.capParse(segment, ele, bool);
 
-        return /*(!bool && start === 0) ? true :*/ bool;
+        return  bool;
     }
 }
 
@@ -5552,6 +5635,7 @@ var ui_productions = /*#__PURE__*/Object.freeze({
     SymbolTerm: SymbolTerm$1
 });
 
+//import util from "util"
 const standard_productions = {
     JUX,
     AND,
@@ -5639,8 +5723,8 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX$$1 && term.isRepeating()) term = _Jux_(productions, new JUX$$1, term);
-                    term = _Jux_(productions, term, v);
+                    if (term instanceof JUX$$1 && term.isRepeating()) term = foldIntoProduction(productions, new JUX$$1, term);
+                    term = foldIntoProduction(productions, term, v);
                 } else
                     term = v;
                 break;
@@ -5653,8 +5737,8 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX$$1 /*&& term.isRepeating()*/) term = _Jux_(productions, new JUX$$1, term);
-                    term = _Jux_(productions, term, v);
+                    if (term instanceof JUX$$1 /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX$$1, term);
+                    term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
                 }
@@ -5734,8 +5818,8 @@ function d$1(l, definitions, productions, super_term = false, oneof_group = fals
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX$$1 /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = _Jux_(productions, new JUX$$1, term);
-                    term = _Jux_(productions, term, v);
+                    if (term instanceof JUX$$1 /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX$$1, term);
+                    term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
                 }
@@ -5756,7 +5840,7 @@ function checkExtensions(l, term, productions) {
                 l.next();
                 continue outer;
             case "{":
-                term = _Jux_(productions, term);
+                term = foldIntoProduction(productions, term);
                 term.r[0] = parseInt(l.next().tx);
                 if (l.next().ch == ",") {
                     l.next();
@@ -5772,25 +5856,25 @@ function checkExtensions(l, term, productions) {
                 l.a("}");
                 break;
             case "*":
-                term = _Jux_(productions, term);
+                term = foldIntoProduction(productions, term);
                 term.r[0] = 0;
                 term.r[1] = Infinity;
                 l.next();
                 break;
             case "+":
-                term = _Jux_(productions, term);
+                term = foldIntoProduction(productions, term);
                 term.r[0] = 1;
                 term.r[1] = Infinity;
                 l.next();
                 break;
             case "?":
-                term = _Jux_(productions, term);
+                term = foldIntoProduction(productions, term);
                 term.r[0] = 0;
                 term.r[1] = 1;
                 l.next();
                 break;
             case "#":
-                term = _Jux_(productions, term);
+                term = foldIntoProduction(productions, term);
                 term.terms.push(new SymbolTerm(","));
                 term.r[0] = 1;
                 term.r[1] = Infinity;
@@ -5808,7 +5892,7 @@ function checkExtensions(l, term, productions) {
     return term;
 }
 
-function _Jux_(productions, term, new_term = null) {
+function foldIntoProduction(productions, term, new_term = null) {
     if (term) {
         if (!(term instanceof productions.JUX)) {
             let nr = new productions.JUX();

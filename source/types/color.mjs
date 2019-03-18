@@ -20,6 +20,9 @@ export default class CSS_Color extends Color {
         let ele = document.createElement("input");
         ele.type = "color"
         ele.value = (existing_value) ? existing_value+ "" : "#000000";
+        ele.addEventListener("change", (e)=>{
+            ele.css_value = ele.value;
+        })
         return ele;
     }
 

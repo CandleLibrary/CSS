@@ -1,7 +1,7 @@
 import whind from "@candlefw/whind";
 import * as prod from "../properties/productions.mjs";
 import { Segment } from "./ui_segment.mjs"
-import { ValueTerm, LiteralTerm, SymbolTerm } from "./ui_terms.mjs";
+import { ValueTerm, LiteralTerm, SymbolTerm,  BlankTerm } from "./ui_terms.mjs";
 
 /**
  * wick internals.
@@ -17,6 +17,11 @@ class JUX extends prod.JUX {
         segment.end = this.end;
         segment.prod = this;
         return segment
+    }
+
+    insertBlank(seg){
+        let blank = new BlankTerm;
+        blank.parseInput(seg);
     }
 
     buildList(list, slot) {
@@ -65,61 +70,74 @@ class JUX extends prod.JUX {
     }
 
     pi(lx, ele, lister = this, start = this.start, end = this.end) {
-
-        //List
+        
         let segment = this.createSegment()
 
-        let bool = true,
+        let bool = false,
             j = 0,
             last_segment = null,
             first;
 
-        for (; j < end && !lx.END; j++) {
-            const REPEAT = j > 0
+        repeat:
+            for (let j = 0; j < end && !lx.END; j++) {
+                const REPEAT = j > 0;
 
-            let seg = (REPEAT) ? new Segment : segment;
+                let copy = lx.copy();
 
-            seg.prod = this;
+                let seg = (REPEAT) ? new Segment : segment;
 
-            outer:
-            
+                seg.prod = this;
+
                 for (let i = 0, l = this.terms.length; i < l; i++) {
-                    bool = this.terms[i].parseInput(lx, seg, l > 1);
 
-                    if (!bool) {
-                        bool = false;
-                        //segment = segment.prev;
-                        
-                    };
-                    //We know that this is in the original input, so we'll create an input for this object. 
+                    let term = this.terms[i];
+
+                    if (!term.parseInput(copy, seg, l > 1)) {
+                        if (!term.OPTIONAL) {
+                            break repeat;
+                        }
+                    }
                 }
-            
 
-            if (!bool) {
+                lx.sync(copy);
 
-                if (j < start)
-                    bool = false;
-                else
-                    bool = true;
-                break;
+                bool = true;
+
+                if (!this.checkForComma(lx))
+                    break;
+
+                if (REPEAT)
+                    segment.addRepeat(seg);
             }
 
-            if (REPEAT)
-                segment.addRepeat(seg);
-        }
+            this.capParse(segment, ele, bool)
+            
+            return bool;
+    }
 
+    capParse(segment, ele, bool){
         if (bool) {
             segment.repeat();
             if (ele)
                 ele.addSub(segment);
             this.last_segment = segment;
+        }else {
+            segment.destroy();
+            if(this.OPTIONAL){
+                if(ele){
+                    let segment = this.createSegment();
+                    let blank = new BlankTerm();
+                    blank.parseInput(segment);
+                    segment.prod = this;
+                    segment.repeat();
+                    ele.addSub(segment)
+                }
+            }
         }
-
-
-        return (!bool && start === 0) ? true : bool;
     }
 
     buildInput(repeat = 1, lex) {
+
         this.last_segment = null;
         let seg = new Segment;
         seg.start = this.start;
@@ -129,12 +147,8 @@ class JUX extends prod.JUX {
         return this.last_segment;
     }
 
-    get start() {
-        return isNaN(this.r[0]) ? 1 : this.r[0];
-    }
-
-    get end() {
-        return isNaN(this.r[1]) ? 1 : this.r[1];
+    list(){
+        
     }
 }
 
@@ -366,14 +380,9 @@ class ONE_OF extends JUX {
 
         }
 
-        if (bool) {
-            segment.repeat();
-            if (ele)
-                ele.addSub(segment);
-            this.last_segment = segment;
-        }
+        this.capParse(segment, ele, bool)
 
-        return /*(!bool && start === 0) ? true :*/ bool;
+        return  bool;
     }
 }
 

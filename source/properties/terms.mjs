@@ -91,7 +91,7 @@ class ValueTerm {
                 } else
                     r.v = v;
 
-            if (this.prop && !this.virtual && root)
+            if (this.prop && !this.virtual && ROOT)
                 rule[this.prop] = v;
 
             return true;
