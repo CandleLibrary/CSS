@@ -1155,26 +1155,51 @@ ${is_iws}`;
     Lexer.types = Types;
     whind$1.types = Types;
 
-    /**
-     * wick internals.
-     * @class      NR (name)
-     */
-    class NR { //Notation Rule
+    var step = 0;
+
+    function checkDefaults(lx) {
+        const tx = lx.tx;
+        /* https://drafts.csswg.org/css-cascade/#inherited-property */
+        switch (lx.tx) {
+            case "initial": //intentional
+            case "inherit": //intentional
+            case "unset": //intentional
+            case "revert": //intentional
+                if (!lx.pk.pk.END) // These values should be the only ones present. Failure otherwise.
+                    return 0; // Default value present among other values. Invalid
+                return 1; // Default value present only. Valid
+        }
+        return 2; // Default value not present. Ignore
+    }
+
+    class JUX { /* Juxtaposition */
 
         constructor() {
-
+            this.id = JUX.step++;
             this.r = [NaN, NaN];
             this.terms = [];
             this.prop = null;
             this.name = "";
             this.virtual = false;
+            this.REQUIRE_COMMA = false;
+        }
+        mergeValues(existing_v, new_v) {
+            if (existing_v)
+                if (existing_v.v) {
+                    if (Array.isArray(existing_v.v))
+                        existing_v.v.push(new_v.v);
+                    else {
+                        existing_v.v = [existing_v.v, new_v.v];
+                    }
+                } else
+                    existing_v.v = new_v.v;
         }
 
         seal() {
 
         }
 
-        sp(value, rule) { //Set Property
+        sp(value, rule) { /* Set Property */
             if (this.prop) {
                 if (value)
                     if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
@@ -1188,123 +1213,249 @@ ${is_iws}`;
             return !(isNaN(this.r[0]) && isNaN(this.r[1]));
         }
 
-        parse(lx, rule, out_val) {
+        parse(lx, rule, out_val, ROOT = true) {
+                
             if (typeof(lx) == "string")
                 lx = whind$1(lx);
 
             let r = out_val || { v: null },
-                start = isNaN(this.r[0]) ? 1 : this.r[0],
-                end = isNaN(this.r[1]) ? 1 : this.r[1];
-
-
-            return this.innerParser(lx, rule, out_val, r, start, end);
-        }
-
-        innerParser(lx, rule, out_val, r, start, end) {
-            let bool = true;
-            for (let j = 0; j < end && !lx.END; j++) {
-
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-                    if (!this.terms[i].parse(lx, rule, r)) {
-
-                        this.sp(r.v, rule);
-
-                        if (j < start && start > 0)
-                            return false;
-                        else
-                            return true;
-                    }
-                }
-            }
-
-            this.sp(r.v, rule);
-
-            return true;
-        }
-    }
-
-    class AND extends NR {
-        innerParser(lx, rule, out_val, r, start, end) {
-
-            outer: for (let j = 0; j < end && !lx.END; j++) {
-                for (let i = 0, l = this.terms.length; i < l; i++){
-                    console.log(i);
-                    if (!this.terms[i].parse(lx, rule, r)) {
-                        console.log("AAAPL", i);
-                        return false;
-                    }
-                }
-            }
-
-            this.sp(r.v, rule);
-
-            return true;
-        }
-    }
-
-    class OR extends NR {
-        innerParser(lx, rule, out_val, r, start, end) {
-            let bool = false;
-
-            for (let j = 0; j < end && !lx.END; j++) {
                 bool = false;
 
-                for (let i = 0, l = this.terms.length; i < l; i++)
-                    if (this.terms[i].parse(lx, rule, r)) bool = true;
-
-                if (!bool && j <= start) {
-                    this.sp(r.v, rule);
-                    return false;
-                }
-            }
-
-            this.sp(r.v, rule);
-
-            return true;
-        }
-    }
-
-    class ONE_OF extends NR {
-        innerParser(lx, rule, out_val, r, start, end) {
-            let bool = false;
-
-            console.log(start, bool, end);
-
-            let j;
-            for (j = 0; j < end && !lx.END; j++) {
-                bool = false;
-
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-                    if (!this.terms[i]) console.log(this);
-                    bool = this.terms[i].parse(lx, rule, r);
-                    if (bool) break;
-                }
-
-                if (!bool) {
-                    if (j <= start && start > 0) {
-                        this.sp(r.v, rule);
-                        return false;
-                    } else {
+            if (ROOT) {
+                switch (checkDefaults(lx)) {
+                    case 1:
+                        this.sp(lx.tx, rule);
                         return true;
-                    }
+                    case 0:
+                        return false;
                 }
-            }
 
-            if(lx.END && !bool){
-                console.log("AA", j, start);
-                if (j <= start && start > 0) {
-                    this.sp(r.v, rule);
+                bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
+
+                if (!lx.END)
                     return false;
-                } else {
-                    return true;
-                }
-            }
+                else
+                    this.sp(r.v, rule);
+            } else
+                bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
 
-            this.sp(r.v, rule);
+            return bool;
+        }
+
+        checkForComma(lx) {
+            if (this.REQUIRE_COMMA) {
+                if (lx.ch == ",")
+                    lx.next();
+                else return false;
+            }
+            return true;
+        }
+
+        innerParser(lx, rule, out_val, r, start, end) {
+
+            let bool = false;
+
+            repeat:
+                for (let j = 0; j < end && !lx.END; j++) {
+                    let copy = lx.copy();
+                    let temp_r = { v: null };
+
+                    for (let i = 0, l = this.terms.length; i < l; i++) {
+
+                        let term = this.terms[i];
+
+                        if (!term.parse(copy, rule, temp_r, false)) {
+                            if (!term.OPTIONAL) {
+                                break repeat;
+                            }
+                        }
+                    }
+
+                    if (temp_r.v)
+                        this.mergeValues(r, temp_r);
+
+                    lx.sync(copy);
+
+                    bool = true;
+
+                    if (!this.checkForComma(lx))
+                        break;
+                }
+
+            if (bool)
+                //console.log("JUX", s, bool)
+                return bool;
+        }
+
+        get start() {
+            return isNaN(this.r[0]) ? 1 : this.r[0];
+        }
+        set start(e) {}
+
+        get end() {
+            return isNaN(this.r[1]) ? 1 : this.r[1];
+        }
+        set end(e) {}
+
+        get OPTIONAL() { return this.r[0] === 0 }
+        set OPTIONAL(a) {}
+    }
+    JUX.step = 0;
+    class AND extends JUX {
+        innerParser(lx, rule, out_val, r, start, end) {
+
+            const
+                PROTO = new Array(this.terms.length),
+                l = this.terms.length;
+
+            let bool = false;
+
+            repeat:
+                for (let j = 0; j < end && !lx.END; j++) {
+
+                    const
+                        HIT = PROTO.fill(0),
+                        copy = lx.copy(),
+                        temp_r = { v: null };
+
+                    and:
+                        while (true) {
+                            let FAILED = false;
+
+
+
+                            for (let i = 0; i < l; i++) {
+
+                                if (HIT[i] === 2) continue;
+
+                                let term = this.terms[i];
+
+                                if (!term.parse(copy, rule, temp_r, false)) {
+                                    if (term.OPTIONAL)
+                                        HIT[i] = 1;
+                                } else {
+                                    HIT[i] = 2;
+                                    continue and;
+                                }
+                            }
+
+                            if (HIT.reduce((a, v) => a * v, 1) === 0)
+                                break repeat;
+
+                            break
+                        }
+
+
+
+                    lx.sync(copy);
+
+                    if (temp_r.v)
+                        this.mergeValues(r, temp_r);
+
+                    bool = true;
+
+                    if (!this.checkForComma(lx))
+                        break;
+                }
 
             return bool;
         }
     }
+
+    class OR extends JUX {
+        innerParser(lx, rule, out_val, r, start, end) {
+
+            const
+                PROTO = new Array(this.terms.length),
+                l = this.terms.length;
+
+            let
+                bool = false,
+                NO_HIT = true;
+
+            repeat:
+                for (let j = 0; j < end && !lx.END; j++) {
+
+                    const HIT = PROTO.fill(0);
+                    let copy = lx.copy();
+                    let temp_r = { v: null };
+
+                    or:
+                        while (true) {
+                            let FAILED = false;
+                            for (let i = 0; i < l; i++) {
+
+                                if (HIT[i] === 2) continue;
+
+                                let term = this.terms[i];
+
+                                if (term.parse(copy, temp_r, r, false)) {
+                                    NO_HIT = false;
+                                    HIT[i] = 2;
+                                    continue or;
+                                }
+                            }
+
+                            if (NO_HIT) break repeat;
+
+                            break;
+                        }
+
+                    lx.sync(copy);
+
+                    if (temp_r.v)
+                        this.mergeValues(r, temp_r);
+
+                    bool = true;
+
+                    if (!this.checkForComma(lx))
+                        break;
+                }
+
+            return bool;
+        }
+    }
+
+    OR.step = 0;
+
+    class ONE_OF extends JUX {
+        innerParser(lx, rule, out_val, r, start, end) {
+
+            let BOOL = false;
+
+            let j;
+            for (j = 0; j < end && !lx.END; j++) {
+                let bool = false;
+                let copy = lx.copy();
+                let temp_r = { v: null };
+
+                for (let i = 0, l = this.terms.length; i < l; i++) {
+                    ////if (!this.terms[i]) console.log(this)
+                    if (this.terms[i].parse(copy, rule, r, false)) {
+                        bool = true;
+                        break;
+                    }
+                }
+
+                if (!bool)
+                    break;
+
+                lx.sync(copy);
+
+                if (temp_r.v)
+                    this.mergeValues(r, temp_r);
+
+                BOOL = true;
+
+                if (!this.checkForComma(lx))
+                    break;
+            }
+
+            return BOOL;
+        }
+    }
+
+    ONE_OF.step = 0;
 
     class Segment {
         constructor(parent) {
@@ -1824,22 +1975,33 @@ ${is_iws}`;
                     
                     let num = parseInt(value,16);
 
-                    out = { r: 0, g: 0, b: 0, a: 1 };
-                    if(value.length == 3){
-                        out.r = ((num >> 8) & 0xF) << 4;
-                        out.g = ((num >> 4) & 0xF) << 4;
-                        out.b = ((num) & 0xF) << 4;
-                    }else{
-                        if(value.length == 6){
-                            out.r = (num >> 16) & 0xFF;
-                            out.g = (num >> 8) & 0xFF;
-                            out.b = (num) & 0xFF;
-                        }if(value.length == 8){
-                            out.r = (num >> 24) & 0xFF;
-                            out.g = (num >> 16) & 0xFF;
-                            out.b = (num >> 8) & 0xFF;
-                            out.a = ((num) & 0xFF);
+                    if(value.length == 3 || value.length == 4){
+                        
+                        if(value.length == 4){
+                            const a = (num >> 8) & 0xF;
+                            out.a = a | a << 4;
+                            num >>= 4;
                         }
+
+                        const r = (num >> 8) & 0xF;
+                        out.r = r | r << 4;
+                        
+                        const g = (num >> 4) & 0xF;
+                        out.g = g | g << 4;
+                        
+                        const b = (num) & 0xF;
+                        out.b = b | b << 4;
+
+                    }else{
+
+                        if(value.length == 8){
+                            out.a = num & 0xFF;
+                            num >>= 8;
+                        }
+
+                        out.r = (num >> 16) & 0xFF;       
+                        out.g = (num >> 8) & 0xFF;
+                        out.b = (num) & 0xFF;
                     }
                     l.next();
                     break;
@@ -2187,16 +2349,16 @@ ${is_iws}`;
             let tx = l.tx,
                 pky = l.pk.ty;
             if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
-                let mult = 1;
+                let sign = 1;
                 if (l.ch == "-") {
-                    mult = -1;
+                    sign = -1;
                     tx = l.p.tx;
                     l.p.next();
                 }
                 if (l.p.ty == l.types.id) {
                     let id = l.sync().tx;
                     l.next();
-                    return new CSS_Length(parseFloat(tx) * mult, id);
+                    return new CSS_Length(parseFloat(tx) * sign, id);
                 }
             }
             return null;
@@ -3003,9 +3165,13 @@ ${is_iws}`;
             }
             return null;
         }
-    }
 
-    var t$1 = (s, l = s.length, n = parseFloat, i = isNaN)=> !i(n(s.slice(2))) &  (l==5 || (l==6 & ["",..."-_*"].includes(s[2]))) & !i(n(s.slice(-3)));
+        constructor(string){
+            if(string[0] == "\"" || string[0] == "\'" || string[0] == "\'")
+                string = string.slice(1,-1);
+            super(string);
+        }
+    }
 
     class CSS_Id extends String {
         static parse(l, rule, r) {
@@ -3041,10 +3207,18 @@ ${is_iws}`;
 
     class CSS_Number extends Number {
         static parse(l, rule, r) {
-            let tx = l.tx;
+            
+            let sign = 1;
+
+            if(l.ch == "-" && l.pk.ty == l.types.num){
+            	l.sync();
+            	sign = -1;
+            }
+
             if(l.ty == l.types.num){
+            	let tx = l.tx;
                 l.next();
-                return new CSS_Number(tx);
+                return new CSS_Number(sign*(new Number(tx)));
             }
             return null;
         }
@@ -4225,6 +4399,33 @@ ${is_iws}`;
         }	
     }
 
+    class CSS_FontName extends String {
+    	static parse(l, rule, r) {
+
+    		if(l.ty == l.types.str){
+    			let tx = l.tx;
+                l.next();
+    			return new CSS_String(tx);
+    		}		
+
+    		if(l.ty == l.types.id){
+
+    			let pk = l.peek();
+
+    			while(pk.type == l.types.id && !pk.END){
+    				pk.next();
+    			}
+
+    			let str = pk.slice(l);
+    			
+    			l.sync();
+    			return new CSS_String(str);
+    		}
+
+            return null;
+        }
+    }
+
     /**
      * CSS Type constructors
      * @alias module:wick~internals.css.types.
@@ -4232,39 +4433,40 @@ ${is_iws}`;
      * https://www.w3.org/TR/CSS2/about.html#property-defs
      */
     const types = {
-        color: CSS_Color,
-        length: CSS_Length,
-        time: CSS_Length,
-        flex: CSS_Length,
-        angle: CSS_Length,
-        frequency: CSS_Length,
-        resolution: CSS_Length,
-        percentage: CSS_Percentage,
-        url: CSS_URL,
-        uri: CSS_URL,
-        number: CSS_Number,
-        id: CSS_Id,
-        string: CSS_String,
-        shape: CSS_Shape,
-        cubic_bezier: CSS_Bezier,
-        integer: CSS_Number,
-        gradient: CSS_Gradient,
-        transform2D : CSS_Transform2D,
-        path: CSS_Path,
+    	color: CSS_Color,
+    	length: CSS_Length,
+    	time: CSS_Length,
+    	flex: CSS_Length,
+    	angle: CSS_Length,
+    	frequency: CSS_Length,
+    	resolution: CSS_Length,
+    	percentage: CSS_Percentage,
+    	url: CSS_URL,
+    	uri: CSS_URL,
+    	number: CSS_Number,
+    	id: CSS_Id,
+    	string: CSS_String,
+    	shape: CSS_Shape,
+    	cubic_bezier: CSS_Bezier,
+    	integer: CSS_Number,
+    	gradient: CSS_Gradient,
+    	transform2D : CSS_Transform2D,
+    	path: CSS_Path,
+    	fontname: CSS_FontName,
 
-        /* Media parsers */
-        m_width: CSS_Media_handle("w", 0),
-        m_min_width: CSS_Media_handle("w", 1),
-        m_max_width: CSS_Media_handle("w", 2),
-        m_height: CSS_Media_handle("h", 0),
-        m_min_height: CSS_Media_handle("h", 1),
-        m_max_height: CSS_Media_handle("h", 2),
-        m_device_width: CSS_Media_handle("dw", 0),
-        m_min_device_width: CSS_Media_handle("dw", 1),
-        m_max_device_width: CSS_Media_handle("dw", 2),
-        m_device_height: CSS_Media_handle("dh", 0),
-        m_min_device_height: CSS_Media_handle("dh", 1),
-        m_max_device_height: CSS_Media_handle("dh", 2)
+    	/* Media parsers */
+    	m_width: CSS_Media_handle("w", 0),
+    	m_min_width: CSS_Media_handle("w", 1),
+    	m_max_width: CSS_Media_handle("w", 2),
+    	m_height: CSS_Media_handle("h", 0),
+    	m_min_height: CSS_Media_handle("h", 1),
+    	m_max_height: CSS_Media_handle("h", 2),
+    	m_device_width: CSS_Media_handle("dw", 0),
+    	m_min_device_width: CSS_Media_handle("dw", 1),
+    	m_max_device_width: CSS_Media_handle("dw", 2),
+    	m_device_height: CSS_Media_handle("dh", 0),
+    	m_min_device_height: CSS_Media_handle("dh", 1),
+    	m_max_device_height: CSS_Media_handle("dh", 2)
     };
 
     /**
@@ -4273,351 +4475,393 @@ ${is_iws}`;
      * @enum {string}
      */
     const property_definitions = {
-        /* https://drafts.csswg.org/css-cascade/#inherited-property */
-            default:'|initial|inherit|unset|revert',
 
-        /* https://drafts.csswg.org/css-writing-modes-3/ */
-            direction:"ltr|rtl",
-            unicode_bidi:"normal|embed|isolate|bidi-override|isolate-override|plaintext",
-            writing_mode:"horizontal-tb|vertical-rl|vertical-lr",
-            text_orientation:"mixed|upright|sideways",
-            glyph_orientation_vertical:"auto|0deg|90deg|0|90",
-            text_combine_upright:"none|all",
+    	/* https://drafts.csswg.org/css-writing-modes-3/ */
+    		direction:"ltr|rtl",
+    		unicode_bidi:"normal|embed|isolate|bidi-override|isolate-override|plaintext",
+    		writing_mode:"horizontal-tb|vertical-rl|vertical-lr",
+    		text_orientation:"mixed|upright|sideways",
+    		glyph_orientation_vertical:`auto|0deg|90deg|"0"|"90"`,
+    		text_combine_upright:"none|all",
 
-        /* https://www.w3.org/TR/css-position-3 */ 
-            position: "static|relative|absolute|sticky|fixed",
-            top: `<length>|<percentage>|auto`,
-            left: `<length>|<percentage>|auto`,
-            bottom: `<length>|<percentage>|auto`,
-            right: `<length>|<percentage>|auto`,
-            offset_before: `<length>|<percentage>|auto`,
-            offset_after: `<length>|<percentage>|auto`,
-            offset_start: `<length>|<percentage>|auto`,
-            offset_end: `<length>|<percentage>|auto`,
-            z_index:"auto|<integer>",
+    	/* https://www.w3.org/TR/css-position-3 */ 
+    		position: "static|relative|absolute|sticky|fixed",
+    		top: `<length>|<percentage>|auto`,
+    		left: `<length>|<percentage>|auto`,
+    		bottom: `<length>|<percentage>|auto`,
+    		right: `<length>|<percentage>|auto`,
+    		offset_before: `<length>|<percentage>|auto`,
+    		offset_after: `<length>|<percentage>|auto`,
+    		offset_start: `<length>|<percentage>|auto`,
+    		offset_end: `<length>|<percentage>|auto`,
+    		z_index:"auto|<integer>",
 
-        /* https://www.w3.org/TR/css-display-3/ */
-            display: `[ <display_outside> || <display_inside> ] | <display_listitem> | <display_internal> | <display_box> | <display_legacy>`,
+    	/* https://www.w3.org/TR/css-display-3/ */
+    		display: `[ <display_outside> || <display_inside> ] | <display_listitem> | <display_internal> | <display_box> | <display_legacy>`,
 
-        /* https://www.w3.org/TR/css-box-3 */
-            margin: `[<length>|<percentage>|0|auto]{1,4}`,
-            margin_top: `<length>|<percentage>|0|auto`,
-            margin_right: `<length>|<percentage>|0|auto`,
-            margin_bottom: `<length>|<percentage>|0|auto`,
-            margin_left: `<length>|<percentage>|0|auto`,
+    	/* https://www.w3.org/TR/css-box-3 */
+    		margin: `[<length>|<percentage>|0|auto]{1,4}`,
+    		margin_top: `<length>|<percentage>|0|auto`,
+    		margin_right: `<length>|<percentage>|0|auto`,
+    		margin_bottom: `<length>|<percentage>|0|auto`,
+    		margin_left: `<length>|<percentage>|0|auto`,
 
-            margin_trim:"none|in-flow|all",
+    		margin_trim:"none|in-flow|all",
 
-            padding: `[<length>|<percentage>|0|auto]{1,4}`,
-            padding_top: `<length>|<percentage>|0|auto`,
-            padding_right: `<length>|<percentage>|0|auto`,
-            padding_bottom: `<length>|<percentage>|0|auto`,
-            padding_left: `<length>|<percentage>|0|auto`,
+    		padding: `[<length>|<percentage>|0|auto]{1,4}`,
+    		padding_top: `<length>|<percentage>|0|auto`,
+    		padding_right: `<length>|<percentage>|0|auto`,
+    		padding_bottom: `<length>|<percentage>|0|auto`,
+    		padding_left: `<length>|<percentage>|0|auto`,
 
-        /* https://www.w3.org/TR/CSS2/visuren.html */
-            float: `left|right|none`,
-            clear: `left|right|both|none`,
+    	/* https://www.w3.org/TR/CSS2/visuren.html */
+    		float: `left|right|none`,
+    		clear: `left|right|both|none`,
 
-        /* https://drafts.csswg.org/css-sizing-3 todo:implement fit-content(%) function */
-            box_sizing: `content-box | border-box`,
-            width: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
-            height: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
-            min_width: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
-            max_width: `<length>|<percentage>|min-content|max-content|fit-content|auto|none`,
-            min_height: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
-            max_height: `<length>|<percentage>|min-content|max-content|fit-content|auto|none`,
+    	/* https://drafts.csswg.org/css-sizing-3 todo:implement fit-content(%) function */
+    		box_sizing: `content-box | border-box`,
+    		width: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
+    		height: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
+    		min_width: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
+    		max_width: `<length>|<percentage>|min-content|max-content|fit-content|auto|none`,
+    		min_height: `<length>|<percentage>|min-content|max-content|fit-content|auto`,
+    		max_height: `<length>|<percentage>|min-content|max-content|fit-content|auto|none`,
 
-        /* https://www.w3.org/TR/2018/REC-css-color-3-20180619 */
-            color: `<color>`,
-            opacity: `<alphavalue>`,
+    	/* https://www.w3.org/TR/2018/REC-css-color-3-20180619 */
+    		color: `<color>`,
+    		opacity: `<alphavalue>`,
 
-        /* https://www.w3.org/TR/css-backgrounds-3/ */
-            background_color: `<color>`,
-            background_image: `<bg_image>#`,
-            background_repeat: `<repeat_style>#`,
-            background_attachment: `scroll|fixed|local`,
-            background_position: `[<percentage>|<length>]{1,2}|[top|center|bottom]||[left|center|right]`,
-            background_clip: `<box>#`,
-            background_origin: `<box>#`,
-            background_size: `<bg_size>#`,
-            /*background: `<bg_layer>#,<final_bg_layer>`,*/
-            border_color: `<color>{1,4}`,
-            border_top_color: `<color>`,
-            border_right_color: `<color>`,
-            border_bottom_color: `<color>`,
-            border_left_color: `<color>`,
+    	/* https://www.w3.org/TR/css-backgrounds-3/ */
+    		background_color: `<color>`,
+    		background_image: `<bg_image>#`,
+    		background_repeat: `<repeat_style>#`,
+    		background_attachment: `scroll|fixed|local`,
+    		background_position: `[<percentage>|<length>]{1,2}|[top|center|bottom]||[left|center|right]`,
+    		background_clip: `<box>#`,
+    		background_origin: `<box>#`,
+    		background_size: `<bg_size>#`,
+    		background: `[<bg_layer>#,]?<final_bg_layer>`,
+    		border_color: `<color>{1,4}`,
+    		border_top_color: `<color>`,
+    		border_right_color: `<color>`,
+    		border_bottom_color: `<color>`,
+    		border_left_color: `<color>`,
 
-            border_top_width: `<line_width>`,
-            border_right_width: `<line_width>`,
-            border_bottom_width: `<line_width>`,
-            border_left_width: `<line_width>`,
-            border_width: `<line_width>{1,4}`,
+    		border_top_width: `<line_width>`,
+    		border_right_width: `<line_width>`,
+    		border_bottom_width: `<line_width>`,
+    		border_left_width: `<line_width>`,
+    		border_width: `<line_width>{1,4}`,
 
-            border_style: `<line_style>{1,4}`,
-            border_top_style: `<line_style>`,
-            border_right_style: `<line_style>`,
-            border_bottom_style: `<line_style>`,
-            border_left_style: `<line_style>`,
+    		border_style: `<line_style>{1,4}`,
+    		border_top_style: `<line_style>`,
+    		border_right_style: `<line_style>`,
+    		border_bottom_style: `<line_style>`,
+    		border_left_style: `<line_style>`,
 
-            border_top: `<line_width>||<line_style>||<color>`,
-            border_right: `<line_width>||<line_style>||<color>`,
-            border_bottom: `<line_width>||<line_style>||<color>`,
-            border_left: `<line_width>||<line_style>||<color>`,
+    		border_top: `<line_width>||<line_style>||<color>`,
+    		border_right: `<line_width>||<line_style>||<color>`,
+    		border_bottom: `<line_width>||<line_style>||<color>`,
+    		border_left: `<line_width>||<line_style>||<color>`,
 
-            border_radius: `<length_percentage>{1,4}[ / <length_percentage>{1,4}]?`,
-            border_top_left_radius: `<length_percentage>{1,2}`,
-            border_top_right_radius: `<length_percentage>{1,2}`,
-            border_bottom_right_radius: `<length_percentage>{1,2}`,
-            border_bottom_left_radius: `<length_percentage>{1,2}`,
+    		border_radius: `<length_percentage>{1,4}[ / <length_percentage>{1,4}]?`,
+    		border_top_left_radius: `<length_percentage>{1,2}`,
+    		border_top_right_radius: `<length_percentage>{1,2}`,
+    		border_bottom_right_radius: `<length_percentage>{1,2}`,
+    		border_bottom_left_radius: `<length_percentage>{1,2}`,
 
-            border: `<line_width>||<line_style>||<color>`,
+    		border: `<line_width>||<line_style>||<color>`,
 
-            border_image: `<border_image_source>||<border_image_slice>[/<border_image_width>|/<border_image_width>?/<border_image_outset>]?||<border_image_repeat>`,
-            border_image_source: `none|<image>`,
-            border_image_slice: `[<number>|<percentage>]{1,4}&&fill?`,
-            border_image_width: `[<length_percentage>|<number>|auto]{1,4}`,
-            border_image_outset: `[<length>|<number>]{1,4}`,
-            border_image_repeat: `[stretch|repeat|round|space]{1,2}`,
-            box_shadow: `none|<shadow>#`,
-            line_height: `normal|<percentage>|<length>|<number>`,
-            overflow: 'visible|hidden|scroll|auto',
+    		border_image: `<border_image_source>||<border_image_slice>[/<border_image_width>|/<border_image_width>?/<border_image_outset>]?||<border_image_repeat>`,
+    		border_image_source: `none|<image>`,
+    		border_image_slice: `[<number>|<percentage>]{1,4}&&fill?`,
+    		border_image_width: `[<length_percentage>|<number>|auto]{1,4}`,
+    		border_image_outset: `[<length>|<number>]{1,4}`,
+    		border_image_repeat: `[stretch|repeat|round|space]{1,2}`,
+    		box_shadow: `none|<shadow>#`,
+    		line_height: `normal|<percentage>|<length>|<number>`,
+    		overflow: 'visible|hidden|scroll|auto',
 
-        /* https://www.w3.org/TR/css-fonts-4 */
-            font_display: "auto|block|swap|fallback|optional",
-            font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
-            font_language_override:"normal|<string>",
-            font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
-            font_max_size: `<absolute_size>|<relative_size>|<length>|<percentage>|infinity`,
-            font_min_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
-            font_optical_sizing: `auto|none`,
-            font_pallette: `normal|light|dark|<identifier>`,
-            font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
-            font_stretch:"<percentage>|normal|ultra-condensed|extra-condensed|condensed|semi-condensed|semi-expanded|expanded|extra-expanded|ultra-expanded",
-            font_style: `normal | italic | oblique <angle>?`,
-            font_synthesis:"none|[weight||style]",
-            font_synthesis_small_caps:"auto|none",
-            font_synthesis_style:"auto|none",
-            font_synthesis_weight:"auto|none",
-            font_variant_alternates:"normal|[stylistic(<feature-value-name>)||historical-forms||styleset(<feature-value-name>#)||character-variant(<feature-value-name>#)||swash(<feature-value-name>)||ornaments(<feature-value-name>)||annotation(<feature-value-name>)]",
-            font_variant_emoji:"auto|text|emoji|unicode",
-            font_variation_settings:" normal|[<string><number>]#",
-            font_size_adjust: `<number>|none`,
-            
-            font_weight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
+    	/* https://www.w3.org/TR/css-fonts-4 */
+    		font_display: "auto|block|swap|fallback|optional",
+    		font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
+    		font_language_override:"normal|<string>",
+    		font: `[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>`,
+    		font_max_size: `<absolute_size>|<relative_size>|<length>|<percentage>|infinity`,
+    		font_min_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
+    		font_optical_sizing: `auto|none`,
+    		font_pallette: `normal|light|dark|<identifier>`,
+    		font_size: `<absolute_size>|<relative_size>|<length>|<percentage>`,
+    		font_stretch:"<percentage>|normal|ultra-condensed|extra-condensed|condensed|semi-condensed|semi-expanded|expanded|extra-expanded|ultra-expanded",
+    		font_style: `normal|italic|oblique<angle>?`,
+    		font_synthesis:"none|[weight||style]",
+    		font_synthesis_small_caps:"auto|none",
+    		font_synthesis_style:"auto|none",
+    		font_synthesis_weight:"auto|none",
+    		font_variant_alternates:"normal|[stylistic(<feature-value-name>)||historical-forms||styleset(<feature-value-name>#)||character-variant(<feature-value-name>#)||swash(<feature-value-name>)||ornaments(<feature-value-name>)||annotation(<feature-value-name>)]",
+    		font_variant_emoji:"auto|text|emoji|unicode",
+    		font_variation_settings:" normal|[<string><number>]#",
+    		font_size_adjust: `<number>|none`,
+    		
+    		font_weight: `normal|bold|bolder|lighter|100|200|300|400|500|600|700|800|900`,
 
-        /* https://www.w3.org/TR/css-fonts-3/ */
-            font_kerning: ` auto | normal | none`,
-            font_variant: `normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values>||[small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps]||<numeric-figure-values>||<numeric-spacing-values>||<numeric-fraction-values>||ordinal||slashed-zero||<east-asian-variant-values>||<east-asian-width-values>||ruby||[sub|super]]`,
-            font_variant_ligatures:`normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values> ]`,
-            font_variant_position:`normal|sub|super`,
-            font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
-            font_variant_numeric: "normal | [ <numeric-figure-values> || <numeric-spacing-values> || <numeric-fraction-values> || ordinal || slashed-zero ]",
-            font_variant_east_asian:" normal | [ <east-asian-variant-values> || <east-asian-width-values> || ruby ]",
+    	/* https://www.w3.org/TR/css-fonts-3/ */
+    		font_kerning: ` auto | normal | none`,
+    		font_variant: `normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values>||[small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps]||<numeric-figure-values>||<numeric-spacing-values>||<numeric-fraction-values>||ordinal||slashed-zero||<east-asian-variant-values>||<east-asian-width-values>||ruby||[sub|super]]`,
+    		font_variant_ligatures:`normal|none|[<common-lig-values>||<discretionary-lig-values>||<historical-lig-values>||<contextual-alt-values> ]`,
+    		font_variant_position:`normal|sub|super`,
+    		font_variant_caps:`normal|small-caps|all-small-caps|petite-caps|all-petite-caps|unicase|titling-caps`,
+    		font_variant_numeric: "normal | [ <numeric-figure-values> || <numeric-spacing-values> || <numeric-fraction-values> || ordinal || slashed-zero ]",
+    		font_variant_east_asian:" normal | [ <east-asian-variant-values> || <east-asian-width-values> || ruby ]",
 
-        /* https://drafts.csswg.org/css-text-3 */
-            hanging_punctuation : "none|[first||[force-end|allow-end]||last]",
-            hyphens : "none|manual|auto",
-            letter_spacing: `normal|<length>`,
-            line_break : "auto|loose|normal|strict|anywhere",
-            overflow_wrap : "normal|break-word|anywhere",
-            tab_size : "<length>|<number>",
-            text_align : "start|end|left|right|center|justify|match-parent|justify-all",
-            text_align_all : "start|end|left|right|center|justify|match-parent",
-            text_align_last : "auto|start|end|left|right|center|justify|match-parent",
-            text_indent : "[[<length>|<percentage>]&&hanging?&&each-line?]",
-            text_justify : "auto|none|inter-word|inter-character",
-            text_transform : "none|[capitalize|uppercase|lowercase]||full-width||full-size-kana",
-            white_space : "normal|pre|nowrap|pre-wrap|break-spaces|pre-line",
-            word_break : " normal|keep-all|break-all|break-word",
-            word_spacing : "normal|<length>",
-            word_wrap : "  normal | break-word | anywhere",
+    	/* https://drafts.csswg.org/css-text-3 */
+    		hanging_punctuation : "none|[first||[force-end|allow-end]||last]",
+    		hyphens : "none|manual|auto",
+    		letter_spacing: `normal|<length>`,
+    		line_break : "auto|loose|normal|strict|anywhere",
+    		overflow_wrap : "normal|break-word|anywhere",
+    		tab_size : "<length>|<number>",
+    		text_align : "start|end|left|right|center|justify|match-parent|justify-all",
+    		text_align_all : "start|end|left|right|center|justify|match-parent",
+    		text_align_last : "auto|start|end|left|right|center|justify|match-parent",
+    		text_indent : "[[<length>|<percentage>]&&hanging?&&each-line?]",
+    		text_justify : "auto|none|inter-word|inter-character",
+    		text_transform : "none|[capitalize|uppercase|lowercase]||full-width||full-size-kana",
+    		white_space : "normal|pre|nowrap|pre-wrap|break-spaces|pre-line",
+    		word_break : " normal|keep-all|break-all|break-word",
+    		word_spacing : "normal|<length>",
+    		word_wrap : "  normal | break-word | anywhere",
 
-        /* https://drafts.csswg.org/css-text-decor-3 */
-            text_decoration: "<text-decoration-line>||<text-decoration-style>||<color>",
-            text_decoration_color:"<color>",
-            text_decoration_line:"none|[underline||overline||line-through||blink]",
-            text_decoration_style:"solid|double|dotted|dashed|wavy",
-            text_emphasis:"<text-emphasis-style>||<text-emphasis-color>",
-            text_emphasis_color:"<color>",
-            text_emphasis_position:"[over|under]&&[right|left]?",
-            text_emphasis_style:"none|[[filled|open]||[dot|circle|double-circle|triangle|sesame]]|<string>",
-            text_shadow:"none|[<color>?&&<length>{2,3}]#",
-            text_underline_position:"auto|[under||[left|right]]",
+    	/* https://drafts.csswg.org/css-text-decor-3 */
+    		text_decoration: "<text-decoration-line>||<text-decoration-style>||<color>",
+    		text_decoration_color:"<color>",
+    		text_decoration_line:"none|[underline||overline||line-through||blink]",
+    		text_decoration_style:"solid|double|dotted|dashed|wavy",
+    		text_emphasis:"<text-emphasis-style>||<text-emphasis-color>",
+    		text_emphasis_color:"<color>",
+    		text_emphasis_position:"[over|under]&&[right|left]?",
+    		text_emphasis_style:"none|[[filled|open]||[dot|circle|double-circle|triangle|sesame]]|<string>",
+    		text_shadow:"none|[<color>?&&<length>{2,3}]#",
+    		text_underline_position:"auto|[under||[left|right]]",
 
-        /* Flex Box https://www.w3.org/TR/css-flexbox-1/ */
-            align_content: `flex-start | flex-end | center | space-between | space-around | stretch`,
-            align_items: `flex-start | flex-end | center | baseline | stretch`,
-            align_self: `auto | flex-start | flex-end | center | baseline | stretch`,
-            flex:`none|[<flex-grow> <flex-shrink>?||<flex-basis>]`,
-            flex_basis:`content|<width>`,
-            flex_direction:`row | row-reverse | column | column-reverse`,
-            flex_flow:`<flex-direction>||<flex-wrap>`,
-            flex_grow:`<number>`,
-            flex_shrink:`<number>`,
-            flex_wrap:`nowrap|wrap|wrap-reverse`,
-            justify_content :"flex-start | flex-end | center | space-between | space-around",
-            order:`<integer>`,
+    	/* Flex Box https://www.w3.org/TR/css-flexbox-1/ */
+    		align_content: `flex-start | flex-end | center | space-between | space-around | stretch`,
+    		align_items: `flex-start | flex-end | center | baseline | stretch`,
+    		align_self: `auto | flex-start | flex-end | center | baseline | stretch`,
+    		flex:`none|[<flex-grow> <flex-shrink>?||<flex-basis>]`,
+    		flex_basis:`content|<width>`,
+    		flex_direction:`row | row-reverse | column | column-reverse`,
+    		flex_flow:`<flex-direction>||<flex-wrap>`,
+    		flex_grow:`<number>`,
+    		flex_shrink:`<number>`,
+    		flex_wrap:`nowrap|wrap|wrap-reverse`,
+    		justify_content :"flex-start | flex-end | center | space-between | space-around",
+    		order:`<integer>`,
 
-        /* https://drafts.csswg.org/css-transitions-1/ */
-            transition: `<single_transition>#`,
-            transition_delay: `<time>#`,
-            transition_duration: `<time>#`,
-            transition_property: `none|<single_transition_property>#`,
-            transition_timing_function: `<timing_function>#`,
+    	/* https://drafts.csswg.org/css-transitions-1/ */
+    		transition: `<single_transition>#`,
+    		transition_delay: `<time>#`,
+    		transition_duration: `<time>#`,
+    		transition_property: `none|<single_transition_property>#`,
+    		transition_timing_function: `<timing_function>#`,
 
-        /* CSS3 Animation https://drafts.csswg.org/css-animations-1/ */
-            animation: `<single_animation>#`,
-            animation_name: `[none|<keyframes_name>]#`,
-            animation_duration: `<time>#`,
-            animation_timing_function: `<timing_function>#`,
-            animation_iteration_count: `<single_animation_iteration_count>#`,
-            animation_direction: `<single_animation_direction>#`,
-            animation_play_state: `<single_animation_play_state>#`,
-            animation_delayed: `<time>#`,
-            animation_fill_mode: `<single_animation_fill_mode>#`,
+    	/* CSS3 Animation https://drafts.csswg.org/css-animations-1/ */
+    		animation: `<single_animation>#`,
+    		animation_name: `[none|<keyframes_name>]#`,
+    		animation_duration: `<time>#`,
+    		animation_timing_function: `<timing_function>#`,
+    		animation_iteration_count: `<single_animation_iteration_count>#`,
+    		animation_direction: `<single_animation_direction>#`,
+    		animation_play_state: `<single_animation_play_state>#`,
+    		animation_delayed: `<time>#`,
+    		animation_fill_mode: `<single_animation_fill_mode>#`,
 
-        /* https://svgwg.org/svg2-draft/interact.html#PointerEventsProperty */
-            pointer_events : `visiblePainted|visibleFill|visibleStroke|visible|painted|fill|stroke|all|none|auto`,
+    	/* https://svgwg.org/svg2-draft/interact.html#PointerEventsProperty */
+    		pointer_events : `visiblePainted|visibleFill|visibleStroke|visible|painted|fill|stroke|all|none|auto`,
 
-        /* https://drafts.csswg.org/css-ui-3 */
-            caret_color :"auto|<color>",
-            cursor:"[[<url> [<number><number>]?,]*[auto|default|none|context-menu|help|pointer|progress|wait|cell|crosshair|text|vertical-text|alias|copy|move|no-drop|not-allowed|grab|grabbing|e-resize|n-resize|ne-resize|nw-resize|s-resize|se-resize|sw-resize|w-resize|ew-resize|ns-resize|nesw-resize|nwse-resize|col-resize|row-resize|all-scroll|zoom-in|zoom-out]]",
-            outline:"[<outline-color>||<outline-style>||<outline-width>]",
-            outlinecolor:"<color>|invert",
-            outlineoffset:"<length>",
-            outlinestyle:"auto|<border-style>",
-            outlinewidth:"<line-width>",
-            resize:"none|both|horizontal|vertical",
-            text_overflow:"clip|ellipsis",
+    	/* https://drafts.csswg.org/css-ui-3 */
+    		caret_color :"auto|<color>",
+    		cursor:"[[<url> [<number><number>]?,]*[auto|default|none|context-menu|help|pointer|progress|wait|cell|crosshair|text|vertical-text|alias|copy|move|no-drop|not-allowed|grab|grabbing|e-resize|n-resize|ne-resize|nw-resize|s-resize|se-resize|sw-resize|w-resize|ew-resize|ns-resize|nesw-resize|nwse-resize|col-resize|row-resize|all-scroll|zoom-in|zoom-out]]",
+    		outline:"[<outline-color>||<outline-style>||<outline-width>]",
+    		outline_color:"<color>|invert",
+    		outline_offset:"<length>",
+    		outline_style:"auto|<border-style>",
+    		outline_width:"<line-width>",
+    		resize:"none|both|horizontal|vertical",
+    		text_overflow:"clip|ellipsis",
 
-        list_style_type: `disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman|lower-greek|lower-latin|upper-latin|armenian|georgian|lower-alpha|upper-alpha|none`,
-        list_style_image: `<url>|none`,
-        list_style_position: `inside|outside`,
-        list_style: `[disc|circle|square|decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|none]||[inside|outside]||[<url>|none]`,
-        vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>`,
+    	/* https://drafts.csswg.org/css-content-3/ */
+    		bookmark_label:"<content-list>",
+    		bookmark_level:"none|<integer>",
+    		bookmark_state:"open|closed",
+    		content:"normal|none|[<content-replacement>|<content-list>][/<string>]?",
+    		quotes:"none|[<string><string>]+",
+    		string_set:"none|[<custom-ident><string>+]#",
+    	
+    	/*https://www.w3.org/TR/CSS22/tables.html*/
+    		caption_side:"top|bottom",
+    		table_layout:"auto|fixed",
+    		border_collapse:"collapse|separate",
+    		border_spacing:"<length><length>?",
+    		empty_cells:"show|hide",
 
-        /* Visual Effects */
-        clip: '<shape>|auto',
-        visibility: `visible|hidden|collapse`,
-        content: `normal|none|[<string>|<uri>|<counter>|attr(<identifier>)|open-quote|close-quote|no-open-quote|no-close-quote]+`,
-        quotas: `[<string><string>]+|none`,
-        counter_reset: `[<identifier><integer>?]+|none`,
-        counter_increment: `[<identifier><integer>?]+|none`,
+    	/* https://www.w3.org/TR/CSS2/page.html */
+    		page_break_before:"auto|always|avoid|left|right",
+    		page_break_after:"auto|always|avoid|left|right",
+    		page_break_inside:"auto|avoid|left|right",
+    		orphans:"<integer>",
+    		widows:"<integer>",
+
+    	/* https://drafts.csswg.org/css-lists-3 */
+    		counter_increment:"[ <custom-ident> <integer>?]+|none",
+    		counter_reset:"[<custom-ident><integer>?]+|none",
+    		counter_set:"[<custom-ident><integer>?]+|none",
+    		list_style:"<list-style-type>||<list-style-position>||<list-style-image>",
+    		list_style_image:"<image>|none",
+    		list_style_position:"inside|outside",
+    		list_style_type:"<counter-style>|<string>|none",
+    		marker_side:"list-item|list-container",
+
+
+    	list_style_type:`disc|circle|square|decimal|decimal-leading-zero|lower-roman|upper-roman|lower-greek|lower-latin|upper-latin|armenian|georgian|lower-alpha|upper-alpha|none`,
+    	list_style_image: `<url>|none`,
+    	list_style_position: `inside|outside`,
+    	list_style: `[disc|circle|square|decimal|lower-roman|upper-roman|lower-alpha|upper-alpha|none]||[inside|outside]||[<url>|none]`,
+    	vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>`,
+
+    	/* Visual Effects */
+    	clip: '<shape>|auto',
+    	visibility: `visible|hidden|collapse`,
+    	content: `normal|none|[<string>|<uri>|<counter>|attr(<identifier>)|open-quote|close-quote|no-open-quote|no-close-quote]+`,
+    	quotas: `[<string><string>]+|none`,
+    	counter_reset: `[<identifier><integer>?]+|none`,
+    	counter_increment: `[<identifier><integer>?]+|none`,
     };
 
     /* Properties that are not directly accessible by CSS prop creator */
 
     const virtual_property_definitions = {
-        east_asian_variant_values : "[ jis78 | jis83 | jis90 | jis04 | simplified | traditional ",
 
-        alphavalue: '<number>',
+    	/* https://drafts.csswg.org/css-content-3/ */
+    		content_list:"[<string>|contents|<image>|<quote>|<target>|<leader()>]+",
+    		content_replacement:"<image>",
 
-        box: `border-box|padding-box|content-box`,
+    	/* https://drafts.csswg.org/css-values-4 */
+    		custom_ident:"<identifier>",
+    		position:"[[left|center|right]||[top|center|bottom]|[left|center|right|<length-percentage>][top|center|bottom|<length-percentage>]?|[[left|right]<length-percentage>]&&[[top|bottom]<length-percentage>]]",
+    	
+    	/* https://drafts.csswg.org/css-lists-3 */
 
-        /*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
-        absolute_size: `xx-small|x-small|small|medium|large|x-large|xx-large`,
-        relative_size: `larger|smaller`,
+    	east_asian_variant_values:"[jis78|jis83|jis90|jis04|simplified|traditional]",
 
-        /*https://www.w3.org/TR/css-backgrounds-3/*/
+    	alphavalue: '<number>',
 
-        bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
-        final_bg_layer: `<background_color>||<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
-        bg_image: `<url>|<gradient>|none`,
-        repeat_style: `repeat-x|repeat-y|[repeat|space|round|no-repeat]{1,2}`,
-        background_attachment: `<attachment>#`,
-        bg_size: `<length_percentage>|auto]{1,2}|cover|contain`,
-        bg_position: `[[left|center|right|top|bottom|<length_percentage>]|[left|center|right|<length_percentage>][top|center|bottom|<length_percentage>]|[center|[left|right]<length_percentage>?]&&[center|[top|bottom]<length_percentage>?]]`,
-        attachment: `scroll|fixed|local`,
-        line_style: `none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset`,
-        line_width: `thin|medium|thick|<length>`,
-        shadow: `inset?&&<length>{2,4}&&<color>?`,
+    	box: `border-box|padding-box|content-box`,
 
-        /* Font https://www.w3.org/TR/css-fonts-4/#family-name-value */
-        
-        family_name: `<id>||<string>`,
-        generic_family: `serif|sans-serif|cursive|fantasy|monospace`,
-        
-        /* Identifier https://drafts.csswg.org/css-values-4/ */
+    	/*Font-Size: www.w3.org/TR/CSS2/fonts.html#propdef-font-size */
+    	absolute_size: `xx-small|x-small|small|medium|large|x-large|xx-large`,
+    	relative_size: `larger|smaller`,
 
-        identifier: `<id>`,
-        custom_ident: `<id>`,
+    	/*https://www.w3.org/TR/css-backgrounds-3/*/
 
-        /* https://drafts.csswg.org/css-timing-1/#typedef-timing-function */
+    	bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
+    	final_bg_layer: `<background_color>||<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
+    	bg_image: `<url>|<gradient>|none`,
+    	repeat_style: `repeat-x|repeat-y|[repeat|space|round|no-repeat]{1,2}`,
+    	background_attachment: `<attachment>#`,
+    	bg_size: `<length_percentage>|auto]{1,2}|cover|contain`,
+    	bg_position: `[[left|center|right|top|bottom|<length_percentage>]|[left|center|right|<length_percentage>][top|center|bottom|<length_percentage>]|[center|[left|right]<length_percentage>?]&&[center|[top|bottom]<length_percentage>?]]`,
+    	attachment: `scroll|fixed|local`,
+    	line_style: `none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset`,
+    	line_width: `thin|medium|thick|<length>`,
+    	shadow: `inset?&&<length>{2,4}&&<color>?`,
 
-        timing_function: `linear|<cubic_bezier_timing_function>|<step_timing_function>|<frames_timing_function>`,
-        cubic_bezier_timing_function: `<cubic_bezier>`,
-        step_timing_function: `step-start|step-end|'steps()'`,
-        frames_timing_function: `'frames()'`,
+    	/* Font https://www.w3.org/TR/css-fonts-4/#family-name-value */
+    	
+    	family_name: `<fontname>`,
+    	generic_family: `serif|sans-serif|cursive|fantasy|monospace`,
+    	
+    	/* Identifier https://drafts.csswg.org/css-values-4/ */
 
-        /* https://drafts.csswg.org/css-transitions-1/ */
+    	identifier: `<id>`,
+    	custom_ident: `<id>`,
 
-        single_animation_fill_mode: `none|forwards|backwards|both`,
-        single_animation_play_state: `running|paused`,
-        single_animation_direction: `normal|reverse|alternate|alternate-reverse`,
-        single_animation_iteration_count: `infinite|<number>`,
-        single_transition_property: `all|<custom_ident>`,
-        single_transition: `[none|<single_transition_property>]||<time>||<timing_function>||<time>`,
+    	/* https://drafts.csswg.org/css-timing-1/#typedef-timing-function */
 
-        /* CSS3 Animation https://drafts.csswg.org/css-animations-1/ */
+    	timing_function: `linear|<cubic_bezier_timing_function>|<step_timing_function>|<frames_timing_function>`,
+    	cubic_bezier_timing_function: `<cubic_bezier>`,
+    	step_timing_function: `step-start|step-end|'steps()'`,
+    	frames_timing_function: `'frames()'`,
 
-        single_animation: `<time>||<timing_function>||<time>||<single_animation_iteration_count>||<single_animation_direction>||<single_animation_fill_mode>||<single_animation_play_state>||[none|<keyframes_name>]`,
-        keyframes_name: `<string>`,
+    	/* https://drafts.csswg.org/css-transitions-1/ */
 
-        /* CSS3 Stuff */
-        length_percentage: `<length>|<percentage>`,
-        frequency_percentage: `<frequency>|<percentage>`,
-        angle_percentage: `<angle>|<percentage>`,
-        time_percentage: `<time>|<percentage>`,
-        number_percentage: `<number>|<percentage>`,
+    	single_animation_fill_mode: `none|forwards|backwards|both`,
+    	single_animation_play_state: `running|paused`,
+    	single_animation_direction: `normal|reverse|alternate|alternate-reverse`,
+    	single_animation_iteration_count: `infinite|<number>`,
+    	single_transition_property: `all|<custom_ident>`,
+    	single_transition: `[none|<single_transition_property>]||<time>||<timing_function>||<time>`,
 
-        /*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping */
-        clip_path: `<clip_source>|[<basic_shape>||<geometry_box>]|none`,
-        clip_source: `<url>`,
-        shape_box: `<box>|margin-box`,
-        geometry_box: `<shape_box>|fill-box|stroke-box|view-box`,
-        basic_shape: `<CSS_Shape>`,
-        ratio: `<integer>/<integer>`,
+    	/* CSS3 Animation https://drafts.csswg.org/css-animations-1/ */
 
-        /* https://www.w3.org/TR/css-fonts-3/*/
-        common_lig_values        : `[ common-ligatures | no-common-ligatures ]`,
-        discretionary_lig_values : `[ discretionary-ligatures | no-discretionary-ligatures ]`,
-        historical_lig_values    : `[ historical-ligatures | no-historical-ligatures ]`,
-        contextual_alt_values    : `[ contextual | no-contextual ]`,
+    	single_animation: `<time>||<timing_function>||<time>||<single_animation_iteration_count>||<single_animation_direction>||<single_animation_fill_mode>||<single_animation_play_state>||[none|<keyframes_name>]`,
+    	keyframes_name: `<string>`,
 
-        //Display
-        display_outside  : `block | inline | run-in`,
-        display_inside   : `flow | flow-root | table | flex | grid | ruby`,
-        display_listitem : `<display_outside>? && [ flow | flow-root ]? && list-item`,
-        display_internal : `table-row-group | table-header-group | table-footer-group | table-row | table-cell | table-column-group | table-column | table-caption | ruby-base | ruby-text | ruby-base-container | ruby-text-container`,
-        display_box      : `contents | none`,
-        display_legacy   : `inline-block | inline-table | inline-flex | inline-grid`,
+    	/* CSS3 Stuff */
+    	length_percentage: `<length>|<percentage>`,
+    	frequency_percentage: `<frequency>|<percentage>`,
+    	angle_percentage: `<angle>|<percentage>`,
+    	time_percentage: `<time>|<percentage>`,
+    	number_percentage: `<number>|<percentage>`,
+
+    	/*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping */
+    	clip_path: `<clip_source>|[<basic_shape>||<geometry_box>]|none`,
+    	clip_source: `<url>`,
+    	shape_box: `<box>|margin-box`,
+    	geometry_box: `<shape_box>|fill-box|stroke-box|view-box`,
+    	basic_shape: `<CSS_Shape>`,
+    	ratio: `<integer>/<integer>`,
+
+    	/* https://www.w3.org/TR/css-fonts-3/*/
+    	common_lig_values        : `[ common-ligatures | no-common-ligatures ]`,
+    	discretionary_lig_values : `[ discretionary-ligatures | no-discretionary-ligatures ]`,
+    	historical_lig_values    : `[ historical-ligatures | no-historical-ligatures ]`,
+    	contextual_alt_values    : `[ contextual | no-contextual ]`,
+
+    	//Display
+    	display_outside  : `block | inline | run-in`,
+    	display_inside   : `flow | flow-root | table | flex | grid | ruby`,
+    	display_listitem : `<display_outside>? && [ flow | flow-root ]? && list-item`,
+    	display_internal : `table-row-group | table-header-group | table-footer-group | table-row | table-cell | table-column-group | table-column | table-caption | ruby-base | ruby-text | ruby-base-container | ruby-text-container`,
+    	display_box      : `contents | none`,
+    	display_legacy   : `inline-block | inline-table | inline-flex | inline-grid`,
     };
 
     const media_feature_definitions = {
-        width: "<m_width>",
-        min_width: "<m_max_width>",
-        max_width: "<m_min_width>",
-        height: "<m_height>",
-        min_height: "<m_min_height>",
-        max_height: "<m_max_height>",
-        orientation: "portrait  | landscape",
-        aspect_ratio: "<ratio>",
-        min_aspect_ratio: "<ratio>",
-        max_aspect_ratio: "<ratio>",
-        resolution: "<length>",
-        min_resolution: "<length>",
-        max_resolution: "<length>",
-        scan: "progressive|interlace",
-        grid: "",
-        monochrome: "",
-        min_monochrome: "<integer>",
-        max_monochrome: "<integer>",
-        color: "",
-        min_color: "<integer>",
-        max_color: "<integer>",
-        color_index: "",
-        min_color_index: "<integer>",
-        max_color_index: "<integer>",
+    	width: "<m_width>",
+    	min_width: "<m_max_width>",
+    	max_width: "<m_min_width>",
+    	height: "<m_height>",
+    	min_height: "<m_min_height>",
+    	max_height: "<m_max_height>",
+    	orientation: "portrait  | landscape",
+    	aspect_ratio: "<ratio>",
+    	min_aspect_ratio: "<ratio>",
+    	max_aspect_ratio: "<ratio>",
+    	resolution: "<length>",
+    	min_resolution: "<length>",
+    	max_resolution: "<length>",
+    	scan: "progressive|interlace",
+    	grid: "",
+    	monochrome: "",
+    	min_monochrome: "<integer>",
+    	max_monochrome: "<integer>",
+    	color: "",
+    	min_color: "<integer>",
+    	max_color: "<integer>",
+    	color_index: "",
+    	min_color_index: "<integer>",
+    	max_color_index: "<integer>",
 
     };
 
@@ -4625,22 +4869,26 @@ ${is_iws}`;
 
         constructor(value, getPropertyParser, definitions, productions) {
 
-            if(value instanceof NR)
+            if(value instanceof JUX)
                 return value;
+            
 
             this.value = null;
 
             const IS_VIRTUAL = { is: false };
+            
+            if(typeof(value) == "string")
+                var u_value = value.replace(/\-/g,"_");
 
-            if (!(this.value = types[value]))
-                this.value = getPropertyParser(value, IS_VIRTUAL, definitions, productions);
+            if (!(this.value = types[u_value]))
+                this.value = getPropertyParser(u_value, IS_VIRTUAL, definitions, productions);
 
             this.prop = "";
 
             if (!this.value)
                 return new LiteralTerm(value);
 
-            if(this.value instanceof NR){
+            if(this.value instanceof JUX){
                 if (IS_VIRTUAL.is)
                     this.value.virtual = true;
                 return this.value;
@@ -4650,9 +4898,20 @@ ${is_iws}`;
 
         seal(){}
 
-        parse(l, rule, r) {
+        parse(l, rule, r, ROOT = true) {
             if (typeof(l) == "string")
                 l = whind$1(l);
+
+            if (ROOT) {
+
+                switch(checkDefaults(l)){
+                    case 1:
+                    rule[this.prop] = l.tx;
+                    return true;
+                    case 0:
+                    return false;
+                }
+            }
 
             let rn = { v: null };
 
@@ -4690,28 +4949,45 @@ ${is_iws}`;
                     } else
                         r.v = v;
 
-                if (this.prop && !this.virtual)
+                if (this.prop && !this.virtual && root)
                     rule[this.prop] = v;
 
                 return true;
             } else
                 return false;
         }
+
+        get OPTIONAL (){ return false }
+        set OPTIONAL (a){}
     }
 
     class LiteralTerm {
 
-        constructor(value) {
+        constructor(value, type) {
+            
+            if(type == whind$1.types.string)
+                value = value.slice(1,-1);
+
             this.value = value;
             this.prop = null;
         }
 
         seal(){}
 
-        parse(l, rule, r) {
+        parse(l, rule, r, root = true) {
 
             if (typeof(l) == "string")
                 l = whind$1(l);
+
+            if (root) {
+                switch(checkDefaults(l)){
+                    case 1:
+                    rule[this.prop] = l.tx;
+                    return true;
+                    case 0:
+                    return false;
+                }
+            }
 
             let v = l.tx;
             if (v == this.value) {
@@ -4728,13 +5004,16 @@ ${is_iws}`;
                     } else
                         r.v = v;
 
-                if (this.prop  && !this.virtual)
+                if (this.prop  && !this.virtual && root)
                     rule[this.prop] = v;
 
                 return true;
             }
             return false;
         }
+
+        get OPTIONAL (){ return false }
+        set OPTIONAL (a){}
     }
 
     class SymbolTerm extends LiteralTerm {
@@ -4888,9 +5167,9 @@ ${is_iws}`;
 
     /**
      * wick internals.
-     * @class      NR (name)
+     * @class      JUX (name)
      */
-    class NR$1 extends NR {
+    class JUX$1 extends JUX {
         //Adds an entry in options list. 
 
 
@@ -5021,7 +5300,7 @@ ${is_iws}`;
         }
     }
 
-    class AND$1 extends NR$1 {
+    class AND$1 extends JUX$1 {
 
         default (segment, EXTENDED = false) {
             //let seg = this.createSegment();
@@ -5071,7 +5350,7 @@ ${is_iws}`;
     }
     Object.assign(AND$1.prototype, AND.prototype);
 
-    class OR$1 extends NR$1 {
+    class OR$1 extends JUX$1 {
 
         default (segment, EXTENDED = false) {
             //let seg = this.createSegment();
@@ -5177,7 +5456,7 @@ ${is_iws}`;
 
     Object.assign(OR$1.prototype, OR.prototype);
 
-    class ONE_OF$1 extends NR$1 {
+    class ONE_OF$1 extends JUX$1 {
 
         default (segment, EXTENDED = false) {
             let seg = this.createSegment();
@@ -5263,7 +5542,7 @@ ${is_iws}`;
     Object.assign(ONE_OF$1.prototype, ONE_OF.prototype);
 
     var ui_productions = /*#__PURE__*/Object.freeze({
-        NR: NR$1,
+        JUX: JUX$1,
         AND: AND$1,
         OR: OR$1,
         ONE_OF: ONE_OF$1,
@@ -5273,7 +5552,7 @@ ${is_iws}`;
     });
 
     const standard_productions = {
-        NR,
+        JUX,
         AND,
         OR,
         ONE_OF,
@@ -5288,8 +5567,7 @@ ${is_iws}`;
         if (prop) {
 
             if (typeof(prop) == "string") {
-                const def = definitions.default;
-                prop = definitions[property_name] = CreatePropertyParser(prop + def, property_name, definitions, productions);
+                prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
             }
             prop.name = property_name;
             return prop;
@@ -5320,67 +5598,65 @@ ${is_iws}`;
     function CreatePropertyParser(notation, name, definitions, productions) {
 
         const l = whind$1(notation);
-
         const important = { is: false };
 
         let n = d$1(l, definitions, productions);
-        console.log(util.inspect(n, { showHidden: false, depth: null }));
+        
         n.seal();
 
-        //if (n instanceof productions.NR && n.terms.length == 1 && n.r[1] < 2)
+        //if (n instanceof productions.JUX && n.terms.length == 1 && n.r[1] < 2)
         //    n = n.terms[0];
 
         n.prop = name;
         n.IMP = important.is;
 
+        /*//******** DEV 
+        console.log("")
+        console.log("")
+        console.log(util.inspect(n, { showHidden: false, depth: null })) 
+        //********** END Dev*/
+
         return n;
     }
 
-    function d$1(l, definitions, productions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
+    function d$1(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
         let term, nt, v;
-        const { NR: NR$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
+        const { JUX: JUX$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
 
         let GROUP_BREAK = false;
 
         while (!l.END) {
 
             switch (l.ch) {
-                case "!":
-                    /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
-                    l.next().a("important");
-                    important.is = true;
-                    break;
                 case "]":
-
                     return term;
                     break;
-
                 case "[":
+
                     v = d$1(l.next(), definitions, productions, true);
                     l.assert("]");
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
+                        if (term instanceof JUX$$1 && term.isRepeating()) term = _Jux_(productions, new JUX$$1, term);
                         term = _Jux_(productions, term, v);
                     } else
                         term = v;
-
                     break;
 
                 case "<":
 
                     v = new ValueTerm$$1(l.next().tx, getPropertyParser, definitions, productions);
                     l.next().assert(">");
+
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
+                        if (term instanceof JUX$$1 /*&& term.isRepeating()*/) term = _Jux_(productions, new JUX$$1, term);
                         term = _Jux_(productions, term, v);
                     } else {
                         term = v;
                     }
-
                     break;
 
                 case "&":
@@ -5399,19 +5675,20 @@ ${is_iws}`;
                         l.sync().next();
 
                         while (!l.END) {
-                            nt.terms.push(d$1(l, definitions, productions, super_term, false, false, true, important));
+                            nt.terms.push(d$1(l, definitions, productions, super_term, oneof_group, or_group, true, important));
                             if (l.ch !== "&" || l.pk.ch !== "&") break;
                             l.a("&").a("&");
                         }
 
                         return nt;
                     }
+                    break;
                 case "|":
 
                     {
                         if (l.pk.ch == "|") {
 
-                            if (need_group)
+                            if (or_group || and_group)
                                 return term;
 
                             nt = new OR$$1();
@@ -5421,7 +5698,7 @@ ${is_iws}`;
                             l.sync().next();
 
                             while (!l.END) {
-                                nt.terms.push(d$1(l, definitions, productions, super_term, false, true, false, important));
+                                nt.terms.push(d$1(l, definitions, productions, super_term, oneof_group, true, and_group, important));
                                 if (l.ch !== "|" || l.pk.ch !== "|") break;
                                 l.a("|").a("|");
                             }
@@ -5430,7 +5707,7 @@ ${is_iws}`;
 
                         } else {
 
-                            if (group)
+                            if (oneof_group || or_group || and_group)
                                 return term;
 
                             nt = new ONE_OF$$1();
@@ -5440,7 +5717,7 @@ ${is_iws}`;
                             l.next();
 
                             while (!l.END) {
-                                nt.terms.push(d$1(l, definitions, productions, super_term, true, false, false, important));
+                                nt.terms.push(d$1(l, definitions, productions, super_term, true, or_group, and_group, important));
                                 if (l.ch !== "|") break;
                                 l.a("|");
                             }
@@ -5451,12 +5728,12 @@ ${is_iws}`;
                     break;
                 default:
 
-                    v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx);
+                    v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx, l.ty);
                     l.next();
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof NR$$1 && term.isRepeating()) term = _Jux_(productions, new NR$$1, term);
+                        if (term instanceof JUX$$1 /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = _Jux_(productions, new JUX$$1, term);
                         term = _Jux_(productions, term, v);
                     } else {
                         term = v;
@@ -5468,61 +5745,72 @@ ${is_iws}`;
     }
 
     function checkExtensions(l, term, productions) {
-        switch (l.ch) {
-            case "{":
-                term = _Jux_(productions, term);
-                term.r[0] = parseInt(l.next().tx);
-                if (l.next().ch == ",") {
-                    l.next();
-                    if (l.pk.ch == "}") {
+        outer:
+        while (true) {
 
-                        term.r[1] = parseInt(l.tx);
-                        l.next();
-                    } else {
-                        term.r[1] = Infinity;
-                    }
-                } else
-                    term.r[1] = term.r[0];
-                l.a("}");
-                break;
-            case "*":
-                term = _Jux_(productions, term);
-                term.r[0] = 0;
-                term.r[1] = Infinity;
-                l.next();
-                break;
-            case "+":
-                term = _Jux_(productions, term);
-                term.r[0] = 1;
-                term.r[1] = Infinity;
-                l.next();
-                break;
-            case "?":
-                term = _Jux_(productions, term);
-                term.r[0] = 0;
-                term.r[1] = 1;
-                l.next();
-                break;
-            case "#":
-                term = _Jux_(productions, term);
-                term.terms.push(new SymbolTerm(","));
-                term.r[0] = 1;
-                term.r[1] = Infinity;
-                l.next();
-                if (l.ch == "{") {
+            switch (l.ch) {
+                case "!":
+                    /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
+                    term.IMPORTANT = true;
+                    l.next();
+                    continue outer;
+                case "{":
+                    term = _Jux_(productions, term);
                     term.r[0] = parseInt(l.next().tx);
-                    term.r[1] = parseInt(l.next().a(",").tx);
-                    l.next().a("}");
-                }
-                break;
+                    if (l.next().ch == ",") {
+                        l.next();
+                        if (l.pk.ch == "}") {
+
+                            term.r[1] = parseInt(l.tx);
+                            l.next();
+                        } else {
+                            term.r[1] = Infinity;
+                        }
+                    } else
+                        term.r[1] = term.r[0];
+                    l.a("}");
+                    break;
+                case "*":
+                    term = _Jux_(productions, term);
+                    term.r[0] = 0;
+                    term.r[1] = Infinity;
+                    l.next();
+                    break;
+                case "+":
+                    term = _Jux_(productions, term);
+                    term.r[0] = 1;
+                    term.r[1] = Infinity;
+                    l.next();
+                    break;
+                case "?":
+                    term = _Jux_(productions, term);
+                    term.r[0] = 0;
+                    term.r[1] = 1;
+                    l.next();
+                    break;
+                case "#":
+                    term = _Jux_(productions, term);
+                    term.terms.push(new SymbolTerm(","));
+                    term.r[0] = 1;
+                    term.r[1] = Infinity;
+                    term.REQUIRE_COMMA = true;
+                    l.next();
+                    if (l.ch == "{") {
+                        term.r[0] = parseInt(l.next().tx);
+                        term.r[1] = parseInt(l.next().a(",").tx);
+                        l.next().a("}");
+                    }
+                    break;
+            }
+            break;
         }
         return term;
     }
 
     function _Jux_(productions, term, new_term = null) {
         if (term) {
-            if (!(term instanceof productions.NR)) {
-                let nr = new productions.NR();
+            if (!(term instanceof productions.JUX)) {
+                let nr = new productions.JUX();
                 nr.terms.push(term);
                 term = nr;
             }

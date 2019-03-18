@@ -86,22 +86,33 @@ export default class CSS_Color extends Color {
                 
                 let num = parseInt(value,16);
 
-                out = { r: 0, g: 0, b: 0, a: 1 };
-                if(value.length == 3){
-                    out.r = ((num >> 8) & 0xF) << 4;
-                    out.g = ((num >> 4) & 0xF) << 4;
-                    out.b = ((num) & 0xF) << 4;
-                }else{
-                    if(value.length == 6){
-                        out.r = (num >> 16) & 0xFF;
-                        out.g = (num >> 8) & 0xFF;
-                        out.b = (num) & 0xFF;
-                    }if(value.length == 8){
-                        out.r = (num >> 24) & 0xFF;
-                        out.g = (num >> 16) & 0xFF;
-                        out.b = (num >> 8) & 0xFF;
-                        out.a = ((num) & 0xFF);
+                if(value.length == 3 || value.length == 4){
+                    
+                    if(value.length == 4){
+                        const a = (num >> 8) & 0xF;
+                        out.a = a | a << 4;
+                        num >>= 4;
                     }
+
+                    const r = (num >> 8) & 0xF;
+                    out.r = r | r << 4;
+                    
+                    const g = (num >> 4) & 0xF;
+                    out.g = g | g << 4;
+                    
+                    const b = (num) & 0xF;
+                    out.b = b | b << 4;
+
+                }else{
+
+                    if(value.length == 8){
+                        out.a = num & 0xFF;
+                        num >>= 8;
+                    }
+
+                    out.r = (num >> 16) & 0xFF;       
+                    out.g = (num >> 8) & 0xFF;
+                    out.b = (num) & 0xFF;
                 }
                 l.next();
                 break;

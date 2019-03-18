@@ -89,23 +89,30 @@ export function checkArray(...rest) {
 }
 
 export function textSpread(name, ...rest) {
+    const ONLY = test.ONLY;
+
     let prop_name = name.replace(/\-/g, "_");
     for (let i = 0; i < rest.length; i++) {
         let text = rest[i];
         test.value = `${name}:${text}`
+        test.ONLY = ONLY;
         test.check = checkText(text);
     }
-}
 
+    test.ONLY = false;
+}
+let itOnly = null;
 export const test = {
     v: "",
     prop_name: "",
-    test_funct:it,
+    ONLY : false,
     only: function (){
-        this.test_funct = it.only.bind(it);
+        if(!itOnly)
+            itOnly = it.only.bind(it);
+        this.ONLY = true;
     },
     set value(v) {
-        this.test_funct = it;
+        this.ONLY = false;
         this.v = v;
         this.prop_name = (new whind(v)).tx.replace(/\-/g, "_");
     },
@@ -118,7 +125,7 @@ export const test = {
         f = checkF(f);
 
 
-        this.test_funct(`Parses property {${v}}`, async () => {
+        (this.ONLY ? itOnly : it)(`Parses property {${v}}`, async () => {
             const body = new CSSRuleBody();
             try{
             	await body.parse(whind(`{${v}}`));

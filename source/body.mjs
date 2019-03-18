@@ -206,7 +206,8 @@ export class CSSRuleBody {
         //Catch any comments
         if (lexer.ch == "/") {
             lexer.comment(true);
-            return this.parseProperty(lexer, rule, definitions);
+            let bool = this.parseProperty(lexer, rule, definitions);
+            return 
         }
         lexer.next().a(":");
         //allow for short circuit < | > | =

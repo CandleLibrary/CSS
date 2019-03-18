@@ -42,6 +42,7 @@ describe("CSS Level 3 Writing Modes Properties https://drafts.csswg.org/css-writ
     textSpread("unicode-bidi", "normal", "embed", "isolate", "bidi-override", "isolate-override", "plaintext", ...inherit)
     textSpread("writing-mode", "horizontal-tb", "vertical-rl", "vertical-lr", ...inherit)
     textSpread("text-orientation", "mixed", "upright", "sideways", ...inherit)
+    //test.only();
     textSpread("glyph-orientation-vertical", "auto", "0deg", "90deg", "0", "90", ...inherit)
     textSpread("text-combine-upright", "none", "all", ...inherit)
 })

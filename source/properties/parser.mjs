@@ -1,10 +1,10 @@
 import whind from "@candlefw/whind";
-import { NR, AND, OR, ONE_OF } from "./productions";
+import { JUX, AND, OR, ONE_OF } from "./productions";
 import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms";
 import { virtual_property_definitions } from "./property_and_type_definitions";
 import util from "util"
 const standard_productions = {
-    NR,
+    JUX,
     AND,
     OR,
     ONE_OF,
@@ -19,8 +19,7 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
     if (prop) {
 
         if (typeof(prop) == "string") {
-            const def = definitions.default;
-            prop = definitions[property_name] = CreatePropertyParser(prop + def, property_name, definitions, productions);
+            prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
         }
         prop.name = property_name;
         return prop;
@@ -51,67 +50,65 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 function CreatePropertyParser(notation, name, definitions, productions) {
 
     const l = whind(notation);
-
     const important = { is: false };
 
     let n = d(l, definitions, productions);
-    console.log(util.inspect(n, { showHidden: false, depth: null }))
+    
     n.seal();
 
-    //if (n instanceof productions.NR && n.terms.length == 1 && n.r[1] < 2)
+    //if (n instanceof productions.JUX && n.terms.length == 1 && n.r[1] < 2)
     //    n = n.terms[0];
 
     n.prop = name;
     n.IMP = important.is;
 
+    /*//******** DEV 
+    console.log("")
+    console.log("")
+    console.log(util.inspect(n, { showHidden: false, depth: null })) 
+    //********** END Dev*/
+
     return n;
 }
 
-function d(l, definitions, productions, super_term = false, group = false, need_group = false, and_group = false, important = null) {
+function d(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
     let term, nt, v;
-    const { NR, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
+    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
 
     let GROUP_BREAK = false;
 
     while (!l.END) {
 
         switch (l.ch) {
-            case "!":
-                /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
-                l.next().a("important");
-                important.is = true;
-                break;
             case "]":
-
                 return term;
                 break;
-
             case "[":
+
                 v = d(l.next(), definitions, productions, true);
                 l.assert("]");
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof NR && term.isRepeating()) term = _Jux_(productions, new NR, term);
+                    if (term instanceof JUX && term.isRepeating()) term = _Jux_(productions, new JUX, term);
                     term = _Jux_(productions, term, v);
                 } else
                     term = v;
-
                 break;
 
             case "<":
 
                 v = new ValueTerm(l.next().tx, getPropertyParser, definitions, productions);
                 l.next().assert(">")
+
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof NR && term.isRepeating()) term = _Jux_(productions, new NR, term);
+                    if (term instanceof JUX /*&& term.isRepeating()*/) term = _Jux_(productions, new JUX, term);
                     term = _Jux_(productions, term, v);
                 } else {
                     term = v;
                 }
-
                 break;
 
             case "&":
@@ -130,19 +127,20 @@ function d(l, definitions, productions, super_term = false, group = false, need_
                     l.sync().next();
 
                     while (!l.END) {
-                        nt.terms.push(d(l, definitions, productions, super_term, false, false, true, important));
+                        nt.terms.push(d(l, definitions, productions, super_term, oneof_group, or_group, true, important));
                         if (l.ch !== "&" || l.pk.ch !== "&") break;
                         l.a("&").a("&");
                     }
 
                     return nt;
                 }
+                break;
             case "|":
 
                 {
                     if (l.pk.ch == "|") {
 
-                        if (need_group)
+                        if (or_group || and_group)
                             return term;
 
                         nt = new OR();
@@ -152,7 +150,7 @@ function d(l, definitions, productions, super_term = false, group = false, need_
                         l.sync().next();
 
                         while (!l.END) {
-                            nt.terms.push(d(l, definitions, productions, super_term, false, true, false, important));
+                            nt.terms.push(d(l, definitions, productions, super_term, oneof_group, true, and_group, important));
                             if (l.ch !== "|" || l.pk.ch !== "|") break;
                             l.a("|").a("|");
                         }
@@ -161,7 +159,7 @@ function d(l, definitions, productions, super_term = false, group = false, need_
 
                     } else {
 
-                        if (group)
+                        if (oneof_group || or_group || and_group)
                             return term;
 
                         nt = new ONE_OF();
@@ -171,7 +169,7 @@ function d(l, definitions, productions, super_term = false, group = false, need_
                         l.next();
 
                         while (!l.END) {
-                            nt.terms.push(d(l, definitions, productions, super_term, true, false, false, important));
+                            nt.terms.push(d(l, definitions, productions, super_term, true, or_group, and_group, important));
                             if (l.ch !== "|") break;
                             l.a("|");
                         }
@@ -182,12 +180,12 @@ function d(l, definitions, productions, super_term = false, group = false, need_
                 break;
             default:
 
-                v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx);
+                v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
                 l.next();
                 v = checkExtensions(l, v, productions)
 
                 if (term) {
-                    if (term instanceof NR && term.isRepeating()) term = _Jux_(productions, new NR, term);
+                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = _Jux_(productions, new JUX, term);
                     term = _Jux_(productions, term, v);
                 } else {
                     term = v;
@@ -199,61 +197,72 @@ function d(l, definitions, productions, super_term = false, group = false, need_
 }
 
 function checkExtensions(l, term, productions) {
-    switch (l.ch) {
-        case "{":
-            term = _Jux_(productions, term);
-            term.r[0] = parseInt(l.next().tx);
-            if (l.next().ch == ",") {
-                l.next();
-                if (l.pk.ch == "}") {
+    outer:
+    while (true) {
 
-                    term.r[1] = parseInt(l.tx);
-                    l.next();
-                } else {
-                    term.r[1] = Infinity;
-                }
-            } else
-                term.r[1] = term.r[0];
-            l.a("}");
-            break;
-        case "*":
-            term = _Jux_(productions, term);
-            term.r[0] = 0;
-            term.r[1] = Infinity;
-            l.next();
-            break;
-        case "+":
-            term = _Jux_(productions, term);
-            term.r[0] = 1;
-            term.r[1] = Infinity;
-            l.next();
-            break;
-        case "?":
-            term = _Jux_(productions, term);
-            term.r[0] = 0;
-            term.r[1] = 1;
-            l.next();
-            break;
-        case "#":
-            term = _Jux_(productions, term);
-            term.terms.push(new SymbolTerm(","));
-            term.r[0] = 1;
-            term.r[1] = Infinity;
-            l.next();
-            if (l.ch == "{") {
+        switch (l.ch) {
+            case "!":
+                /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
+                term.IMPORTANT = true;
+                l.next();
+                continue outer;
+            case "{":
+                term = _Jux_(productions, term);
                 term.r[0] = parseInt(l.next().tx);
-                term.r[1] = parseInt(l.next().a(",").tx);
-                l.next().a("}");
-            }
-            break;
+                if (l.next().ch == ",") {
+                    l.next();
+                    if (l.pk.ch == "}") {
+
+                        term.r[1] = parseInt(l.tx);
+                        l.next();
+                    } else {
+                        term.r[1] = Infinity;
+                    }
+                } else
+                    term.r[1] = term.r[0];
+                l.a("}");
+                break;
+            case "*":
+                term = _Jux_(productions, term);
+                term.r[0] = 0;
+                term.r[1] = Infinity;
+                l.next();
+                break;
+            case "+":
+                term = _Jux_(productions, term);
+                term.r[0] = 1;
+                term.r[1] = Infinity;
+                l.next();
+                break;
+            case "?":
+                term = _Jux_(productions, term);
+                term.r[0] = 0;
+                term.r[1] = 1;
+                l.next();
+                break;
+            case "#":
+                term = _Jux_(productions, term);
+                term.terms.push(new SymbolTerm(","));
+                term.r[0] = 1;
+                term.r[1] = Infinity;
+                term.REQUIRE_COMMA = true;
+                l.next();
+                if (l.ch == "{") {
+                    term.r[0] = parseInt(l.next().tx);
+                    term.r[1] = parseInt(l.next().a(",").tx);
+                    l.next().a("}");
+                }
+                break;
+        }
+        break;
     }
     return term;
 }
 
 function _Jux_(productions, term, new_term = null) {
     if (term) {
-        if (!(term instanceof productions.NR)) {
-            let nr = new productions.NR();
+        if (!(term instanceof productions.JUX)) {
+            let nr = new productions.JUX();
             nr.terms.push(term);
             term = nr;
         }

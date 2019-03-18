@@ -29,9 +29,11 @@ describe("CSS Level 1", () => {
     describe("Font Properties: https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#font-properties", () => {
 
         test.value = `font-family: Arial, Times New Roman, sans-serif`;
-        test.check = ["font_family", checkText("Arial"), checkText("Times New Roman"), checkText("sans-serif")];
+        //test.only();
+        test.check = [checkText("Arial"), checkText("Times New Roman"), checkText("sans-serif")];
 
-
+        test.value = `font-family: monospace, monospace, sans-serif`;
+        //test.only();
         textSpread(
             "font-style",
             "normal",
@@ -137,7 +139,7 @@ describe("CSS Level 1", () => {
         test.check = [checkText("top"), checkText("right")];
 
         test.value = "background: red url(bg.ck:12) scroll"
-        test.check = ["red", url("bg.ck:12"), "scroll"]
+        test.check = [color(255), url("bg.ck:12"), "scroll"]
     })
 
     describe("Text Properties: https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#text-properties", () => {
@@ -156,7 +158,7 @@ describe("CSS Level 1", () => {
 
         test.value = "letter-spacing:201pt";
         test.check = checkLength(201, "pt");
-
+        //test.only();
         textSpread(
             "text-decoration",
             "none",
@@ -194,7 +196,6 @@ describe("CSS Level 1", () => {
 
         
         test.value = "text-indent:120%"
-        test.only();
         test.check = checkPercentage(120);
         
 

@@ -45,8 +45,8 @@ describe("CSS Level 3 Text Properties https://www.w3.org/TR/2018/WD-css-text-3-2
     test.value = "text-transform: uppercase full-width full-size-kana"
     test.check = ["uppercase", "full-width", "full-size-kana"]
 
-    message("text-transform - see also CSS Level 1 Properties tests & CSS Level 2 Properties tests")
-    textSpread("text-transform", "break-spaces", ...inherit);
+    message("white-space - see also CSS Level 1 Properties tests & CSS Level 2 Properties tests")
+    textSpread("white-space", "break-spaces", ...inherit);
 
     test.value = "tab-size: 23px"
     test.check = px(23);

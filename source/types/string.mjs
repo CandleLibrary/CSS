@@ -28,6 +28,10 @@ export default  class CSS_String extends String {
         }
         return null;
     }
-}
 
-var t = (s, l = s.length, n = parseFloat, i = isNaN)=> !i(n(s.slice(2))) &  (l==5 || (l==6 & ["",..."-_*"].includes(s[2]))) & !i(n(s.slice(-3)))
+    constructor(string){
+        if(string[0] == "\"" || string[0] == "\'" || string[0] == "\'")
+            string = string.slice(1,-1);
+        super(string)
+    }
+}

@@ -71,15 +71,17 @@ describe("CSS Level 2.1 ", () => {
 
     })
 
-    describe("Vsiaul Formatting: https://www.w3.org/TR/CSS2/visuren.html", () => {
+    describe("Visual Formatting: https://www.w3.org/TR/CSS2/visuren.html", () => {
+
+
         textSpread("display",
             "inline",
             "block",
             "list-item",
             "inline-block",
             "table",
-            "inline-table",
             "table-row-group",
+            "inline-table",
             "table-header-group",
             "table-footer-group",
             "table-row",
@@ -247,7 +249,7 @@ describe("CSS Level 2.1 ", () => {
         test.value = "line-height:inherit"
         test.check = "inherit";
 
-        message("vertical-align", "see alse CSS Level 1 Properties test")
+        message("vertical-align - see also CSS Level 1 Properties test")
 
         test.value = "vertical-align:inherit"
         test.check = "inherit";
@@ -283,6 +285,7 @@ describe("CSS Level 2.1 ", () => {
     })
 
     describe("Generate: https://www.w3.org/TR/CSS2/generate.html", function() {
+
         textSpread("content",
             "normal",
             "none",
@@ -314,7 +317,7 @@ describe("CSS Level 2.1 ", () => {
         test.value = "quotes: \"|\" \"|\" "
         test.check = ["|", "|"];
 
-        textSpread("conter-reset",
+        textSpread("counter-reset",
             "none",
             "inherit"
         )
@@ -322,7 +325,7 @@ describe("CSS Level 2.1 ", () => {
         test.value = "counter-reset:chapter section 1"
         test.check = ["chapter", "section", checkNumber(1)];
 
-        textSpread("conter-reset",
+        textSpread("counter-reset",
             "none",
             "inherit"
         )
@@ -350,17 +353,17 @@ describe("CSS Level 2.1 ", () => {
             "inherit"
         );
 
-        message("list-style-image", "see alse CSS Level 1 Properties test")
+        message("list-style-image - see also CSS Level 1 Properties test")
 
         test.value = "list-style-image:inherit";
         test.check = "inherit";
 
-        message("list-style-position", "see alse CSS Level 1 Properties test")
+        message("list-style-position - see also CSS Level 1 Properties test")
 
         test.value = "list-style-position:inherit";
         test.check = "inherit";
 
-        message("list-style", "see alse CSS Level 1 Properties test")
+        message("list-style - see also CSS Level 1 Properties test")
 
         test.value = "list-style:inherit";
         test.check = "inherit";
@@ -408,44 +411,44 @@ describe("CSS Level 2.1 ", () => {
     })
 
     describe("Colors and Backgrounds: https://www.w3.org/TR/CSS2/colors.html", function() {
-        message("color", "see alse CSS Level 1 Properties test")
+        message("color - see also CSS Level 1 Properties test")
         textSpread("color", "inherit");
 
-        message("background-color", "see alse CSS Level 1 Properties test")
+        message("background-color - see also CSS Level 1 Properties test")
         textSpread("background-color", "inherit");
 
-        message("background-image", "see alse CSS Level 1 Properties test")
+        message("background-image - see also CSS Level 1 Properties test")
         textSpread("background-image", "inherit");
 
-        message("background-repeat", "see alse CSS Level 1 Properties test")
+        message("background-repeat - see also CSS Level 1 Properties test")
         textSpread("background-repeat", "inherit");
 
-        message("background-attachment", "see alse CSS Level 1 Properties test")
+        message("background-attachment - see also CSS Level 1 Properties test")
         textSpread("background-attachment", "inherit");
 
-        message("background-position", "see alse CSS Level 1 Properties test")
+        message("background-position - see also CSS Level 1 Properties test")
         textSpread("background-position", "inherit");
 
-        message("background", "see alse CSS Level 1 Properties test")
+        message("background - see also CSS Level 1 Properties test")
         textSpread("background", "inherit");
     })
 
     describe("Fonts: https://www.w3.org/TR/CSS2/fonts.html", function() {
-        message("font-family", "see alse CSS Level 1 Properties test")
+        message("font-family - see also CSS Level 1 Properties test")
         textSpread("font-family", "inherit");
 
-        message("font-style", "see alse CSS Level 1 Properties test")
+        message("font-style - see also CSS Level 1 Properties test")
         textSpread("font-style", "inherit");
 
-        message("font-variant", "see alse CSS Level 1 Properties test")
+        message("font-variant - see also CSS Level 1 Properties test")
         textSpread("font-variant", "inherit");
 
-        message("font-weight", "see alse CSS Level 1 Properties test")
+        message("font-weight - see also CSS Level 1 Properties test")
         textSpread("font-weight", "inherit");
 
         message("font-size", "see CSS Level 1 Properties test")
 
-        message("font", "see alse CSS Level 1 Properties test")
+        message("font - see also CSS Level 1 Properties test")
 
         textSpread(
             "font",
@@ -460,32 +463,32 @@ describe("CSS Level 2.1 ", () => {
     })
 
     describe("Text: https://www.w3.org/TR/CSS2/text.html", function() {
-        message("text-indent", "see alse CSS Level 1 Properties test")
+        message("text-indent - see also CSS Level 1 Properties test")
         textSpread("text-indent", "inherit");
 
-        message("text-align", "see alse CSS Level 1 Properties test")
+        message("text-align - see also CSS Level 1 Properties test")
         textSpread("text-align", "inherit");
 
-        message("text-decoration", "see alse CSS Level 1 Properties test")
+        message("text-decoration - see also CSS Level 1 Properties test")
         textSpread("text-decoration", "inherit");
 
-        message("letter-spacing", "see alse CSS Level 1 Properties test")
+        message("letter-spacing - see also CSS Level 1 Properties test")
         textSpread("letter-spacing", "inherit");
 
-        message("word-spacing", "see alse CSS Level 1 Properties test")
+        message("word-spacing - see also CSS Level 1 Properties test")
         textSpread("word-spacing", "inherit");
 
-        message("text-transform", "see alse CSS Level 1 Properties test")
+        message("text-transform - see also CSS Level 1 Properties test")
         textSpread("text-transform", "inherit");
 
-        message("white-space", "see alse CSS Level 1 Properties test")
-        textSpread("text-transform", "pre-line", "inherit");
+        message("white-space - see also CSS Level 1 Properties test")
+        textSpread("white-space", "pre-line", "inherit");
     })
 
     describe("Tables: https://www.w3.org/TR/CSS2/tables.html", function() {
         textSpread("caption-side", "top", "bottom", "inherit");
         textSpread("table-layout", "auto", "fixed", "inherit");
-        textSpread("border-collapse", "collapse", "seperate", "inherit");
+        textSpread("border-collapse", "collapse", "separate", "inherit");
 
         textSpread("border-spacing", "inherit");
 
@@ -496,7 +499,7 @@ describe("CSS Level 2.1 ", () => {
 
     describe("User Interface: https://www.w3.org/TR/CSS2/ui.html", function() {
         textSpread("cursor",
-            "auto ",
+            "auto",
             "crosshair",
             "default",
             "pointer",
@@ -516,29 +519,8 @@ describe("CSS Level 2.1 ", () => {
             "inherit"
         )
 
-        test.value = "border-spacing: url(my.com:80/giraffe.cur) auto";
+        test.value = "cursor: url(my.com:80/giraffe.cur), auto";
         test.check = [url("my.com:80/giraffe.cur"), "auto"];
-
-        textSpread("cursor",
-            "auto ",
-            "crosshair",
-            "default",
-            "pointer",
-            "move",
-            "e-resize",
-            "ne-resize",
-            "nw-resize",
-            "n-resize",
-            "se-resize",
-            "sw-resize",
-            "s-resize",
-            "w-resize",
-            "text",
-            "wait",
-            "help",
-            "progress",
-            "inherit"
-        )
 
         textSpread(
             "outline-width",
@@ -566,16 +548,16 @@ describe("CSS Level 2.1 ", () => {
         );
 
         textSpread("outline-color","invert","inherit")
-        test.value = "outline-color: #00FF00 green";
-        test.check = [color(0,255), color(0,128)];
+        test.value = "outline-color: #00FF00";
+        test.check = color(0,255);
 
         textSpread(
             "outline",
             "inherit"
         );
 
-        test.value = "outline: red green solid 3px 5px 2px";
-        test.check = [color(255), color(0,128), "solid", px(3), px(5), px(2)];
+        test.value = "outline: red solid 2px";
+        test.check = [color(255), "solid", px(2)];
 
     })
 

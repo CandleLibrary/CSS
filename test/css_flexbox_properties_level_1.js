@@ -55,9 +55,9 @@ describe("CSS Level 1 Flexbox Properties https://www.w3.org/TR/css-flexbox-1/", 
     test.check = 3
 
     textSpread("flex", "none", ...inherit);
-    test.value = "flex: -5 5 auto",
-    test.check = [-5, 5, "auto"]
-
+    test.value = "flex: -5 6 auto",
+    
+    test.check = [-5, 6, "auto"]
 
 	textSpread("flex-grow", ...inherit);
     test.value = "flex-grow:8"

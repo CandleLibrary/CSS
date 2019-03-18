@@ -5,9 +5,9 @@ import { ValueTerm, LiteralTerm, SymbolTerm } from "./ui_terms.mjs";
 
 /**
  * wick internals.
- * @class      NR (name)
+ * @class      JUX (name)
  */
-class NR extends prod.NR {
+class JUX extends prod.JUX {
     //Adds an entry in options list. 
 
 
@@ -138,7 +138,7 @@ class NR extends prod.NR {
     }
 }
 
-class AND extends NR {
+class AND extends JUX {
 
     default (segment, EXTENDED = false) {
         //let seg = this.createSegment();
@@ -188,7 +188,7 @@ class AND extends NR {
 }
 Object.assign(AND.prototype, prod.AND.prototype);
 
-class OR extends NR {
+class OR extends JUX {
 
     default (segment, EXTENDED = false) {
         //let seg = this.createSegment();
@@ -294,7 +294,7 @@ class OR extends NR {
 
 Object.assign(OR.prototype, prod.OR.prototype)
 
-class ONE_OF extends NR {
+class ONE_OF extends JUX {
 
     default (segment, EXTENDED = false) {
         let seg = this.createSegment();
@@ -379,4 +379,4 @@ class ONE_OF extends NR {
 
 Object.assign(ONE_OF.prototype, prod.ONE_OF.prototype)
 
-export { NR, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm };
+export { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm };

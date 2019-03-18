@@ -26,16 +26,16 @@ export default class CSS_Length extends Number {
         let tx = l.tx,
             pky = l.pk.ty;
         if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
-            let mult = 1;
+            let sign = 1;
             if (l.ch == "-") {
-                mult = -1;
+                sign = -1;
                 tx = l.p.tx;
                 l.p.next();
             }
             if (l.p.ty == l.types.id) {
                 let id = l.sync().tx;
                 l.next();
-                return new CSS_Length(parseFloat(tx) * mult, id);
+                return new CSS_Length(parseFloat(tx) * sign, id);
             }
         }
         return null;
