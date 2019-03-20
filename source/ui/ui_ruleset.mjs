@@ -89,6 +89,7 @@ export default class UIRuleSet {
 
     build(rule_body = this.rule_body) {
 
+
         this.rule_body = rule_body;
 
         let i = -1;
@@ -109,7 +110,7 @@ export default class UIRuleSet {
     }
 
     rebuild(rule_body){
-        if(this.ver !== rule_body.ver){
+        if(true || this.ver !== rule_body.ver){
             this.rule_space.innerHTML = "";
             this.rules.length = 0;
             this.build(rule_body);
@@ -120,6 +121,8 @@ export default class UIRuleSet {
     update(type, value) {
 
         if(type && value){
+
+            console.log(type, value)
 
             let lexer = whind(value);
             

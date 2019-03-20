@@ -895,7 +895,6 @@ class Lexer {
         destination.line = this.line;
         destination.sl = this.sl;
         destination.masked_values = this.masked_values;
-        destination.symbol_map = this.symbol_map;
         return destination;
     }
 
@@ -1029,7 +1028,7 @@ ${is_iws}`;
 
         const USE_CUSTOM_SYMBOLS = !!this.symbol_map;
         let NORMAL_PARSE = true;
-        
+
         if (USE_CUSTOM_SYMBOLS) {
 
             let code = str.charCodeAt(off);
@@ -1040,13 +1039,13 @@ ${is_iws}`;
 
             while(code == 32 && IWS)
                 (code = str.charCodeAt(++off2), off++);
-            
+
             while ((m$$1 = map.get(code))) {
                 map = m$$1;
                 off2 += 1;
                 code = str.charCodeAt(off2);
             }
-            
+
             if (map.IS_SYM) {
                NORMAL_PARSE = false;
                base = off;
@@ -1072,7 +1071,7 @@ ${is_iws}`;
                         case 0: //NUMBER
                             while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
 
-                            if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off)])) {
+                            if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off+1)])) {
                                 off++;
                                 if (str[off] == "-") off++;
                                 marker.off = off;
@@ -1238,7 +1237,6 @@ ${is_iws}`;
         peek_marker.tl = marker.tl;
         peek_marker.char = marker.char;
         peek_marker.line = marker.line;
-        peek_marker.symbol_map = marker.symbol_map;
         this.next(peek_marker);
         return peek_marker;
     }
@@ -1331,7 +1329,6 @@ ${is_iws}`;
 
     /** Adds symbol to symbol_map. This allows custom symbols to be defined and tokenized by parser. **/
     addSymbol(sym) {
-
         if (!this.symbol_map)
             this.symbol_map = new Map;
 
