@@ -35,4 +35,8 @@ export default class CSS_Bezier extends CBezier {
 
 		return out;
 	}
+
+	toString(){
+		 return `cubic-bezier(${this[2]},${this[3]},${this[4]},${this[5]})`;
+	}
 }

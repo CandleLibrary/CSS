@@ -1,4 +1,4 @@
-//import whind from "@candlefw/whind";
+import whind from "@candlefw/whind";
 
 function getValue(lex, attribute) {
     let v = lex.tx,
@@ -37,7 +37,11 @@ function getValue(lex, attribute) {
 }
 
 function ParseString(string, transform) {
-    //var lex = whind(string);
+    let lex = null;
+    lex = string;
+
+    if(typeof(string) == "string")
+        lex = whind(string);
     
     while (!lex.END) {
         let tx = lex.tx;
@@ -159,7 +163,7 @@ export default class CSS_Transform2D extends Float64Array {
         super(5);
         this.sx = 1;
         this.sy = 1;
-        if (px) {
+        if (px !== undefined) {
             if (px instanceof CSS_Transform2D) {
                 this[0] = px[0];
                 this[1] = px[1];
