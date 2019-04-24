@@ -1,18 +1,5 @@
-//import { UIValue } from "./ui_value.mjs";
-
-
 import whind from "@candlefw/whind";
-import * as ui_productions from "./ui_productions.mjs";
 import UIRuleSet from "./ui_ruleset.mjs";
-import {
-    property_definitions,
-    media_feature_definitions,
-    types
-} from "../properties/property_and_type_definitions.mjs";
-//import { CSSRule as R, CSSSelector as S } from "../nodes.mjs";
-import { getPropertyParser } from "../properties/parser.mjs";
-
-const props = Object.assign({}, property_definitions);
 
 export default class UIMaster {
     constructor(css) {
@@ -22,6 +9,7 @@ export default class UIMaster {
         this.selectors = [];
         this.element = document.createElement("div");
         this.element.classList.add("cfw_css");
+        this.update_mod = 0;
 
 
         this.rule_map = new Map();
@@ -31,6 +19,7 @@ export default class UIMaster {
     // css - A CandleFW_CSS object. 
     // meta - internal 
     build(css = this.css) {
+        if(this.update_mod++%3 !== 0) return;
 
         //Extract rule bodies and set as keys for the rule_map. 
         //Any existing mapped body that does not have a matching rule should be removed. 

@@ -6313,10 +6313,6 @@ ${is_iws}`;
         e.preventDefault();
     }
 
-    //import { UIValue } from "./ui_value.mjs";
-
-    const props$2 = Object.assign({}, property_definitions);
-
     class UIMaster {
         constructor(css) {
             css.addObserver(this);
@@ -6325,6 +6321,7 @@ ${is_iws}`;
             this.selectors = [];
             this.element = document.createElement("div");
             this.element.classList.add("cfw_css");
+            this.update_mod = 0;
 
 
             this.rule_map = new Map();
@@ -6334,6 +6331,7 @@ ${is_iws}`;
         // css - A CandleFW_CSS object. 
         // meta - internal 
         build(css = this.css) {
+            if(this.update_mod++%3 !== 0) return;
 
             //Extract rule bodies and set as keys for the rule_map. 
             //Any existing mapped body that does not have a matching rule should be removed. 

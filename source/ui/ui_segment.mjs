@@ -110,7 +110,7 @@ export class Segment {
     }
 
     setList() {
-        if(this.DEMOTED) debugger
+        //if(this.DEMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
             if (this.DEMOTED || !this.prod.buildList(this.list, this))
                 this.menu_icon.style.display = "none";

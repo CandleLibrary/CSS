@@ -7,6 +7,7 @@ import {CSSSelector} from "./selector.mjs";
 import { types } from "./properties/property_and_type_definitions";
 import { CSSRuleBody } from "./body";
 import  UIMaster  from "./ui/builder.mjs";
+import UIRuleSet from "./ui/ui_ruleset.mjs"
 
 export { CSSRule, CSSSelector };
 
@@ -193,5 +194,5 @@ import CSS_Length from "./types/length.mjs";
 import CSS_URL from "./types/url.mjs";
 
 export default CSSParser;
-export {CSSRuleBody, CSS_Length, CSS_URL, UIMaster}
+export {CSSRuleBody, CSS_Length, CSS_URL, UIMaster, UIRuleSet}
 

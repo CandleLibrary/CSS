@@ -138,7 +138,7 @@ export default class UIRuleSet {
             }
         }
 
-        this.parent.update();
+        this.parent.update(this);
     }
 
     addProp(type, value){

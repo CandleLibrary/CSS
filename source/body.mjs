@@ -465,6 +465,7 @@ export class CSSRuleBody {
                 let selector = this.parseSelector(lexer, this);
 
                 if (selector) {
+                    selector.root = this;
                     if (!this._selectors_[selector.id]) {
                         l = selectors.push(selector);
                         this._selectors_[selector.id] = selector;

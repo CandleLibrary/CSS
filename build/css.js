@@ -490,134 +490,134 @@ var css = (function (exports) {
      * 11. DATA_LINK
      */ 
     const jump_table = [
-    7, 	 	/* A */
-    7, 	 	/* a */
+    7, 	 	/* NULL */
+    7, 	 	/* START_OF_HEADER */
+    7, 	 	/* START_OF_TEXT */
+    7, 	 	/* END_OF_TXT */
+    7, 	 	/* END_OF_TRANSMISSION */
+    7, 	 	/* ENQUIRY */
     7, 	 	/* ACKNOWLEDGE */
-    7, 	 	/* AMPERSAND */
-    7, 	 	/* ASTERISK */
-    7, 	 	/* AT */
-    7, 	 	/* B */
-    7, 	 	/* b */
-    7, 	 	/* BACKSLASH */
-    4, 	 	/* BACKSPACE */
-    6, 	 	/* BELL */
-    7, 	 	/* C */
-    7, 	 	/* c */
-    5, 	 	/* CANCEL */
-    7, 	 	/* CARET */
-    11, 	/* CARRIAGE_RETURN */
-    7, 	 	/* CLOSE_CURLY */
-    7, 	 	/* CLOSE_PARENTH */
-    7, 	 	/* CLOSE_SQUARE */
-    7, 	 	/* COLON */
-    7, 	 	/* COMMA */
-    7, 	 	/* d */
-    7, 	 	/* D */
-    7, 	 	/* DATA_LINK_ESCAPE */
-    7, 	 	/* DELETE */
+    7, 	 	/* BELL */
+    7, 	 	/* BACKSPACE */
+    4, 	 	/* HORIZONTAL_TAB */
+    6, 	 	/* LINEFEED */
+    7, 	 	/* VERTICAL_TAB */
+    7, 	 	/* FORM_FEED */
+    5, 	 	/* CARRIAGE_RETURN */
+    7, 	 	/* SHIFT_OUT */
+    7, 		/* SHIFT_IN */
+    11,	 	/* DATA_LINK_ESCAPE */
     7, 	 	/* DEVICE_CTRL_1 */
     7, 	 	/* DEVICE_CTRL_2 */
     7, 	 	/* DEVICE_CTRL_3 */
     7, 	 	/* DEVICE_CTRL_4 */
-    7, 	 	/* DOLLAR */
-    7, 	 	/* DOUBLE_QUOTE */
-    7, 	 	/* e */
-    3, 	 	/* E */
-    8, 	 	/* EIGHT */
-    2, 	 	/* END_OF_MEDIUM */
-    7, 	 	/* END_OF_TRANSMISSION */
+    7, 	 	/* NEGATIVE_ACKNOWLEDGE */
+    7, 	 	/* SYNCH_IDLE */
     7, 	 	/* END_OF_TRANSMISSION_BLOCK */
-    8, 	 	/* END_OF_TXT */
-    8, 	 	/* ENQUIRY */
-    2, 	 	/* EQUAL */
-    9, 	 	/* ESCAPE */
-    10, 	 /* EXCLAMATION */
-    8, 	 	/* f */
-    8, 	 	/* F */
+    7, 	 	/* CANCEL */
+    7, 	 	/* END_OF_MEDIUM */
+    7, 	 	/* SUBSTITUTE */
+    7, 	 	/* ESCAPE */
     7, 	 	/* FILE_SEPERATOR */
-    7, 	 	/* FIVE */
-    7, 	 	/* FORM_FEED */
+    7, 	 	/* GROUP_SEPERATOR */
+    7, 	 	/* RECORD_SEPERATOR */
+    7, 	 	/* UNIT_SEPERATOR */
+    3, 	 	/* SPACE */
+    8, 	 	/* EXCLAMATION */
+    2, 	 	/* DOUBLE_QUOTE */
+    7, 	 	/* HASH */
+    7, 	 	/* DOLLAR */
+    8, 	 	/* PERCENT */
+    8, 	 	/* AMPERSAND */
+    2, 	 	/* QUOTE */
+    9, 	 	/* OPEN_PARENTH */
+    10, 	 /* CLOSE_PARENTH */
+    8, 	 	/* ASTERISK */
+    8, 	 	/* PLUS */
+    7, 	 	/* COMMA */
+    7, 	 	/* HYPHEN */
+    7, 	 	/* PERIOD */
     7, 	 	/* FORWARD_SLASH */
+    0, 	 	/* ZERO */
+    0, 	 	/* ONE */
+    0, 	 	/* TWO */
+    0, 	 	/* THREE */
     0, 	 	/* FOUR */
-    0, 	 	/* g */
-    0, 	 	/* G */
-    0, 	 	/* GRAVE */
-    0, 	 	/* GREATER_THAN */
-    0, 	 	/* GROUP_SEPERATOR */
-    0, 	 	/* h */
-    0, 	 	/* H */
-    0, 	 	/* HASH */
-    0, 	 	/* HORIZONTAL_TAB */
-    8, 	 	/* HYPHEN */
-    7, 	 	/* i */
-    8, 	 	/* I */
-    8, 	 	/* j */
-    8, 	 	/* J */
-    7, 	 	/* k */
-    7, 	 	/* K */
-    1, 	 	/* l */
+    0, 	 	/* FIVE */
+    0, 	 	/* SIX */
+    0, 	 	/* SEVEN */
+    0, 	 	/* EIGHT */
+    0, 	 	/* NINE */
+    8, 	 	/* COLON */
+    7, 	 	/* SEMICOLON */
+    8, 	 	/* LESS_THAN */
+    8, 	 	/* EQUAL */
+    8, 	 	/* GREATER_THAN */
+    7, 	 	/* QMARK */
+    7, 	 	/* AT */
+    1, 	 	/* A*/
+    1, 	 	/* B */
+    1, 	 	/* C */
+    1, 	 	/* D */
+    1, 	 	/* E */
+    1, 	 	/* F */
+    1, 	 	/* G */
+    1, 	 	/* H */
+    1, 	 	/* I */
+    1, 	 	/* J */
+    1, 	 	/* K */
     1, 	 	/* L */
-    1, 	 	/* LESS_THAN */
-    1, 	 	/* LINE_FEED */
-    1, 	 	/* m */
     1, 	 	/* M */
-    1, 	 	/* n */
     1, 	 	/* N */
-    1, 	 	/* NEGATIVE_ACKNOWLEDGE */
-    1, 	 	/* NINE */
-    1, 	 	/* NULL */
-    1, 	 	/* o */
     1, 	 	/* O */
-    1, 	 	/* ONE */
-    1, 	 	/* OPEN_CURLY */
-    1, 	 	/* OPEN_PARENTH */
-    1, 	 	/* OPEN_SQUARE */
-    1, 	 	/* p */
     1, 	 	/* P */
-    1, 	 	/* PERCENT */
-    1, 	 	/* PERIOD */
-    1, 	 	/* PLUS */
-    1, 	 	/* q */
     1, 	 	/* Q */
-    1, 	 	/* QMARK */
-    1, 	 	/* QUOTE */
-    9, 	 	/* r */
-    7, 	 	/* R */
-    10, 	/* RECORD_SEPERATOR */
-    7, 	 	/* s */
-    7, 	 	/* S */
-    2, 	 	/* SEMICOLON */
-    1, 	 	/* SEVEN */
-    1, 	 	/* SHIFT_IN */
-    1, 	 	/* SHIFT_OUT */
-    1, 	 	/* SIX */
-    1, 	 	/* SPACE */
-    1, 	 	/* START_OF_HEADER */
-    1, 	 	/* START_OF_TEXT */
-    1, 	 	/* SUBSTITUTE */
-    1, 	 	/* SYNCH_IDLE */
-    1, 	 	/* t */
+    1, 	 	/* R */
+    1, 	 	/* S */
     1, 	 	/* T */
-    1, 	 	/* THREE */
-    1, 	 	/* TILDE */
-    1, 	 	/* TWO */
-    1, 	 	/* u */
     1, 	 	/* U */
-    1, 	 	/* UNDER_SCORE */
-    1, 	 	/* UNIT_SEPERATOR */
-    1, 	 	/* v */
     1, 	 	/* V */
-    1, 	 	/* VERTICAL_BAR */
-    1, 	 	/* VERTICAL_TAB */
-    1, 	 	/* w */
     1, 	 	/* W */
-    1, 	 	/* x */
     1, 	 	/* X */
-    9, 	 	/* y */
-    7, 	 	/* Y */
-    10,  	/* z */
-    7,  	/* Z */
-    7 		/* ZERO */
+    1, 	 	/* Y */
+    1, 	 	/* Z */
+    9, 	 	/* OPEN_SQUARE */
+    7, 	 	/* TILDE */
+    10, 	/* CLOSE_SQUARE */
+    7, 	 	/* CARET */
+    7, 	 	/* UNDER_SCORE */
+    2, 	 	/* GRAVE */
+    1, 	 	/* a */
+    1, 	 	/* b */
+    1, 	 	/* c */
+    1, 	 	/* d */
+    1, 	 	/* e */
+    1, 	 	/* f */
+    1, 	 	/* g */
+    1, 	 	/* h */
+    1, 	 	/* i */
+    1, 	 	/* j */
+    1, 	 	/* k */
+    1, 	 	/* l */
+    1, 	 	/* m */
+    1, 	 	/* n */
+    1, 	 	/* o */
+    1, 	 	/* p */
+    1, 	 	/* q */
+    1, 	 	/* r */
+    1, 	 	/* s */
+    1, 	 	/* t */
+    1, 	 	/* u */
+    1, 	 	/* v */
+    1, 	 	/* w */
+    1, 	 	/* x */
+    1, 	 	/* y */
+    1, 	 	/* z */
+    9, 	 	/* OPEN_CURLY */
+    7, 	 	/* VERTICAL_BAR */
+    10,  	/* CLOSE_CURLY */
+    7,  	/* TILDE */
+    7 		/* DELETE */
     ];	
 
     /**
@@ -629,134 +629,134 @@ var css = (function (exports) {
      * entries marked as `8` are in both number and identifier sets
      */
     const number_and_identifier_table = [
-    0, 		/* A */
-    0, 		/* a */
-    0, 		/* ACKNOWLEDGE */
-    0, 		/* AMPERSAND */
-    0, 		/* ASTERISK */
-    0, 		/* AT */
-    0,		/* B */
-    0,		/* b */
-    0,		/* BACKSLASH */
-    0,		/* BACKSPACE */
+    0, 		/* NULL */
+    0, 		/* START_OF_HEADER */
+    0, 		/* START_OF_TEXT */
+    0, 		/* END_OF_TXT */
+    0, 		/* END_OF_TRANSMISSION */
+    0, 		/* ENQUIRY */
+    0,		/* ACKNOWLEDGE */
     0,		/* BELL */
-    0,		/* C */
-    0,		/* c */
-    0,		/* CANCEL */
-    0,		/* CARET */
+    0,		/* BACKSPACE */
+    0,		/* HORIZONTAL_TAB */
+    0,		/* LINEFEED */
+    0,		/* VERTICAL_TAB */
+    0,		/* FORM_FEED */
     0,		/* CARRIAGE_RETURN */
-    0,		/* CLOSE_CURLY */
-    0,		/* CLOSE_PARENTH */
-    0,		/* CLOSE_SQUARE */
-    0,		/* COLON */
-    0,		/* COMMA */
-    0,		/* d */
-    0,		/* D */
+    0,		/* SHIFT_OUT */
+    0,		/* SHIFT_IN */
     0,		/* DATA_LINK_ESCAPE */
-    0,		/* DELETE */
     0,		/* DEVICE_CTRL_1 */
     0,		/* DEVICE_CTRL_2 */
     0,		/* DEVICE_CTRL_3 */
     0,		/* DEVICE_CTRL_4 */
-    0,		/* DOLLAR */
-    0,		/* DOUBLE_QUOTE */
-    0,		/* e */
-    0,		/* E */
-    0,		/* EIGHT */
+    0,		/* NEGATIVE_ACKNOWLEDGE */
+    0,		/* SYNCH_IDLE */
+    0,		/* END_OF_TRANSMISSION_BLOCK */
+    0,		/* CANCEL */
     0,		/* END_OF_MEDIUM */
-    0,		/* END_OF_TRANSMISSION */
-    8,		/* END_OF_TRANSMISSION_BLOCK */
-    0,		/* END_OF_TXT */
-    0,		/* ENQUIRY */
-    0,		/* EQUAL */
+    0,		/* SUBSTITUTE */
     0,		/* ESCAPE */
-    0,		/* EXCLAMATION */
-    0,		/* f */
-    0,		/* F */
     0,		/* FILE_SEPERATOR */
-    2,		/* FIVE */
-    4,		/* FORM_FEED */
-    0,		/* FORWARD_SLASH */
-    8,		/* FOUR */
-    8,		/* g */
-    8,		/* G */
-    8,		/* GRAVE */
-    8,		/* GREATER_THAN */
-    8,		/* GROUP_SEPERATOR */
-    8,		/* h */
-    8,		/* H */
-    8,		/* HASH */
-    8,		/* HORIZONTAL_TAB */
-    0,		/* HYPHEN */
-    0,		/* i */
-    0,		/* I */
-    0,		/* j */
-    0,		/* J */
-    0,		/* k */
-    0,		/* K */
-    2,		/* l */
-    8,		/* L */
-    2,		/* LESS_THAN */
-    2,		/* LINE_FEED */
-    8,		/* m */
-    2,		/* M */
-    2,		/* n */
-    2,		/* N */
-    2,		/* NEGATIVE_ACKNOWLEDGE */
-    2,		/* NINE */
-    2,		/* NULL */
-    2,		/* o */
-    2,		/* O */
-    2,		/* ONE */
-    8,		/* OPEN_CURLY */
-    2,		/* OPEN_PARENTH */
-    2,		/* OPEN_SQUARE */
-    2,		/* p */
-    2,		/* P */
-    2,		/* PERCENT */
-    2,		/* PERIOD */
-    2,		/* PLUS */
-    2,		/* q */
-    8,		/* Q */
-    2,		/* QMARK */
-    2,		/* QUOTE */
-    0,		/* r */
-    0,		/* R */
+    0,		/* GROUP_SEPERATOR */
     0,		/* RECORD_SEPERATOR */
-    0,		/* s */
-    2,		/* S */
+    0,		/* UNIT_SEPERATOR */
+    0,		/* SPACE */
+    0,		/* EXCLAMATION */
+    0,		/* DOUBLE_QUOTE */
+    0,		/* HASH */
+    8,		/* DOLLAR */
+    0,		/* PERCENT */
+    0,		/* AMPERSAND */
+    2,		/* QUOTE */
+    0,		/* OPEN_PARENTH */
+    0,		 /* CLOSE_PARENTH */
+    0,		/* ASTERISK */
+    0,		/* PLUS */
+    0,		/* COMMA */
+    2,		/* HYPHEN */
+    4,		/* PERIOD */
+    0,		/* FORWARD_SLASH */
+    8,		/* ZERO */
+    8,		/* ONE */
+    8,		/* TWO */
+    8,		/* THREE */
+    8,		/* FOUR */
+    8,		/* FIVE */
+    8,		/* SIX */
+    8,		/* SEVEN */
+    8,		/* EIGHT */
+    8,		/* NINE */
+    0,		/* COLON */
     0,		/* SEMICOLON */
-    2,		/* SEVEN */
-    8,		/* SHIFT_IN */
-    2,		/* SHIFT_OUT */
-    2,		/* SIX */
-    2,		/* SPACE */
-    2,		/* START_OF_HEADER */
-    2,		/* START_OF_TEXT */
-    2,		/* SUBSTITUTE */
-    2,		/* SYNCH_IDLE */
-    2,		/* t */
+    0,		/* LESS_THAN */
+    0,		/* EQUAL */
+    0,		/* GREATER_THAN */
+    0,		/* QMARK */
+    0,		/* AT */
+    2,		/* A*/
+    8,		/* B */
+    2,		/* C */
+    2,		/* D */
+    8,		/* E */
+    2,		/* F */
+    2,		/* G */
+    2,		/* H */
+    2,		/* I */
+    2,		/* J */
+    2,		/* K */
+    2,		/* L */
+    2,		/* M */
+    2,		/* N */
+    8,		/* O */
+    2,		/* P */
+    2,		/* Q */
+    2,		/* R */
+    2,		/* S */
     2,		/* T */
-    2,		/* THREE */
-    2,		/* TILDE */
-    2,		/* TWO */
-    8,		/* u */
     2,		/* U */
-    2,		/* UNDER_SCORE */
-    2,		/* UNIT_SEPERATOR */
-    2,		/* v */
     2,		/* V */
-    2,		/* VERTICAL_BAR */
-    2,		/* VERTICAL_TAB */
+    2,		/* W */
+    8,		/* X */
+    2,		/* Y */
+    2,		/* Z */
+    0,		/* OPEN_SQUARE */
+    0,		/* TILDE */
+    0,		/* CLOSE_SQUARE */
+    0,		/* CARET */
+    2,		/* UNDER_SCORE */
+    0,		/* GRAVE */
+    2,		/* a */
+    8,		/* b */
+    2,		/* c */
+    2,		/* d */
+    2,		/* e */
+    2,		/* f */
+    2,		/* g */
+    2,		/* h */
+    2,		/* i */
+    2,		/* j */
+    2,		/* k */
+    2,		/* l */
+    2,		/* m */
+    2,		/* n */
+    8,		/* o */
+    2,		/* p */
+    2,		/* q */
+    2,		/* r */
+    2,		/* s */
+    2,		/* t */
+    2,		/* u */
+    2,		/* v */
     2,		/* w */
-    8,		/* W */
-    2,		/* x */
-    2,		/* X */
-    0,		/* y */
-    0,		/* Y */
-    0,		/* z */
-    0,		/* Z */
-    0		/* ZERO */
+    8,		/* x */
+    2,		/* y */
+    2,		/* z */
+    0,		/* OPEN_CURLY */
+    0,		/* VERTICAL_BAR */
+    0,		/* CLOSE_CURLY */
+    0,		/* TILDE */
+    0		/* DELETE */
     ];
 
     const number = 1,
@@ -811,9 +811,7 @@ var css = (function (exports) {
             31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
         ];
 
-    function getNumbrOfTrailingZeroBitsFromPowerOf2(value) {
-        return debruijnLUT[(value * 0x077CB531) >>> 27];
-    }
+    const  getNumbrOfTrailingZeroBitsFromPowerOf2 = (value) => debruijnLUT[(value * 0x077CB531) >>> 27];
 
     class Lexer {
 
@@ -1036,7 +1034,7 @@ ${is_iws}`;
                     m$$1;
                 let i$$1 = 0;
 
-                while(code == 32 && IWS)
+                while (code == 32 && IWS)
                     (code = str.charCodeAt(++off2), off++);
 
                 while ((m$$1 = map.get(code))) {
@@ -1046,10 +1044,10 @@ ${is_iws}`;
                 }
 
                 if (map.IS_SYM) {
-                   NORMAL_PARSE = false;
-                   base = off;
-                   length = off2 - off;
-                   char += length;
+                    NORMAL_PARSE = false;
+                    base = off;
+                    length = off2 - off;
+                    char += length;
                 }
             }
 
@@ -1070,7 +1068,7 @@ ${is_iws}`;
                             case 0: //NUMBER
                                 while (++off < l$$1 && (12 & number_and_identifier_table[str.charCodeAt(off)]));
 
-                                if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off+1)])) {
+                                if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off + 1)])) {
                                     off++;
                                     if (str[off] == "-") off++;
                                     marker.off = off;
@@ -1298,29 +1296,57 @@ ${is_iws}`;
 
         /**
          * Returns new Whind Lexer that has leading and trailing whitespace characters removed from input. 
+         * leave_leading_amount - Maximum amount of leading space caracters to leave behind. Default is zero
+         * leave_trailing_amount - Maximum amount of trailing space caracters to leave behind. Default is zero
          */
-        trim() {
+        trim(leave_leading_amount = 0, leave_trailing_amount = leave_leading_amount) {
             const lex = this.copy();
+
+            let space_count = 0,
+                off = lex.off;
 
             for (; lex.off < lex.sl; lex.off++) {
                 const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
 
-                if (c$$1 > 2 && c$$1 < 7)
+                if (c$$1 > 2 && c$$1 < 7) {
+
+                    if (space_count >= leave_leading_amount) {
+                        off++;
+                    } else {
+                        space_count++;
+                    }
                     continue;
+                }
 
                 break;
             }
+
+            lex.off = off;
+            space_count = 0;
+            off = lex.sl;
 
             for (; lex.sl > lex.off; lex.sl--) {
                 const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
-                if (c$$1 > 2 && c$$1 < 7)
+                if (c$$1 > 2 && c$$1 < 7) {
+                    if (space_count >= leave_trailing_amount) {
+                        off--;
+                    } else {
+                        space_count++;
+                    }
                     continue;
+                }
 
                 break;
             }
 
+            lex.sl = off;
+
+            if (leave_leading_amount > 0)
+                lex.IWS = false;
+
             lex.token_length = 0;
+
             lex.next();
 
             return lex;
@@ -1337,7 +1363,7 @@ ${is_iws}`;
             for (let i$$1 = 0; i$$1 < sym.length; i$$1++) {
                 let code = sym.charCodeAt(i$$1);
                 let m$$1 = map.get(code);
-                if (!m$$1){
+                if (!m$$1) {
                     m$$1 = map.set(code, new Map).get(code);
                 }
                 map = m$$1;
@@ -1489,6 +1515,8 @@ ${is_iws}`;
             return Types;
         }
     }
+
+    Lexer.prototype.addCharacter = Lexer.prototype.addSymbol;
 
     function whind$1(string, INCLUDE_WHITE_SPACE_TOKENS = false) { return new Lexer(string, INCLUDE_WHITE_SPACE_TOKENS) }
 
@@ -2046,11 +2074,10 @@ ${is_iws}`;
         static buildInput(value){
             let ele = document.createElement("input");
             ele.type = "number";
+            ele.value = parseFloat(value) || 0;
             ele.addEventListener("change", (e)=>{
-                debugger
                 ele.css_value = ele.value + "%";
             });
-            input.value = parseFloat(value) || 0;
             return ele;
         }
         
@@ -2129,10 +2156,15 @@ ${is_iws}`;
 
     class CSS_Length extends Number {
 
-        static valueHandler(value){
+        static valueHandler(value, ui_seg){
             let ele = document.createElement("input");
+
+
             ele.type = "number";
             ele.value = (value) ? value + 0 : 0;
+            
+            ui_seg.css_value = ele.value + "%";
+            
             ele.addEventListener("change", (e)=>{
                 ele.css_value = ele.value + "px";
             });
@@ -2303,39 +2335,14 @@ ${is_iws}`;
         query: "",
         search: ""
     };
-
-    /** Implement Basic Fetch Mechanism for NodeJS **/
-    if (typeof(fetch) == "undefined" && typeof(global) !== "undefined") {
-        (async () => {
-            const fs = (await import("fs")).default.promises;
-            const path = (await import("path")).default;
-            global.fetch = (url, data) =>
-                new Promise(async (res, rej) => {
-                    let p = await path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
-                    try {
-                        let data = await fs.readFile(p, "utf8");
-                        return res({
-                            status: 200,
-                            text: () => {
-                                return {
-                                    then: (f) => f(data)
-                                }
-                            }
-                        })
-                    } catch (err) {
-                        return rej(err);
-                    }
-                });
-        })();
-    }
-
     function fetchLocalText(URL, m = "same-origin") {
         return new Promise((res, rej) => {
             fetch(URL, {
                 mode: m, // CORs not allowed
                 credentials: m,
-                method: "Get"
+                method: "GET"
             }).then(r => {
+
                 if (r.status < 200 || r.status > 299)
                     r.text().then(rej);
                 else
@@ -2349,7 +2356,7 @@ ${is_iws}`;
             fetch(URL, {
                 mode: m, // CORs not allowed
                 credentials: m,
-                method: "Get"
+                method: "GET"
             }).then(r => {
                 if (r.status < 200 || r.status > 299)
                     r.json().then(rej);
@@ -2417,10 +2424,12 @@ ${is_iws}`;
      */
     class URL {
 
-        static resolveRelative(URL_or_url_original, URL_or_url_new) {
+        static resolveRelative(URL_or_url_new, URL_or_url_original = document.location.toString(), ) {
 
             let URL_old = (URL_or_url_original instanceof URL) ? URL_or_url_original : new URL(URL_or_url_original);
             let URL_new = (URL_or_url_new instanceof URL) ? URL_or_url_new : new URL(URL_or_url_new);
+            
+            if (!(URL_old + "") || !(URL_new + "")) return null;
 
             let new_path = "";
             if (URL_new.path[0] != "/") {
@@ -2443,7 +2452,6 @@ ${is_iws}`;
                 URL_new.path = a.join("/");
             }
 
-
             return URL_new;
         }
 
@@ -2455,7 +2463,7 @@ ${is_iws}`;
 
             let location = (typeof(document) !== "undefined") ? document.location : STOCK_LOCATION;
 
-            if (url instanceof Location) {
+            if (typeof(Location) !== "undefined" && url instanceof Location) {
                 location = url;
                 url = "";
                 IS_LOCATION = true;
@@ -2524,6 +2532,11 @@ ${is_iws}`;
                     this.hash = url.hash;
                 } else {
                     let part = url.match(uri_reg_ex);
+
+                    //If the complete string is not matched than we are dealing with something other 
+                    //than a pure URL. Thus, no object is returned. 
+                    if (part[0] !== url) return null;
+
                     this.protocol = part[1] || ((USE_LOCATION) ? location.protocol : "");
                     this.user = part[2] || "";
                     this.pwd = part[3] || "";
@@ -2535,7 +2548,7 @@ ${is_iws}`;
 
                 }
             } else if (IS_LOCATION) {
-                this.protocol = location.protocol.replace(/\:/g,"");
+                this.protocol = location.protocol.replace(/\:/g, "");
                 this.host = location.hostname;
                 this.port = location.port;
                 this.path = location.pathname;
@@ -2646,7 +2659,7 @@ ${is_iws}`;
                 str.push(((this.query[0] == "?" ? "" : "?") + this.query));
 
             if (this.hash)
-                str.push("#"+this.hash);
+                str.push("#" + this.hash);
 
 
             return str.join("");
@@ -2789,8 +2802,8 @@ ${is_iws}`;
             return submitForm(this.toString(), form_data);
         }
 
-        submitJSON(json_data) {
-            return submitJSON(this.toString(), json_data);
+        submitJSON(json_data, mode) {
+            return submitJSON(this.toString(), json_data, mode);
         }
         /**
          * Goes to the current URL.
@@ -2809,6 +2822,11 @@ ${is_iws}`;
 
         get href() {
             return this.toString();
+        }
+
+        get ext() {
+            const m = this.path.match(/\.([^\.]*)$/);
+            return m ? m[1] : "";
         }
     }
 
@@ -2911,6 +2929,81 @@ ${is_iws}`;
             return URL.G.cacheResource(resource);
         }
     };
+
+
+    /** Implement Basic Fetch Mechanism for NodeJS **/
+    if (typeof(fetch) == "undefined" && typeof(global) !== "undefined") {
+        (async () => {
+            console.log("Moonshot");
+            
+            global.fetch = (url, data) =>
+                new Promise(async (res, rej) => {
+                    let p = await path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
+                    try {
+                        let data = await fs.readFile(p, "utf8");
+                        return res({
+                            status: 200,
+                            text: () => {
+                                return {
+                                    then: (f) => f(data)
+                                }
+                            }
+                        })
+                    } catch (err) {
+                        return rej(err);
+                    }
+                });
+        })();
+    }
+
+
+    let SIMDATA = null;
+
+    /* Replaces the fetch actions with functions that simulate network fetches. Resources are added by the user to a Map object. */
+    URL.simulate = function(){
+        SIMDATA = new Map;
+        URL.prototype.fetchText = async d => ((d = this.toString()), SIMDATA.get(d)) ? SIMDATA.get(d) : "" ;
+        URL.prototype.fetchJSON = async d => ((d = this.toString()), SIMDATA.get(d)) ? JSON.parse(SIMDATA.get(d).toString()) : {} ;
+    };
+
+    //Allows simulated resources to be added as a key value pair, were the key is a URI string and the value is string data.
+    URL.addResource = (n,v) => (n && v && (SIMDATA || (SIMDATA = new Map())) && SIMDATA.set(n.toString(), v.toString));
+
+    URL.polyfill = function() {    if (typeof(global) !== "undefined") {
+        console.log("AAAAAAAAAAAAAAAAAAAAAA");
+            const fs = (import("fs")).promises;
+            const path = (import("path"));
+
+
+            global.Location =  (class extends URL{});
+            
+            global.document = global.document || {};
+
+            global.document.location = new URL(process.env.PWD);
+            /**
+             * Global `fetch` polyfill - basic support
+             */
+            global.fetch = (url, data) =>
+                new Promise((res, rej) => {
+                    let p = path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
+                    fs.readFile(p, "utf8", (err, data) => {
+                        if (err) {
+                            rej(err);
+                        } else {
+                            res({
+                                status: 200,
+                                text: () => {
+                                    return {
+                                        then: (f) => f(data)
+                                    }
+                                }
+                            });
+                        }
+                    });
+                });
+        }
+    };
+
     Object.freeze(URL.R);
     Object.freeze(URL.RC);
     Object.seal(URL);
@@ -3610,6 +3703,10 @@ ${is_iws}`;
 
     		return out;
     	}
+
+    	toString(){
+    		 return `cubic-bezier(${this[2]},${this[3]},${this[4]},${this[5]})`;
+    	}
     }
 
     class Stop{
@@ -3721,8 +3818,6 @@ ${is_iws}`;
         };
     }
 
-    //import whind from "@candlefw/whind";
-
     function getValue(lex, attribute) {
         let v = lex.tx,
             mult = 1;
@@ -3760,7 +3855,11 @@ ${is_iws}`;
     }
 
     function ParseString(string, transform) {
-        //var lex = whind(string);
+        let lex = null;
+        lex = string;
+
+        if(typeof(string) == "string")
+            lex = whind$1(string);
         
         while (!lex.END) {
             let tx = lex.tx;
@@ -3882,7 +3981,7 @@ ${is_iws}`;
             super(5);
             this.sx = 1;
             this.sy = 1;
-            if (px) {
+            if (px !== undefined) {
                 if (px instanceof CSS_Transform2D) {
                     this[0] = px[0];
                     this[1] = px[1];
@@ -4714,27 +4813,25 @@ ${is_iws}`;
      */
     class CSSSelector {
 
-        constructor(selectors /* string */ , selectors_arrays /* array */ ) {
+        constructor(value = "", value_array = []) {
 
             /**
              * The raw selector string value
              * @package
              */
-
-            this.v = selectors;
+            this.v = value;
 
             /**
              * Array of separated selector strings in reverse order.
              * @package
              */
+            this.a = value_array;
 
-            this.a = selectors_arrays;
-
-            /**
-             * The CSSRule.
-             * @package
-             */
+            // CSS Rulesets the selector is member of .
             this.r = null;
+
+            // CSS root the selector is a child of. 
+            this.root = null;
         }
 
         get id() {
@@ -5977,6 +6074,7 @@ ${is_iws}`;
                     let selector = this.parseSelector(lexer, this);
 
                     if (selector) {
+                        selector.root = this;
                         if (!this._selectors_[selector.id]) {
                             l = selectors.push(selector);
                             this._selectors_[selector.id] = selector;
@@ -6063,6 +6161,1384 @@ ${is_iws}`;
     }
 
     LinkedList.mixinTree(CSSRuleBody);
+
+    class Segment {
+        constructor(parent) {
+            this.parent = null;
+
+            this.css_val = "";
+
+            this.val = document.createElement("span");
+            this.val.classList.add("prop_value");
+
+            this.list = document.createElement("div");
+            this.list.classList.add("prop_list");
+            //this.list.style.display = "none"
+
+            this.ext = document.createElement("button");
+            this.ext.classList.add("prop_extender");
+            this.ext.style.display = "none";
+            this.ext.setAttribute("action","ext");
+
+            this.menu_icon = document.createElement("span");
+            this.menu_icon.classList.add("prop_list_icon");
+            //this.menu_icon.innerHTML = "+"
+            this.menu_icon.style.display = "none";
+            this.menu_icon.setAttribute("superset", false);
+            this.menu_icon.appendChild(this.list);
+
+            this.element = document.createElement("span");
+            this.element.classList.add("prop_segment");
+
+            this.element.appendChild(this.menu_icon);
+            this.element.appendChild(this.val);
+            this.element.appendChild(this.ext);
+
+            this.value_list = [];
+            this.subs = [];
+            this.old_subs = [];
+            this.sib = null;
+            this.value_set;
+            this.HAS_VALUE = false;
+            this.DEMOTED = false;
+
+            this.element.addEventListener("mouseover", e => {
+                //this.setList();
+            });
+        }
+
+        destroy() {
+            this.parent = null;
+            this.element = null;
+            this.val = null;
+            this.list = null;
+            this.ext = null;
+            this.menu_icon = null;
+            this.subs.forEach(e => e.destroy());
+            this.subs = null;
+        }
+
+        reset() {
+            this.list.innerHTML = "";
+            this.val.innerHTML = "";
+            //this.subs.forEach(e => e.destroy);
+            this.subs = [];
+            this.setElement = null;
+            this.changeEvent = null;
+        }
+
+        clearSegments(){
+            if(this.subs.length > 0){
+                this.val.innerHTML = "";
+                for(let i = 0; i < this.subs.length; i++){
+                    let sub = this.subs[i];
+                    sub.destroy();
+                }   
+                this.subs.length = 0;
+            }
+        }
+
+        replaceSub(old_sub, new_sub) {
+            for (let i = 0; i < this.subs.length; i++) {
+                if (this.subs[i] == old_sub) {
+                    this.sub[i] = new_sub;
+                    this.val.replaceChild(old_sub.element, new_sub.element);
+                    return;
+                }
+            }
+        }
+
+        mount(element) {
+            element.appendChild(this.element);
+        }
+
+
+        addSub(seg) {
+            this.menu_icon.setAttribute("superset", true);
+            seg.parent = this;
+            this.subs.push(seg);
+            this.val.appendChild(seg.element);
+        }
+
+        removeSub(seg) {
+            if (seg.parent == this) {
+                for (let i = 0; i < this.subs.length; i++) {
+                    if (this.subs[i] == seg) {
+                        this.val.removeChild(seg.element);
+                        seg.parent = null;
+                        break;
+                    }
+                }
+            }
+            return seg;
+        }
+
+        setList() {
+            //if(this.DEMOTED) debugger
+            if (this.prod && this.list.innerHTML == "") {
+                if (this.DEMOTED || !this.prod.buildList(this.list, this))
+                    this.menu_icon.style.display = "none";
+                else
+                    this.menu_icon.style.display = "inline-block";
+            }
+        }
+        change(e) {
+            if (this.changeEvent)
+                this.changeEvent(this.setElement, this, e);
+        }
+
+        setValueHandler(element, change_event_function) {
+            this.val.innerHTML = "";
+            this.val.appendChild(element);
+
+            if (change_event_function) {
+                this.setElement = element;
+                this.changeEvent = change_event_function;
+                this.setElement.onchange = this.change.bind(this);
+            }
+
+            this.HAS_VALUE = true;
+            //this.menu_icon.style.display = "none";
+            this.setList();
+        }
+
+        set value(v) {
+            this.val.innerHTML = v;
+            this.css_val = v;
+            this.HAS_VALUE = true;
+            this.setList();
+        }
+
+        get value_count() {
+            if (this.subs.length > 0)
+                return this.subs.length
+            return (this.HAS_VALUE) ? 1 : 0;
+        }
+
+        promote() {
+
+        }
+
+        demote() {
+            let seg = new Segment;
+            seg.prod = this.prod;
+            seg.css_val = this.css_val;
+
+            if (this.change_event_function) {
+                seg.changeEvent = this.changeEvent;
+                seg.setElement = this.setElement;
+                seg.setElement.onchange = seg.change.bind(seg);
+            }
+
+            let subs = this.subs;
+
+            if (subs.length > 0) {
+
+                for (let i = 0; i < this.subs.length; i++) 
+                    seg.addSub(this.subs[i]);
+                
+            } else {
+
+
+                let children = this.val.childNodes;
+
+                if (children.length > 0) {
+                    for (let i = 0, l = children.length; i < l; i++) {
+                        seg.val.appendChild(children[0]);
+                    }
+                } else {
+                    seg.val.innerHTML = this.val.innerHTML;
+                }
+            }
+
+
+            this.menu_icon.innerHTML = "";
+            this.menu_icon.style.display = "none";
+            this.menu_icon.setAttribute("superset", false);
+            this.list.innerHTML = "";
+
+            this.reset();
+
+            this.addSub(seg);
+            seg.setList();
+            
+            this.DEMOTED = true;
+        }
+
+        addRepeat(seg) {
+            if (!this.DEMOTED)
+                //Turn self into own sub seg
+                this.demote();
+            this.addSub(seg);
+            seg.setList();
+        }
+
+        repeat(prod = this.prod) {
+            
+            if (this.value_count <= this.end && this.prod.end > 1) {
+                this.ext.style.display = "inline-block";
+
+                let root_x = 0;
+                let width = 0;
+                let diff_width = 0;
+
+                const move = (e) => {
+
+                    let diff = e.clientX - root_x;
+                    let min_diff = diff + diff_width;   
+
+                    let EXTENDABLE = this.value_count < this.end;
+                    let RETRACTABLE = this.value_count > 1;
+
+                    if(EXTENDABLE && RETRACTABLE)
+                        this.ext.setAttribute("action","both");
+                    else if(EXTENDABLE)
+                        this.ext.setAttribute("action","ext");
+                    else
+                        this.ext.setAttribute("action","ret");
+
+                    if (diff > 15 && EXTENDABLE) {
+                        let bb = this.element;
+
+                        if (!this.DEMOTED) {
+                            //Turn self into own sub seg
+                            this.demote();
+                        }
+
+                        if (this.old_subs.length > 1) {
+                            this.addSub(this.old_subs.pop());
+                        } else {
+                            prod.default(this, true);
+                        }
+
+                        let w = this.element.clientWidth;
+                        diff_width = w - width;
+                        width = w;
+                        root_x += diff_width;
+
+                        return;
+                    }
+
+                    let last_sub = this.subs[this.subs.length - 1];
+
+                    if (diff < -5 - last_sub.width && RETRACTABLE) {
+                        const sub = this.subs[this.subs.length - 1];
+                        this.old_subs.push(sub);
+                        this.removeSub(sub);
+                        this.subs.length = this.subs.length - 1;
+
+                        let w = this.element.clientWidth;
+                        diff_width = w - width;
+                        width = w;
+
+                        root_x += diff_width;
+                    }
+                };
+
+                const up = (e) => {
+                    window.removeEventListener("pointermove", move);
+                    window.removeEventListener("pointerup", up);
+                };
+
+                this.ext.onpointerdown = e => {
+                    width = this.element.clientWidth;
+                    root_x = e.clientX;
+                    window.addEventListener("pointermove", move);
+                    window.addEventListener("pointerup", up);
+                };
+
+
+                /*
+                this.ext.onclick = e => {
+                    if (this.subs.length == 0)
+                        //Turn self into own sub seg
+                        this.demote()
+
+                    prod.default(this, true);
+
+                    if (this.value_count >= this.end)
+                        this.ext.style.display = "none";
+                }
+                */
+            } else {
+                this.ext.style.display = "none";
+            }
+            this.setList();
+            this.update();
+        }
+
+        get width() {
+            return this.element.clientWidth;
+        }
+
+        update() {
+            if (this.parent)
+                this.parent.update(this);
+            else {
+                let val = this.getValue();
+            }
+        }
+
+        getValue() {
+            let val = "";
+
+            if (this.subs.length > 0)
+                for (let i = 0; i < this.subs.length; i++)
+                    val += " " + this.subs[i].getValue();
+            else
+                val = this.css_val;
+            return val;
+        }
+
+        toString() {
+            return this.getValue();
+        }
+    }
+
+    class ValueTerm$1 extends ValueTerm {
+
+        default (seg, APPEND = false, value = null) {
+            if (!APPEND) {
+                let element = this.value.valueHandler(value, seg);
+
+                if (value) {
+                    seg.css_val = value.toString();
+                }
+                seg.setValueHandler(element, (ele, seg, event) => {
+                    seg.css_val = element.css_value;
+                    seg.update();
+                });
+            } else {
+                let sub = new Segment();
+                let element = this.value.valueHandler(value, sub);
+                if (value)
+                    sub.css_val = value.toString();
+
+                sub.setValueHandler(element, (ele, seg, event) => {
+                    seg.css_val = element.css_value;
+                    seg.update();
+                });
+                //sub.prod = list;
+                seg.addSub(sub);
+            }
+        }
+
+        buildInput(rep = 1, value) {
+            let seg = new Segment();
+            this.default(seg, false, value);
+            return seg;
+        }
+
+        parseInput(l, seg, APPEND = false) {
+            let val = this.value.parse(l);
+
+            if (val) {
+                this.default(seg, APPEND, val);
+                return true;
+            }
+
+            return val;
+        }
+
+        list(ele, slot) {
+            let element = document.createElement("div");
+            element.classList.add("option");
+            element.innerHTML = this.value.label_name || this.value.name;
+            ele.appendChild(element);
+
+            element.addEventListener("click", e => {
+
+                slot.innerHTML = this.value;
+                if (slot) {
+                    let element = this.value.valueHandler();
+                    element.addEventListener("change", e => {
+
+                        let value = element.value;
+                        slot.css_val = value;
+                        slot.update();
+                    });
+                    slot.setValueHandler(element);
+                } else {
+                    let sub = new Segment();
+                    sub.setValueHandler(this.value);
+                    seg.addSub(sub);
+                }
+            });
+
+            return 1;
+        }
+
+        setSegment(segment) {
+            segment.element.innerHTML = this.value.name;
+        }
+    }
+
+    class BlankTerm extends LiteralTerm {
+
+        default (seg, APPEND = false) {
+
+            if (!APPEND) {
+                seg.value = "  ";
+            } else {
+                let sub = new Segment();
+                sub.value = "";
+                seg.addSub(sub);
+            }
+        }
+
+        list(ele, slot) {
+            let element = document.createElement("div");
+            element.innerHTML = this.value;
+            element.classList.add("option");
+            //        ele.appendChild(element) 
+
+            return 1;
+        }
+
+        parseInput(seg, APPEND = false) {
+            this.default(seg, APPEND);
+            return false;
+        }
+    }
+
+    class LiteralTerm$1 extends LiteralTerm {
+
+        default (seg, APPEND = false) {
+            if (!APPEND) {
+                seg.value = this.value;
+            } else {
+                let sub = new Segment();
+                sub.value = this.value;
+                seg.addSub(sub);
+            }
+        }
+
+        list(ele, slot) {
+            let element = document.createElement("div");
+            element.innerHTML = this.value;
+            element.classList.add("option");
+            ele.appendChild(element);
+            element.addEventListener("click", e => {
+                slot.value = this.value + "";
+                slot.update();
+            });
+
+            return 1;
+        }
+
+        parseInput(l, seg, APPEND = false) {
+            if (typeof(l) == "string")
+                l = whind(l);
+
+            if (l.tx == this.value) {
+                l.next();
+                this.default(seg, APPEND);
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    class SymbolTerm$1 extends LiteralTerm$1 {
+        list() { return 0 }
+
+        parseInput(l, seg, r) {
+            if (typeof(l) == "string")
+                l = whind(l);
+
+            if (l.tx == this.value) {
+                l.next();
+                let sub = new Segment();
+                sub.value = this.value + "";
+                seg.addSub(sub);
+                return true;
+            }
+
+            return false;
+        }
+    }
+
+    /**
+     * wick internals.
+     * @class      JUX (name)
+     */
+    class JUX$1 extends JUX {
+        //Adds an entry in options list. 
+
+
+        createSegment() {
+            let segment = new Segment();
+            segment.start = this.start;
+            segment.end = this.end;
+            segment.prod = this;
+            return segment
+        }
+
+        insertBlank(seg){
+            let blank = new BlankTerm;
+            blank.parseInput(seg);
+        }
+
+        buildList(list, slot) {
+
+            if (!slot) {
+                let element = document.createElement("div");
+                element.classList.add("prop_slot");
+                slot = element;
+            }
+
+            if (!list) {
+                list = document.createElement("div");
+                list.classList.add("prop_slot");
+                slot.appendChild(list);
+            }
+            let count = 0;
+            //Build List
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                count += this.terms[i].list(list, slot);
+            }
+
+            return count > 1;
+        }
+
+        seal() {}
+
+        parseInput(lx, segment, list) {
+
+            if (typeof(lx) == "string")
+                lx = whind$1(lx);
+
+            return this.pi(lx, segment, list);
+        }
+
+        default (segment, EXTENDED = true) {
+            let seg = this.createSegment();
+
+            segment.addSub(seg);
+
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                this.terms[i].default(seg, l > 1);
+            }
+            seg.setList();
+
+            if (!EXTENDED) seg.repeat();
+        }
+
+        pi(lx, ele, lister = this, start = this.start, end = this.end) {
+            
+            let segment = this.createSegment();
+
+            let bool = false,
+                j = 0,
+                last_segment = null,
+                first;
+
+            repeat:
+                for (let j = 0; j < end && !lx.END; j++) {
+                    const REPEAT = j > 0;
+
+                    let copy = lx.copy();
+
+                    let seg = (REPEAT) ? new Segment : segment;
+
+                    seg.prod = this;
+
+                    for (let i = 0, l = this.terms.length; i < l; i++) {
+
+                        let term = this.terms[i];
+
+                        if (!term.parseInput(copy, seg, l > 1)) {
+                            if (!term.OPTIONAL) {
+                                break repeat;
+                            }
+                        }
+                    }
+
+                    lx.sync(copy);
+
+                    bool = true;
+
+                    if (!this.checkForComma(lx))
+                        break;
+
+                    if (REPEAT)
+                        segment.addRepeat(seg);
+                }
+
+                this.capParse(segment, ele, bool);
+                
+                return bool;
+        }
+
+        capParse(segment, ele, bool){
+            if (bool) {
+                segment.repeat();
+                if (ele)
+                    ele.addSub(segment);
+                this.last_segment = segment;
+            }else {
+                segment.destroy();
+                if(this.OPTIONAL){
+                    if(ele){
+                        let segment = this.createSegment();
+                        let blank = new BlankTerm();
+                        blank.parseInput(segment);
+                        segment.prod = this;
+                        
+                        segment.repeat();
+                        ele.addSub(segment);
+                    }
+                }
+            }
+        }
+
+        buildInput(repeat = 1, lex) {
+
+            this.last_segment = null;
+            let seg = new Segment;
+            seg.start = this.start;
+            seg.end = this.end;
+            seg.prod = this;
+            this.parseInput(lex, seg, this);
+            return this.last_segment;
+        }
+
+        list(){
+            
+        }
+    }
+
+    class AND$1 extends JUX$1 {
+
+        default (segment, EXTENDED = false) {
+            //let seg = this.createSegment();
+            //segment.addSub(seg);
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                this.terms[i].default(segment, i > 1);
+            }
+            //seg.repeat();
+        }
+
+        list(ele, slot) {
+
+            let name = (this.name) ? this.name.replace("\_\g", " ") : this.terms.reduce((r, t) => r += " | " + t.name, "");
+            let element = document.createElement("div");
+            element.classList.add("option");
+            element.innerHTML = name;
+            ele.appendChild(element);
+
+            element.addEventListener("click", e => {
+                
+                slot.innerHTML = this.value;
+                if (slot) {
+                    slot.clearSegments();
+                    this.default(slot);
+                    slot.update();
+                } else {
+                    let sub = new Segment();
+                    sub.setValueHandler(this.value);
+                    seg.addSub(sub);
+                }
+            });
+
+            return 1;
+        }
+
+        pi(lx, ele, lister = this, start = 1, end = 1) {
+
+            outer: for (let j = 0; j < end && !lx.END; j++) {
+                for (let i = 0, l = this.terms.length; i < l; i++)
+                    if (!this.terms[i].parseInput(lx, ele)) return (start === 0) ? true : false
+            }
+
+            segment.repeat();
+
+            return true;
+        }
+    }
+    Object.assign(AND$1.prototype, AND.prototype);
+
+    class OR$1 extends JUX$1 {
+
+        default (segment, EXTENDED = false) {
+            //let seg = this.createSegment();
+            //segment.addSub(seg);
+            for (let i = 0, l = this.terms.length; i < l; i++) {
+                this.terms[i].default(segment, l > 1);
+            }
+            //seg.repeat();
+        }
+
+        buildList(list, slot) {
+            return false;
+        }
+
+        list(ele, slot) {
+
+            let name = this.terms.reduce((r, t) => r += " | " + t.name, "");
+            let element = document.createElement("div");
+            element.classList.add("option");
+            element.innerHTML = name;
+            ele.appendChild(element);
+
+            element.addEventListener("click", e => {
+                
+                slot.innerHTML = this.value;
+                if (slot) {
+                    slot.clearSegments();
+                    this.default(slot);
+                    slot.update();
+                } else {
+                    let sub = new Segment();
+                    sub.setValueHandler(this.value);
+                    seg.addSub(sub);
+                }
+            });
+
+            return 1;
+        }
+
+        pi(lx, ele, lister = this, start = this.start, end = this.end) {
+            
+            let segment = ele; //this.createSegment()
+
+            let bool = false;
+
+            let j = 0;
+
+            let OVERALL_BOOL = false;
+
+            for (let j = 0; j < end && !lx.END; j++) {
+                const REPEAT = j > 0;
+
+                let seg = (REPEAT) ? new Segment : segment;
+
+
+                bool = false;
+
+                this.count = (this.count) ? this.count:this.count = 0;
+                
+                outer:
+                //User "factorial" expression to isolate used results in a continous match. 
+                while(true){
+                    for (let i = 0, l = this.terms.length; i < l; i++) {
+                        //if(this.terms[i].count == this.count) continue
+
+                        if (this.terms[i].parseInput(lx, seg, true)) {
+                            this.terms[i].count = this.count;
+                            OVERALL_BOOL = true;
+                            bool = true;
+                            continue outer;
+                        }
+                    }
+                    break;
+                }
+
+                {
+                    //Go through unmatched and make placeholders.
+                }
+
+                {
+                    //Sort everything based on parse 
+                }
+
+                if (!bool && j < start) {
+                    bool = false;
+                } else if (start === 0)
+                    bool = true;
+                    if (REPEAT)
+                segment.addRepeat(seg);
+            }
+
+            if (OVERALL_BOOL) {
+                segment.repeat();
+                //if (ele)
+                //    ele.addSub(segment);
+                this.last_segment = segment;
+            }
+
+
+            return (!bool && start === 0) ? true : bool;
+        }
+    }
+
+    Object.assign(OR$1.prototype, OR.prototype);
+
+    class ONE_OF$1 extends JUX$1 {
+
+        default (segment, EXTENDED = false) {
+            let seg = this.createSegment();
+            this.terms[0].default(seg);
+            segment.addSub(seg);
+            seg.setList();
+            if (!EXTENDED) seg.repeat();
+        }
+
+        list(ele, slot) {
+            let name = (this.name) ? this.name.replace(/_/g, " ") : this.terms.reduce((r, t) => r += " | " + t.name, "");
+            let element = document.createElement("div");
+            element.classList.add("option");
+            element.innerHTML = name;
+            ele.appendChild(element);
+
+            element.addEventListener("click", e => {
+                //debugger
+                slot.innerHTML = this.value;
+                if (slot) {
+                    slot.clearSegments();
+                    this.default(slot);
+                    slot.update();
+                } else {
+                    let sub = new Segment();
+                    sub.setValueHandler(this.value);
+                    seg.addSub(sub);
+                }
+            });
+
+            return 1;
+        }
+
+        pi(lx, ele, lister = this, start = this.start, end = this.end) {
+            //List
+            let segment = this.createSegment();
+
+            //Add new
+            let bool = false;
+
+            let j = 0;
+
+            //Parse Input
+            for (; j < end && !lx.END; j++) {
+                const REPEAT = j > 0;
+
+                let seg = segment;
+                
+                if(REPEAT){
+                    seg = new Segment;
+                    seg.prod = this;
+                }
+
+                bool = false;
+
+                for (let i = 0, l = this.terms.length; i < l; i++) {
+                    bool = this.terms[i].parseInput(lx, seg);
+                    if (bool) break;
+                }
+
+                if (!bool) {
+                    if (j < start) {
+                        bool = false;
+                        break;
+                    }
+                }
+                if (REPEAT)
+                    segment.addRepeat(seg);
+
+            }
+
+            this.capParse(segment, ele, bool);
+
+            return  bool;
+        }
+    }
+
+    Object.assign(ONE_OF$1.prototype, ONE_OF.prototype);
+
+    var ui_productions = /*#__PURE__*/Object.freeze({
+        JUX: JUX$1,
+        AND: AND$1,
+        OR: OR$1,
+        ONE_OF: ONE_OF$1,
+        LiteralTerm: LiteralTerm$1,
+        ValueTerm: ValueTerm$1,
+        SymbolTerm: SymbolTerm$1
+    });
+
+    function dragstart(e){
+        event.dataTransfer.setData('text/plain',null);
+        UISelectorPart.dragee = this;
+    }
+
+    function dragover(e){
+        e.preventDefault();
+    }
+
+    class UISelectorPart{
+
+        constructor(name, index){
+            this.txt = name;
+            this.index = index;
+            this.element = document.createElement("span");
+            this.element.classList.add("selector");
+            this.element.innerHTML = this.txt;
+            this.element.setAttribute("draggable", true);
+            this.parent = null;
+            this.element.addEventListener("dragstart",dragstart.bind(this));
+        }
+
+        mount(element, parent){
+            this.parent = parent;
+            if (element instanceof HTMLElement)
+                element.appendChild(this.element);
+        }
+
+        unmount(){
+            this.parent = null;
+            if (this.element.parentElement)
+                this.element.parentElement.removeChild(this.element);
+        }
+
+        compare(other_part){
+            return other_part.txt === this.txt
+        }
+
+        toString(){
+            return this.txt;
+        }
+
+    }
+
+
+    function drop(e){
+        if(UISelectorPart.dragee){
+            const part = UISelectorPart.dragee;
+            const parent = part.parent;
+
+            loop:
+            while(parent != this){
+
+                //Ignore if part is already present in the selector area
+                for(let i = 0; i < this.parts.length; i++)
+                    if(this.parts[i].compare(part)) break loop;
+
+                part.unmount();
+                let d = parent.remove(part);
+                this.add(part, ...d);
+                part.mount(this.element, this);
+                break;
+            }
+        }
+        UISelectorPart.dragee = null;
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        return false;
+    }
+
+    class UISelector {
+        constructor(selector) {
+            this.selector = selector;
+            this.parts = [];
+            
+            selector.v.forEach((e, i) => {
+                this.parts.push(new UISelectorPart(e, i));
+            });
+            
+            this.text = selector.v.join();
+        }
+
+        update() {
+            this.parent.update();
+        }
+
+        mount(parent) {
+            this.element = parent.selector_space;
+            this.element.ondrop = drop.bind(this);
+            this.element.ondragover = dragover;
+            
+            this.parent = parent;
+
+            this.parts.forEach(e=>e.mount(this.element, this));
+        }
+
+        unmount() {
+            if (this.element.parentElement)
+                this.element.parentElement.removeChild(this.element);
+        }
+
+        remove(part){
+            let index = part.index;
+            this.parts.splice(index,1);
+            this.parts.forEach((e,i)=>e.index = i);
+            const a = this.selector.a.splice(index,1)[0];
+            const v = this.selector.v.splice(index,1)[0];
+            this.update();
+            return [a,v]
+        }
+
+        add(part, a, v){
+            this.parts.push(part);
+            this.selector.a.push(a);
+            this.selector.v.push(v);
+            this.parts.forEach((e,i)=>e.index = i);
+            this.update();
+        }
+
+        rebuild(selector){
+            this.parts.forEach(e=>e.unmount(false));
+            this.parts.length = 0;
+            selector.v.forEach((e,i) => {
+                this.parts.push(new UISelectorPart(e, i));
+            });
+            this.mount(this.parent);
+
+        }
+    }
+
+    function createCache(cacher){
+        let cache = null;
+        const destroy = cacher.prototype.destroy;
+        const init = cacher.prototype.init;
+
+        cacher.prototype.destroy = function(...args){
+
+            if(destroy)
+                destroy.call(this, ...args);
+
+            this.next_cached = cache;
+            cache = this;
+        };
+
+        return function(...args){
+                let r;
+            if(cache){
+                r = cache;
+                cache = cache.next_cached;
+                r.next_cached = null;
+                init.call(r,...args);
+            }else{
+                r = new cacher(...args);
+                r.next_cached = null;
+                r.CACHED = true;
+            }
+            return r;
+        };
+    }
+
+    const props = Object.assign({}, property_definitions);
+
+    var dragee = null;
+
+    function dragstart$1(e){
+        event.dataTransfer.setData('text/plain',null);
+        UIProp.dragee = this;
+    }
+
+    class UIProp {
+        constructor(type,  parent) {
+            // Predefine all members of this object.
+            this.hash = 0;
+            this.type = "";
+            this.parent = null;
+            this._value = null;
+            this.setupElement(type);
+            this.init(type, parent);
+        }
+
+        init(type,  parent){
+            this.type = type;
+            this.parent = parent;
+        }
+
+        destroy(){
+            this.hash = 0;
+            this.type = "";
+            this.parent = null;
+            this._value = null;
+            this.type = null;
+            this.parent = null;
+            this.unmount();
+        }
+
+        build(type, value){
+            this.element.innerHTML ="";
+            this.element.appendChild(this.label);
+            let pp = getPropertyParser(type, undefined, props, ui_productions);
+            this._value = pp.buildInput(1, whind$1(value));
+            this._value.parent = this;
+            this._value.mount(this.element);
+        }
+
+        update(value) {
+            this.parent.update(this.type, value.toString());
+        }
+
+        mount(element) {
+            if (element instanceof HTMLElement)
+                element.appendChild(this.element);
+        }
+
+        unmount() {
+            if (this.element.parentElement)
+                this.element.parentElement.removeChild(this.element);
+        }
+
+        setupElement(type) {
+            this.element = document.createElement("div");
+            this.element.setAttribute("draggable", "true");
+            this.element.classList.add("prop");
+            this.element.addEventListener("dragstart", dragstart$1.bind(this));
+            this.label = document.createElement("span");
+            this.label.classList.add("prop_label");
+            this.label.innerHTML = `${type.replace(/[\-\_]/g, " ")}`;
+        }
+
+        get value(){
+            return this._value.toString();
+        }
+    }
+
+    UIProp = createCache(UIProp);
+
+    var UIProp$1 = UIProp;
+
+    const props$1 = Object.assign({}, property_definitions);
+    class UIRuleSet {
+        constructor(rule_body, parent) {
+
+            this.parent = parent;
+            this.hash = 0;
+            this.rules = [];
+            this.selectors = null;
+
+            this.element = document.createElement("div");
+            this.element.classList.add("rule");
+            this.selector_space = document.createElement("div");
+            this.selector_space.classList.add("rule_selectors");
+            this.rule_space = document.createElement("div");
+            this.rule_space.classList.add("rule_body");
+
+            this.element.addEventListener("dragover", dragover$1);
+            this.element.addEventListener("drop", (e)=>{
+                
+                let prop = UIProp$1.dragee;
+                let parent = prop.parent;
+                let value = prop.value;
+                let type = prop.type;
+
+                if(parent === this)
+                    return;
+
+                this.addProp(type, value);
+                parent.removeProp(type);
+
+                //move the dragee's data into this ruleset
+            });
+
+            this.element.appendChild(this.selector_space);
+            this.element.appendChild(this.rule_space);
+
+            this.build(rule_body);
+            this.mount(this.parent.element);
+
+            this.ver = rule_body;
+        }
+
+        addData(){
+
+        }
+
+        updateSelectors(obj){
+            if(obj.parts.length < 1){
+                //remove selector from the rule set.
+            }
+        }
+
+        addSelector(selector){
+
+            //Add to list of selectors and update UI
+            if(!this.selectors){
+
+                this.selectors = new UISelector(selector);
+
+                this.selectors.mount(this);
+            }else{
+                this.selectors.rebuild(selector);
+            }
+        }
+
+        mount(element) {
+            if (element instanceof HTMLElement)
+                element.appendChild(this.element);
+        }
+
+        unmount() {
+            if (this.element.parentElement)
+                this.element.parentElement.removeChild(this.element);
+        }
+
+        build(rule_body = this.rule_body) {
+
+
+            this.rule_body = rule_body;
+
+            let i = -1;
+
+            for (let a in rule_body.props) {
+                let rule;
+                
+                //Reuse Existing Rule Bodies
+                if(++i < this.rules.length){
+                    rule = this.rules[i];
+                }else{
+                    rule = new UIProp$1(a,  this);
+                    this.rules.push(rule);
+                }
+                rule.build(a, rule_body.toString(0, a));
+                rule.mount(this.rule_space);
+            }
+        }
+
+        rebuild(rule_body){
+            if(true || this.ver !== rule_body.ver){
+                this.rule_space.innerHTML = "";
+                this.rules.length = 0;
+                this.build(rule_body);
+                this.ver = this.rule_body.ver;
+            }
+        }
+
+        update(type, value) {
+
+            if(type && value){
+
+                console.log(type, value);
+
+                let lexer = whind$1(value);
+                
+                const IS_VIRTUAL = {
+                    is: false
+                };
+                
+                const parser = getPropertyParser(type, IS_VIRTUAL, property_definitions);
+                const rule = this.rule_body;
+                if (parser && !IS_VIRTUAL.is) {
+                    if (!rule.props) rule.props = {};
+                    parser.parse(lexer, rule.props);
+                }
+            }
+
+            this.parent.update(this);
+        }
+
+        addProp(type, value){
+            this.update(type, value);
+            //Increment the version of the rule_body
+            this.rule_body.ver++;
+           
+            this.rebuild(this.rule_body);
+        }
+
+        removeProp(type){
+            const rule = this.rule_body;
+            if(rule.props[type]){
+                delete rule.props[type];
+
+
+                //Increment the version of the rule_body
+                this.rule_body.ver++;
+
+                this.parent.update();
+                this.rebuild(this.rule_body);
+            }
+        }
+
+        generateHash() {}
+    }
+
+    function dragover$1(e){
+        e.preventDefault();
+    }
+
+    class UIMaster {
+        constructor(css) {
+            css.addObserver(this);
+            this.css = css;
+            this.rule_sets = [];
+            this.selectors = [];
+            this.element = document.createElement("div");
+            this.element.classList.add("cfw_css");
+            this.update_mod = 0;
+
+
+            this.rule_map = new Map();
+        }
+
+        // Builds out the UI elements from collection of rule bodies and associated selector groups. 
+        // css - A CandleFW_CSS object. 
+        // meta - internal 
+        build(css = this.css) {
+            if(this.update_mod++%3 !== 0) return;
+
+            //Extract rule bodies and set as keys for the rule_map. 
+            //Any existing mapped body that does not have a matching rule should be removed. 
+            
+            const rule_sets = css.children;
+
+            for(let i= 0; i < rule_sets.length; i++){
+                let rule_set = rule_sets[i];
+
+                for(let i = 0; i < rule_set.rules.length; i++){
+
+                    let rule = rule_set.rules[i];
+
+                    if(!this.rule_map.get(rule))
+                        this.rule_map.set(rule, new UIRuleSet(rule, this));
+                    else {
+                        this.rule_map.get(rule).rebuild(rule);
+                    }
+                }
+
+            
+                const selector_array = rule_set._sel_a_;
+
+                for(let i = 0; i < selector_array.length; i++){
+                    let selector = selector_array[i];
+                    let rule_ref = selector.r;
+
+                    let rule_ui = this.rule_map.get(rule_ref);
+
+                    rule_ui.addSelector(selector);
+                }
+            }
+
+
+            this.css = css;
+
+            let children = css.children;
+
+            this.rule_sets = [];
+            this.selectors = [];
+        }
+
+        updatedCSS(css) {
+            if(this.UPDATE_MATCHED) return void (this.UPDATE_MATCHED = false);      
+            //this.element.innerHTML = "";
+            this.build(css);
+            //this.render();
+        }
+
+        render() {
+            for (let i = 0; i < this.rule_sets.length; i++)
+                this.rule_sets.render(this.element);
+        }
+
+        mount(element) {
+            if (element instanceof HTMLElement)
+                element.appendChild(this.element);
+        }
+
+        unmount() {
+            if (this.element.parentElement)
+                this.element.parentElement.removeChild(this.element);
+        }
+
+        update(){
+            this.UPDATE_MATCHED = true;
+        	this.css.updated();
+        }
+    }
 
     /**
      * Container for all rules found in a CSS string or strings.
@@ -6247,6 +7723,8 @@ ${is_iws}`;
     exports.CSSRuleBody = CSSRuleBody;
     exports.CSS_Length = CSS_Length;
     exports.CSS_URL = CSS_URL;
+    exports.UIMaster = UIMaster;
+    exports.UIRuleSet = UIRuleSet;
 
     return exports;
 

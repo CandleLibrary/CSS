@@ -11,27 +11,25 @@ import { property_definitions } from "./properties/property_and_type_definitions
  */
 export class CSSSelector {
 
-    constructor(selectors /* string */ , selectors_arrays /* array */ ) {
+    constructor(value = "", value_array = []) {
 
         /**
          * The raw selector string value
          * @package
          */
-
-        this.v = selectors;
+        this.v = value;
 
         /**
          * Array of separated selector strings in reverse order.
          * @package
          */
+        this.a = value_array;
 
-        this.a = selectors_arrays;
-
-        /**
-         * The CSSRule.
-         * @package
-         */
+        // CSS Rulesets the selector is member of .
         this.r = null;
+
+        // CSS root the selector is a child of. 
+        this.root = null;
     }
 
     get id() {
