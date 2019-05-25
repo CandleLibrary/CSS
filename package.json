@@ -9,6 +9,7 @@
     "build": "rollup --config ./build/config/config.js",
     "build.watch": "rollup --config  ./build/config/config.js --watch",
     "build.ui.watch": "rollup --config  ./build/config/ui.config.js --watch",
+    "compile": "hydrocarbon compile -u -o ./source/compiler/ -t mjs ./source/grammars/css.hcg",
     "prepare": "npm run build && npm test"
   },
   "repository": {
