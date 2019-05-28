@@ -58,6 +58,23 @@ import attribSelector from "./selectors/attribute.mjs"
 import pseudoClassSelector from "./selectors/pseudo_class.mjs"
 import pseudoElementSelector from "./selectors/pseudo_element.mjs"
 
+style = {
+    
+    media: style
+    
+    keyframes:
+        name_ref
+        rules
+    
+    rules:
+        rule*
+    
+    rule: 
+        selectors
+        props
+
+}
+
 const env = {
     functions: {
         compoundSelector,
@@ -79,12 +96,19 @@ const env = {
 
             if (parser && !IS_VIRTUAL.is) {
                 if (!rule.props) rule.props = {};
-                parser.parse(whind(body_data), rule.props);
+
+                const prop = parser.parse(whind(body_data));
+
+                if(prop.length > 0)
+                    return {name: rule_name, val: prop};
+                else 
+                    return null;
+
             } else
                 //Need to know what properties have not been defined
                 console.warn(`Unable to get parser for css property ${rule_name}`);
 
-            return rule;
+            return null;
         },
     },
     body: null

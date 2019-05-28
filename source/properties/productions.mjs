@@ -22,7 +22,7 @@ class JUX { /* Juxtaposition */
         this.id = JUX.step++;
         this.r = [NaN, NaN];
         this.terms = [];
-        this.prop = null;
+        this.HAS_PROP = false;
         this.name = "";
         this.virtual = false;
         this.REQUIRE_COMMA = false;
@@ -44,12 +44,12 @@ class JUX { /* Juxtaposition */
     }
 
     sp(value, rule) { /* Set Property */
-        if (this.prop) {
+        if (this.HAS_PROP) {
             if (value)
                 if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
-                    rule[this.prop] = value[0];
+                    rule[0] = value[0];
                 else
-                    rule[this.prop] = value;
+                    rule[0] = value;
         }
     }
 
@@ -57,13 +57,22 @@ class JUX { /* Juxtaposition */
         return !(isNaN(this.r[0]) && isNaN(this.r[1]));
     }
 
-    parse(lx, rule, out_val, ROOT = true) {
+    parse(data){
+        const prop_data = [];
+
+        this.parseLVL1(data instanceof whind.LEXER ? data : whind(data + ""), prop_data)
+
+        return prop_data;
+    }
+
+
+
+    parseLVL1(lx, out_val = [], ROOT = true) {
             
         if (typeof(lx) == "string")
             lx = whind(lx);
 
-        let r = out_val || { v: null },
-            bool = false;
+        let bool = false;
 
         if (ROOT) {
             switch (checkDefaults(lx)) {
@@ -74,14 +83,14 @@ class JUX { /* Juxtaposition */
                     return false;
             }
 
-            bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
+            bool = this.parseLVL2(lx, out_val, this.start, this.end);
 
             //if (!lx.END)
             //    return false;
             //else
                 this.sp(r.v, rule);
         } else
-            bool = this.innerParser(lx, rule, out_val, r, this.start, this.end);
+            bool = this.parseLVL2(lx, out_val, this.start, this.end);
 
         return bool;
     }
@@ -95,28 +104,28 @@ class JUX { /* Juxtaposition */
         return true;
     }
 
-    innerParser(lx, rule, out_val, r, start, end) {
+    parseLVL2(lx, out_val, start, end) {
 
         let bool = false;
 
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
-                let copy = lx.copy();
-                let temp_r = { v: null }
+                const copy = lx.copy();
+                //let temp_r = { v: null }
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
 
                     let term = this.terms[i];
 
-                    if (!term.parse(copy, rule, temp_r, false)) {
+                    if (!term.parseLVL1(copy, out_val, false)) {
                         if (!term.OPTIONAL) {
                             break repeat;
                         }
                     }
                 }
 
-                if (temp_r.v)
-                    this.mergeValues(r, temp_r)
+                //if (temp_r.v)
+                //    this.mergeValues(r, temp_r)
 
                 lx.sync(copy);
 
@@ -146,7 +155,7 @@ class JUX { /* Juxtaposition */
 }
 JUX.step = 0;
 class AND extends JUX {
-    innerParser(lx, rule, out_val, r, start, end) {
+    parseLVL2(lx, out_val, start, end) {
 
         const
             PROTO = new Array(this.terms.length),
@@ -159,8 +168,8 @@ class AND extends JUX {
 
                 const
                     HIT = PROTO.fill(0),
-                    copy = lx.copy(),
-                    temp_r = { v: null }
+                    copy = lx.copy();
+                    //temp_r = [];
 
                 and:
                     while (true) {
@@ -174,7 +183,7 @@ class AND extends JUX {
 
                             let term = this.terms[i];
 
-                            if (!term.parse(copy, rule, temp_r, false)) {
+                            if (!term.parseLVL1(copy, out_val, false)) {
                                 if (term.OPTIONAL)
                                     HIT[i] = 1;
                             } else {
@@ -193,8 +202,8 @@ class AND extends JUX {
 
                 lx.sync(copy);
 
-                if (temp_r.v)
-                    this.mergeValues(r, temp_r)
+                // if (temp_r.length > 0)
+                //     r.push(...temp);
 
                 bool = true;
 
@@ -207,7 +216,7 @@ class AND extends JUX {
 }
 
 class OR extends JUX {
-    innerParser(lx, rule, out_val, r, start, end) {
+    parseLVL2(lx, out_val, start, end) {
 
         const
             PROTO = new Array(this.terms.length),
@@ -233,7 +242,7 @@ class OR extends JUX {
 
                             let term = this.terms[i];
 
-                            if (term.parse(copy, temp_r, r, false)) {
+                            if (term.parseLVL1(copy, out_val, false)) {
                                 NO_HIT = false;
                                 HIT[i] = 2;
                                 continue or;
@@ -247,8 +256,8 @@ class OR extends JUX {
 
                 lx.sync(copy)
 
-                if (temp_r.v)
-                    this.mergeValues(r, temp_r)
+                //if (temp_r.v)
+                //    this.mergeValues(r, temp_r)
 
                 bool = true;
 
@@ -263,19 +272,20 @@ class OR extends JUX {
 OR.step = 0;
 
 class ONE_OF extends JUX {
-    innerParser(lx, rule, out_val, r, start, end) {
+    parseLVL2(lx, out_val, start, end) {
 
         let BOOL = false;
 
-        let j;
-        for (j = 0; j < end && !lx.END; j++) {
+        for (let j = 0; j < end && !lx.END; j++) {
+
+            const 
+                copy = lx.copy(),
+                temp_r = [];
+            
             let bool = false;
-            let copy = lx.copy();
-            let temp_r = { v: null }
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                ////if (!this.terms[i]) console.log(this)
-                if (this.terms[i].parse(copy, rule, temp_r, false)) {
+                if (this.terms[i].parseLVL1(copy, out_val, false)) {
                     bool = true;
                     break;
                 }
@@ -286,8 +296,8 @@ class ONE_OF extends JUX {
 
             lx.sync(copy)
             
-            if (temp_r.v)
-                this.mergeValues(r, temp_r)
+            //if (temp_r.v)
+            //    this.mergeValues(r, temp_r)
 
             BOOL = true;
 

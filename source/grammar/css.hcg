@@ -33,11 +33,11 @@
 
 # adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes#Formal_syntax
 
-	<> keyframes → \@ τkeyframes keyframes_names { keyframes_blocks(+) }
+	<> keyframes → \@ τkeyframes keyframes_names { keyframes_blocks(+) }	↦c { this.keyframes = sym[4] };
 
 	<> keyframes_names → τid │ string
 
-	<> keyframes_blocks → keyframe_selector(+,) { declaration_list }
+	<> keyframes_blocks → keyframe_selector(+,) { declaration_list }		↦c { this.selectors = sym[0]; this.props = sym[2].props; }
 
 	<> keyframe_selector → τfrom │ τto │ percentage
 
@@ -156,10 +156,10 @@
 #### Body
 ##############################################################################################
 
-	<> declaration_list → ((declaration))(+;)
-		│ AT_RULE 															↦r { [sym[0]] }
-		│ declaration_list AT_RULE 											↦r { sym[0].push(sym[1]), sym[0] }
-		│ declaration_list ((declaration))(+;) 								↦r { sym[0].concat(sym[1]) }
+	<> declaration_list → ((declaration))(+;)								↦r { ({props: sym[0], at_rules:[]}) }
+		│ AT_RULE 															↦r { ({props: [], at_rules:[sym[0]]}) }
+		│ declaration_list AT_RULE 											↦r {  sym[0].at_rules.push(sym[1]), sym[0] }
+		│ declaration_list ((declaration))(+;) 								↦r {  sym[0].props.push(...sym[1]), sym[0] }
 		
 
 	<> declaration → θid \: ((θws │ θany))(+") (( \! τimportant ))?			↦r ^parseDeclaration

@@ -25,7 +25,7 @@ class ValueTerm {
         if (!(this.value = types[u_value]))
             this.value = getPropertyParser(u_value, IS_VIRTUAL, definitions, productions);
 
-        this.prop = "";
+        this.HAS_PROP = false;
 
         if (!this.value)
             return new LiteralTerm(value);
@@ -35,64 +35,43 @@ class ValueTerm {
                 this.value.virtual = true;
             return this.value;
         }
-
     }
 
     seal(){}
 
-    parse(l, rule, r, ROOT = true) {
+    parseLVL1(l, r, ROOT = true) {
         if (typeof(l) == "string")
             l = whind(l);
 
         if (ROOT) {
-
             switch(checkDefaults(l)){
                 case 1:
-                rule[this.prop] = l.tx;
+                r.push(l.tx);
                 return true;
                 case 0:
                 return false;
             }
         }
 
-        let rn = { v: null };
+        //const rn = [];
 
-        let v = this.value.parse(l, rule, rn);
+        const v = this.value.parse(l, rule, r);
 
-        if (rn.v) {
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v)) {
-                        if (Array.isArray(rn.v) && !this.virtual)
-                            r.v = r.v.concat(rn.v);
-                        else
-                            r.v.push(rn.v);
-                    } else {
-                        if (Array.isArray(rn.v) && !this.virtual)
-                            r.v = ([r.v]).concat(rn.v);
-                        else
-                            r.v = [r.v, rn.v];
-                    }
-                } else
-                    r.v = (this.virtual) ? [rn.v] : rn.v;
+        if (rn.length > 0) {
+            
+           // r.push(...rn);
 
-            if (this.prop && !this.virtual)
-                rule[this.prop] = rn.v;
+            // if (this.HAS_PROP && !this.virtual)
+            //     rule[0] = rn.v;
 
             return true;
 
         } else if (v) {
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v))
-                        r.v.push(v);
-                    else
-                        r.v = [r.v, v];
-                } else
-                    r.v = v;
 
-            if (this.prop && !this.virtual && ROOT)
-                rule[this.prop] = v;
+            r.push(v);
+
+            //if (this.HAS_PROP && !this.virtual && ROOT)
+            //    rule[0] = v;
 
             return true;
         } else
@@ -111,12 +90,12 @@ class LiteralTerm {
             value = value.slice(1,-1);
 
         this.value = value;
-        this.prop = null;
+        this.HAS_PROP = false;
     }
 
     seal(){}
 
-    parse(l, rule, r, root = true) {
+    parseLVL1(l, r, root = true) {
 
         if (typeof(l) == "string")
             l = whind(l);
@@ -124,7 +103,7 @@ class LiteralTerm {
         if (root) {
             switch(checkDefaults(l)){
                 case 1:
-                rule[this.prop] = l.tx;
+                rule.push(l.tx);
                 return true;
                 case 0:
                 return false;
@@ -132,22 +111,12 @@ class LiteralTerm {
         }
 
         let v = l.tx;
+        
         if (v == this.value) {
             l.next();
-
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v))
-                        r.v.push(v);
-                    else {
-                        let t = r.v;
-                        r.v = [t, v];
-                    }
-                } else
-                    r.v = v;
-
-            if (this.prop  && !this.virtual && root)
-                rule[this.prop] = v;
+            r.push(v);
+            //if (this.HAS_PROP  && !this.virtual && root)
+            //    rule[0] = v;
 
             return true;
         }
@@ -159,7 +128,7 @@ class LiteralTerm {
 }
 
 class SymbolTerm extends LiteralTerm {
-    parse(l, rule, r) {
+    parseLVL1(l, rule, r) {
         if (typeof(l) == "string")
             l = whind(l);
 
