@@ -15,9 +15,6 @@ import CSS_FontName from "../types/font_name.mjs"
 
 /**
  * CSS Type constructors
- * @alias module:wick~internals.css.types.
- * @enum {object}
- * https://www.w3.org/TR/CSS2/about.html#property-defs
  */
 export const types = {
 	color: CSS_Color,
@@ -58,8 +55,6 @@ export const types = {
 
 /**
  * CSS Property Definitions https://www.w3.org/TR/css3-values/#value-defs
- * @alias module:wick~internals.css.property_definitions.
- * @enum {string}
  */
 export const property_definitions = {
 

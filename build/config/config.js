@@ -4,16 +4,16 @@ const output = [{
         name: "css",
         file: "./build/css.js",
         format: "iife",
-        exports:"named"
+        exports:"default"
     },{
         name: "css_cjs",
         file: "./build/css.node.js",
         format: "cjs",
-        exports:"named"
+        exports:"default"
     }];
 
 export default {
-    input: "./source/css.mjs",
+    input: "./source/css_parser.mjs",
     treeshake: false,
     output,
     plugins: [resolve({jail:"",modulesOnly: true})]

@@ -1,77 +1,165 @@
+@SYMBOL || ^= $= *= <=
+
+@IGNORE θnl θws
+
 ##############################################################################################
 ##############################################################################################
 #### CSS
 ##############################################################################################
-##############################################################################################				
+##############################################################################################	
 
-	<> css_RULE → css_SELECTORS css_RULE_BODY
+	<> GOAL → STYLE_SHEET		
 
-	<> css_SELECTORS → css_SELECTOR 						↦return { [sym[0]] }
-		│ css_SELECTORS , css_SELECTOR						↦return { sym[0].push[sym[2]], sym[0]  }
+	<> STYLE_SHEET → import(*) (( RULE_SET │ AT_RULE ))(*)
+
+	<> RULE_SET → COMPLEX_SELECTOR(+,) { declaration_list } ↦c{this.selectors=sym[0]; this.body = sym[2]}
+
+	<> GROUP_RULE_BODY → RULE_SET(*)
+
+	<> AT_RULE → media ;
+		│ import ;
+		│ keyframes ;
+		│ supports ;
+
+##############################################################################################
+##############################################################################################
+#### @Rules
+##############################################################################################
+##############################################################################################	
+
+# adapted from https://www.w3.org/TR/css-cascade-4/#at-import
+
+	<> import →  \@ τimport θws(*) (( string │ url )) (( τsupports( (( supports_condition │ declaration )) ) ))? media_query(*,) ;
+
+# adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes#Formal_syntax
+
+	<> keyframes → \@ τkeyframes keyframes_names { keyframes_blocks(+) }
+
+	<> keyframes_names → τid │ string
+
+	<> keyframes_blocks → keyframe_selector(+,) { declaration_list }
+
+	<> keyframe_selector → τfrom │ τto │ percentage
+
+# adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@supports#Formal_syntax
+
+	<> supports → \@ τsupports supports_condition { GROUP_RULE_BODY }
+
+	<> supports_condition → τnot supports_in_parens
+		│ supports_in_parens ((τand supports_in_parens))(*)
+		│ supports_in_parens ((τor supports_in_parens))(*)
+
+	<> supports_in_parens → ( supports_condition )
+		│ supports_feature
+		│ general_enclosed
+
+	<> supports_feature → supports_feature_fn 
+		│ supports_decl 
+
+	<> supports_decl → ( declaration )
+	<> supports_feature_fn →  θselector( COMPLEX_SELECTOR )
+
+# adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@media#Formal_syntax
+
+	<> media →  \@ τmedia media_query(+,) { GROUP_RULE_BODY }
+
+	<> media_query → media_condition
+		│ ((τnot │ τonly ))? media_type ((τand media_condition_without_or))?
+
+	<> media_condition_without_or → media_not
+		│ media_and 
+		│ media_in_parenths
+	
+	<> media_condition → media_condition_without_or
+		│ media_or
+
+	<> media_not → τnot media_in_parenths
+	<> media_and → media_in_parenths ((τand media_in_parenths))(+)
+	<> media_or → media_in_parenths ((τor media_in_parenths))(+)
+
+	<> media_in_parenths → ( media_condition ) 
+		│ media_feature
+		│ general_enclosed
+
+	<> media_feature → ( (( mf_plain │ mf_boolean │ mf_range )) )
+	<> general_enclosed → θid( ((θany│θws))(*") )
+		│ ( θid ((θany│θws))(*") )
+
+	<> mf_plain → mf_name : mf_value 
+
+	<> mf_range → mf_name (( < │ > │ <= │ >= │ = )) mf_value
+		│ mf_value (( < │ > │ <= │ >= │ = )) mf_name
+		│ mf_value (( > │ >= )) θid (( > │ >= )) mf_value
+		│ mf_value (( < │ <= )) θid (( < │ <= )) mf_value
+
+	<> mf_value → θnum │ dimension │ mf_name │ ratio
+	<> mf_boolean → θid
+	<> mf_name → θid
+	<> media_type → θid
+
+	<> ratio → θnum / θnum
+	<> percentage → θnum % 
+	<> dimension → θnum ((τpx │ τin │ τrad))
+
+	<> url →  τurl ( string )
+
+	<>string → " θany(+") " │ ' θany(+") '
 
 ##############################################################################################
 #### Modified from https://drafts.csswg.org/selectors-4/#grammar
 ##############################################################################################
 
-	<> css_SELECTOR → css_SELECTOR_TARGET css_SELECTOR_OPERATION
+	<> COMPLEX_SELECTOR →  COMPOUND_SELECTOR (( COMBINATOR? COMPOUND_SELECTOR ↦c ^comboSelector)) (*)
+		↦r{len>1? [sym[0]].concat(sym[1]) : [sym[0]]}
 
-	<> css_SELECTOR_LIST →  css_COMPLEX_SELECTOR_LIST
+	<> COMPOUND_SELECTOR →  TYPE_SELECTOR? SUBCLASS_SELECTOR(*) (( PSEUDO_ELEMENT_SELECTOR PSEUDO_CLASS_SELECTOR(*) ))(*) ! 
+		↦c ^compoundSelector
 
-	<> css_COMPLEX_SELECTOR_LIST →  css_COMPLEX_SELECTOR
-		│ css_COMPLEX_SELECTOR_LIST , css_COMPLEX_SELECTOR
+	<> COMBINATOR →  >  				
+		│ + 								
+		│ ~ 								
+		│ || 								
 
-	<> css_COMPLEX_SELECTOR →  css_COMPOUND_SELECTOR combinator css_COMPOUND_SELECTOR
+	<> TYPE_SELECTOR →  WQ_NAME 											↦c ^selector
+		│ NS_PREFIX? *														↦c ^selector
+	
+	<> NS_PREFIX →  ((θid │ * ))? | 
 
-	<> css_COMPOUND_SELECTOR →  [ css_TYPE_SELECTOR? css_SUBCLASS_SELECTOR* [ css_PSEUDO_ELEMENT_SELECTOR css_PSEUDO_CLASS_SELECTOR* ]* ]!
+	<> WQ_NAME →  NS_PREFIX? θid 	
 
-	<> css_SIMPLE_SELECTOR →  css_TYPE_SELECTOR 
-		│ css_SUBCLASS_SELECTOR
+	<> SUBCLASS_SELECTOR →  ID_SELECTOR 
+		│ CLASS_SELECTOR 
+		│ ATTRIBUTE_SELECTOR 
+		│ PSEUDO_CLASS_SELECTOR
 
-	<> combinator →  > 
-		│ + 
-		│ ~ 
-		│ ||
+	<> ID_SELECTOR →  \# θid  												↦c ^idSelector
 
-	<> css_TYPE_SELECTOR →  css_WQ_NAME 
-		│ css_NS_PREFIX? '*'
+	<> CLASS_SELECTOR →  . θid 												↦c ^classSelector
 
-	<> css_NS_PREFIX →  [ css_IDENT_TOKEN 
-		│ '*' ]? '
-		│'
+	<> ATTRIBUTE_SELECTOR →  [ WQ_NAME ] 									↦c ^attribSelector
+		│ [ WQ_NAME ATTR_MATCHER (( θid │ θstr )) ATTR_MODIFIER? ]			↦c ^attribSelector
 
-	<> css_WQ_NAME →  css_NS_PREFIX? css_IDENT_TOKEN
+	<> ATTR_MATCHER → ~=												
+		│ ^= 																
+		│ $= 																
+		│ *=																
+		│ = 																
 
-	<> css_SUBCLASS_SELECTOR →  css_ID_SELECTOR 
-		│ css_CLASS_SELECTOR 
-		│ css_ATTRIBUTE_SELECTOR 
-		│ css_PSEUDO_CLASS_SELECTOR
+	<> ATTR_MODIFIER →  τi 
+		│ τs
 
-	<> css_ID_SELECTOR →  css_HASH_TOKEN
+	<> PSEUDO_CLASS_SELECTOR →  : θid (( ( COMPLEX_SELECTOR ) ))?   		↦c ^pseudoClassSelector
 
-	<> css_CLASS_SELECTOR →  . css_IDENT_TOKEN
+	<> PSEUDO_ELEMENT_SELECTOR →  : PSEUDO_CLASS_SELECTOR 					↦c ^pseudoElementSelector
 
-	<> css_ATTRIBUTE_SELECTOR →  [ css_WQ_NAME ] 
-		│ [ css_WQ_NAME css_ATTR_MATCHER [ css_STRING_TOKEN | css_IDENT_TOKEN ] css_ATTR_MODIFIER? ]
+##############################################################################################
+#### Body
+##############################################################################################
 
-	<> css_ATTR_MATCHER → ~
-		│ ^ 
-		│ $ 
-		│ * =
+	<> declaration_list → ((declaration))(+;)
+		│ AT_RULE 															↦r { [sym[0]] }
+		│ declaration_list AT_RULE 											↦r { sym[0].push(sym[1]), sym[0] }
+		│ declaration_list ((declaration))(+;) 								↦r { sym[0].concat(sym[1]) }
+		
 
-	<> css_ATTR_MODIFIER →  i 
-		│ s
-
-	<> css_PSEUDO_CLASS_SELECTOR →  : css_IDENT_TOKEN 
-		│ : css_FUNCTION_TOKEN css_ANY_VALUE )
-
-	<> css_PSEUDO_ELEMENT_SELECTOR →  : css_PSEUDO_CLASS_SELECTOR
-
-	<> css_RULE_BODY → { css_RULES } 						↦return { sym[0] }
-
-	<> css_RULES → css_PROP  								↦return { [sym[0]] }
-		│ css_RULES ; css_PROP 								↦return { sym[0].push[sym[2]], sym[0]  }
-
-	<> css_PROP → css_PROP_NAME \: css_PROP_BODY  			↦return { {name:sym[0], body:sym[2]} }			
-
-	# Let the css parser handle the actual prop. 
-	<> css_PROP_BODY → θstr  								↦return { [sym[0] ] }
+	<> declaration → θid \: ((θws │ θany))(+") (( \! τimportant ))?			↦r ^parseDeclaration
