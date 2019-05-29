@@ -60,7 +60,7 @@ class JUX { /* Juxtaposition */
     parse(data){
         const prop_data = [];
 
-        this.parseLVL1(data instanceof whind.LEXER ? data : whind(data + ""), prop_data)
+        this.parseLVL1(data instanceof whind.constructor ? data : whind(data + ""), prop_data)
 
         return prop_data;
     }
@@ -88,7 +88,7 @@ class JUX { /* Juxtaposition */
             //if (!lx.END)
             //    return false;
             //else
-                this.sp(r.v, rule);
+                //this.sp(r.v, rule);
         } else
             bool = this.parseLVL2(lx, out_val, this.start, this.end);
 

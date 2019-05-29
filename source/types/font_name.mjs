@@ -1,7 +1,7 @@
 import CSS_String from "./string.mjs";
 
 export default  class CSS_FontName extends String {
-	static parse(l, rule, r) {
+	static parse(l) {
 
 		if(l.ty == l.types.str){
 			let tx = l.tx;

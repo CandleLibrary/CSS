@@ -1,4 +1,4 @@
-@SYMBOL || ^= $= *= <=
+@SYMBOL || ^= $= *= <= )
 
 @IGNORE θnl θws
 
@@ -12,7 +12,7 @@
 
 	<> STYLE_SHEET → import(*) (( RULE_SET │ AT_RULE ))(*)
 
-	<> RULE_SET → COMPLEX_SELECTOR(+,) { declaration_list } ↦c{this.selectors=sym[0]; this.body = sym[2]}
+	<> RULE_SET → COMPLEX_SELECTOR(*,) { declaration_list ;? } ↦c{this.selectors=sym[0]; this.body = sym[2]}
 
 	<> GROUP_RULE_BODY → RULE_SET(*)
 
@@ -29,15 +29,15 @@
 
 # adapted from https://www.w3.org/TR/css-cascade-4/#at-import
 
-	<> import →  \@ τimport θws(*) (( string │ url )) (( τsupports( (( supports_condition │ declaration )) ) ))? media_query(*,) ;
+	<> import →  \@ τimport θws(*) (( string │ url )) (( τsupports( (( supports_condition │ declaration )) ) ))? media_query(*,) 
 
 # adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes#Formal_syntax
 
-	<> keyframes → \@ τkeyframes keyframes_names { keyframes_blocks(+) }	↦c { this.keyframes = sym[4] };
+	<> keyframes → \@ τkeyframes keyframes_names { keyframes_blocks(+) }	↦c { this.keyframes = sym[4] }
 
 	<> keyframes_names → τid │ string
 
-	<> keyframes_blocks → keyframe_selector(+,) { declaration_list }		↦c { this.selectors = sym[0]; this.props = sym[2].props; }
+	<> keyframes_blocks → keyframe_selector(+,) { declaration_list ((;))? }		↦c { this.selectors = sym[0]; this.props = sym[2].props; }
 
 	<> keyframe_selector → τfrom │ τto │ percentage
 
@@ -156,10 +156,14 @@
 #### Body
 ##############################################################################################
 
-	<> declaration_list → ((declaration))(+;)								↦r { ({props: sym[0], at_rules:[]}) }
+	<> declaration_list → ((declaration))(+;) ;?							↦r { ({props: sym[0], at_rules:[]}) }
 		│ AT_RULE 															↦r { ({props: [], at_rules:[sym[0]]}) }
 		│ declaration_list AT_RULE 											↦r {  sym[0].at_rules.push(sym[1]), sym[0] }
-		│ declaration_list ((declaration))(+;) 								↦r {  sym[0].props.push(...sym[1]), sym[0] }
+		│ declaration_list ((declaration))(+;) ;?	 						↦r {  sym[0].props.push(...sym[1]), sym[0] }
 		
 
-	<> declaration → θid \: ((θws │ θany))(+") (( \! τimportant ))?			↦r ^parseDeclaration
+	<> declaration → θid \: declaration_values (( \! τimportant ))?			↦r ^parseDeclaration
+
+	<> declaration_values → (( θws │ θany ))(+")
+		│\( declaration_values \) ↦r { sym.join("") }
+		│ declaration_values declaration_values ↦r { sym.join("") }

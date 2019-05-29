@@ -8,7 +8,7 @@ import { types } from "./properties/property_and_type_definitions";
 import { CSSRuleBody } from "./body";
 import  UIMaster  from "./ui/builder.mjs";
 
-export { CSSRule, CSSSelector };
+//export { CSSRule, CSSSelector };
 
 
 

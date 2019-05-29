@@ -1,7 +1,7 @@
 import URL from "@candlefw/url";
 
 export default class CSS_URL extends URL {
-    static parse(l, rule, r) {
+    static parse(l) {
         if (l.tx == "url" || l.tx == "uri") {
             l.next().a("(");
             let v = "";

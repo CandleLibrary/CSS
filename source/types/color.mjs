@@ -37,7 +37,7 @@ export default class CSS_Color extends Color {
         return ele;
     }
 
-    static parse(l, rule, r) {
+    static parse(l) {
 
         let c = CSS_Color._fs_(l);
 

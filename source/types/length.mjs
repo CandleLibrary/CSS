@@ -30,7 +30,7 @@ export default class CSS_Length extends Number {
         return ele;
     }
 
-    static parse(l, rule, r) {
+    static parse(l) {
         let tx = l.tx,
             pky = l.pk.ty;
         if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
