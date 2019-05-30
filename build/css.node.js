@@ -7494,70 +7494,86 @@ class compoundSelector {
         return "basic"
     }
 
-    match(element, result) {
-
+    match(element) {
         if (this.tag) {
-            this.tag.match(element, result);
-            if (!result.match)
-                return element;
+            if (!this.tag.match(element))
+                return null;
         }
 
         if (this.subclass) {
             for (const sel of this.subclass) {
-                sel.match(element, result);
-                if (!result.match)
-                    return element;
+                if (!sel.match(element))
+                    return null;
             }
         }
 
         if (this.pseudo) {
-            this.subclass.match(element, result);
-            if (!result.match)
-                return element;
+            if (!this.subclass.match(element))
+                return null;
         }
 
         return element;
     }
 
-    toString() {
-
+    matchBU(element, selector_array, selector = null, index = 0) {
+        if (index + 1 < selector_array.length) {
+            return selector_array[index + 1].matchBU(element, selector_array, this, index + 1);
+        } else {
+            return this.match(element);
+        }
     }
 }
 
-class comboSelector{
-	constructor(sym,env){
-		if(sym.length > 1){
-			this.op = sym[0];
-			this.selector = sym[1];
-		}else
-			return sym[0]
-	}
+class comboSelector {
+    constructor(sym, env) {
+        if (sym.length > 1) {
+            this.op = sym[0];
+            this.selector = sym[1];
+        } else {
+            this.op = "";
+            this.selector = sym[0];
+        }
 
-	get type(){
-		return "basic"
-	}
+    }
 
-	match(element, result){
-		this.selector.match(element, result);
-		
-		if(result.match){
-			//return pool of candidates
-			switch(this.op){
-				case ">":
-					return element.parentElement;
-				case "+":
-					return element.prevSibling;
-				case "~":
-					return element.parentElement.children.slice(0, element.index);
-			}
-		}
-		
-		return element;
-	}
+    get type() {
+        return "basic"
+    }
 
-	toString(){
+    matchBU(element, selector_array, selector = null, index = 0) {
+        let ele;
+        if (index < selector_array.length) {
+            if ((ele = this.selector.matchBU(element, selector_array, null, index))) {
+                switch (this.op) {
+                    case ">":
+                        return selector.match(ele.parentElement);
+                    case "+":
+                        return selector.match(ele.previousElementSibling);
+                    case "~":
+                        let children = ele.parentElement.children.slice(0, element.index);
 
-	}
+                        for (const child of children) {
+                            if (selector.match(child))
+                                return child;
+                        }
+                        return null;
+                    default:
+                        ele = ele.parentElement;
+                        while (ele) {
+                            if (selector.match(ele))
+                                return ele;
+                            ele = ele.parentElement;
+                        }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    toString() {
+
+    }
 }
 
 class selector{
@@ -7572,8 +7588,7 @@ class selector{
 	}
 
 	match(element, result){
-		result.match = element.tagName.toLowerCase() == this.val;
-		return element;
+		return element.tagName.toLowerCase() == this.val;
 	}
 
 	toString(){
@@ -7590,9 +7605,8 @@ class idSelector{
 		return "id"
 	}
 
-	match(element, result){
-		result.match = element.id == this.val;
-		return element;
+	match(element){
+		return element.id == this.val;
 	}
 
 	toString(){
@@ -7610,8 +7624,7 @@ class classSelector{
 	}
 
 	match(element, result){
-		result.match = element.classList.contains(this.val);
-		return element;
+		return element.classList.contains(this.val);
 	}
 
 	toString(){
@@ -7639,8 +7652,15 @@ class attribSelector{
 	}
 
 	match(element, result){
-		result.match = true;
-		return element;
+		
+		let attr = element.getAttribute(this.key);
+
+		if(!attr)
+			return false
+		if(this.val && attr !== this.val)
+			return false;
+		
+		return true;
 	}
 
 	toString(){
@@ -7657,9 +7677,8 @@ class pseudoClassSelector{
 		return "pseudoClass"
 	}
 
-	match(element, result){
-		result.match = true;
-		return element;
+	match(element){
+		return true;
 	}
 
 	toString(){
@@ -7676,9 +7695,8 @@ class pseudoElementSelector{
 		return "pseudoElement"
 	}
 
-	match(element, result){
-		result.match = true;
-		return element;
+	match(element){
+		return true;
 	}
 
 	toString(){
@@ -7739,22 +7757,22 @@ const env = {
             let rule_name = sym[0];
             let body_data = sym[2];
             let important = sym[3] ? true : false;
-            console.log(body_data, sym);
+
             const IS_VIRTUAL = { is: false };
-            const parser$$1 = getPropertyParser(rule_name.replace(/\-/g,"_"), IS_VIRTUAL, property_definitions);
-            console.log("sdsd",parser$$1);
+            const parser$$1 = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
+
             if (parser$$1 && !IS_VIRTUAL.is) {
 
                 const prop = parser$$1.parse(whind$1(body_data));
 
-                if(prop.length > 0)
-                    return {name: rule_name, val: prop, original:body_data};
+                if (prop.length > 0)
+                    return { name: rule_name, val: prop, original: body_data };
 
             } else
                 //Need to know what properties have not been defined
                 console.warn(`Unable to get parser for css property ${rule_name}`);
 
-            return {name: rule_name, val: null, original:body_data};
+            return { name: rule_name, val: null, original: body_data };
         },
     },
     body: null
@@ -7764,30 +7782,22 @@ function parse(string_data) {
     try {
         const nodes = parser(whind$1(string_data), env);
 
-        for(const node of nodes){
+        for (const node of nodes) {
 
-        let selectors = node.selectors;
+            let selectors = node.selectors;
 
 
-        selectors.forEach(sel_array => {
-            let element = document.getElementById("test"),
-                match = { match: true };
-            let ele = element;
-            for (let i = 0, l = sel_array.length; i < l; i++) {
-                let sel = sel_array[l - (i + 1)];
+            selectors.forEach(sel_array => {
 
-                ele = sel.match(ele, match);
+                let element = document.getElementById("test"),
+                    match = { match: true };
 
-                if (!match.match)
-                    break;
-            }
-
-            if (match.match) {
-                element.style.backgroundColor = "red";
-            } else {
-                element.style.backgroundColor = "blue";
-            }
-        });
+                if (sel_array[0].matchBU(element, sel_array) !== null) {
+                    element.style.backgroundColor = "red";
+                } else {
+                    element.style.backgroundColor = "blue";
+                }
+            });
         }
         console.log(nodes);
     } catch (e) {

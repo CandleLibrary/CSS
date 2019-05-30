@@ -8,8 +8,7 @@ export default class classSelector{
 	}
 
 	match(element, result){
-		result.match = element.classList.contains(this.val);
-		return element;
+		return element.classList.contains(this.val);
 	}
 
 	toString(){

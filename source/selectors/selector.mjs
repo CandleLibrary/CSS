@@ -10,8 +10,7 @@ export default class selector{
 	}
 
 	match(element, result){
-		result.match = element.tagName.toLowerCase() == this.val;
-		return element;
+		return element.tagName.toLowerCase() == this.val;
 	}
 
 	toString(){

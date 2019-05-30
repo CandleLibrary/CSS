@@ -7,9 +7,8 @@ export default class pseudoClassSelector{
 		return "pseudoClass"
 	}
 
-	match(element, result){
-		result.match = true;
-		return element;
+	match(element){
+		return true;
 	}
 
 	toString(){

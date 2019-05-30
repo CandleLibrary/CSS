@@ -8,7 +8,7 @@
 ##############################################################################################
 ##############################################################################################	
 
-	<> GOAL → STYLE_SHEET		
+	<> CSS → STYLE_SHEET		
 
 	<> STYLE_SHEET → import(*) (( RULE_SET │ AT_RULE ))(*)
 
@@ -109,7 +109,7 @@
 #### Modified from https://drafts.csswg.org/selectors-4/#grammar
 ##############################################################################################
 
-	<> COMPLEX_SELECTOR →  COMPOUND_SELECTOR (( COMBINATOR? COMPOUND_SELECTOR ↦c ^comboSelector)) (*)
+	<> COMPLEX_SELECTOR →  COMPOUND_SELECTOR (( COMBINATOR? COMPOUND_SELECTOR ↦r ^comboSelector)) (*)
 		↦r{len>1? [sym[0]].concat(sym[1]) : [sym[0]]}
 
 	<> COMPOUND_SELECTOR →  TYPE_SELECTOR? SUBCLASS_SELECTOR(*) (( PSEUDO_ELEMENT_SELECTOR PSEUDO_CLASS_SELECTOR(*) ))(*) ! 

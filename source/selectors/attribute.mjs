@@ -18,8 +18,15 @@ export default class attribSelector{
 	}
 
 	match(element, result){
-		result.match = true;
-		return element;
+		
+		let attr = element.getAttribute(this.key);
+
+		if(!attr)
+			return false
+		if(this.val && attr !== this.val)
+			return false;
+		
+		return true;
 	}
 
 	toString(){
