@@ -1130,8 +1130,8 @@ var css = (function () {
                                 break;
                             case 5: //CARIAGE RETURN
                                 length = 2;
+                                //intentional
                             case 6: //LINEFEED
-                                //Intentional
                                 type = new_line;
                                 line++;
                                 base = off;
