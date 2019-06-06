@@ -49,15 +49,15 @@
 		│ supports_in_parens (τand supports_in_parens)(*)
 		│ supports_in_parens (τor supports_in_parens)(*)
 
-	<> supports_in_parens → ( supports_condition )
+	<> supports_in_parens → \( supports_condition \)
 		│ supports_feature
 		│ general_enclosed
 
 	<> supports_feature → supports_feature_fn 
 		│ supports_decl 
 
-	<> supports_decl → ( declaration )
-	<> supports_feature_fn →  θselector( COMPLEX_SELECTOR )
+	<> supports_decl → \( declaration \)
+	<> supports_feature_fn →  θselector \( COMPLEX_SELECTOR \)
 
 # adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@media#Formal_syntax
 
@@ -77,7 +77,7 @@
 	<> media_and → media_in_parenths (τand media_in_parenths)(+)
 	<> media_or → media_in_parenths (τor media_in_parenths)(+)
 
-	<> media_in_parenths → ( media_condition ) 
+	<> media_in_parenths → \( media_condition \) 
 		│ media_feature
 		│ general_enclosed
 
@@ -109,7 +109,7 @@
 #### Modified from https://drafts.csswg.org/selectors-4/#grammar
 ##############################################################################################
 
-	<> COMPLEX_SELECTOR →  COMPOUND_SELECTOR ( COMBINATOR? COMPOUND_SELECTOR ↦r ^comboSelector) (*)
+	<> COMPLEX_SELECTOR →  COMPOUND_SELECTOR ( COMBINATOR? COMPOUND_SELECTOR ↦r ^comboSelector)(*)
 		↦r{len>1? [sym[0]].concat(sym[1]) : [sym[0]]}
 
 	<> COMPOUND_SELECTOR →  [ TYPE_SELECTOR? SUBCLASS_SELECTOR(*) ( PSEUDO_ELEMENT_SELECTOR PSEUDO_CLASS_SELECTOR(*) )(*) ]
