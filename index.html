@@ -14,17 +14,27 @@
 
 	<template id="temp">
 		<scope>
-			<textarea type=text value="((test_))"></textarea>
-			<script on="((test_))">
-				css(test_);
-			</script>
+			<style>
+				div{
+					color:red;
+				}
+			</style>
+			<textarea type="text" value="((test_))"></textarea>
 		</scope>
 	</template>
 
 	<script src="./build/css.js"></script>
 	<script>
 		async function start(){
-			(await wick(document.getElementById("temp"), {custom:{css}})).mount(document.getElementById("mable"));
+			console.log(document.getElementById("temp").outerHTML);
+			(await wick(`<scope>
+			<style>
+				div{
+					color:red;
+				}
+			</style>
+			<textarea type="text" value="((test_))"></textarea>
+		</scope>`, {custom:{css}})).mount(document.getElementById("mable"));
 		}
 		start();
 	</script>

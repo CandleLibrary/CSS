@@ -3,13 +3,11 @@ import resolve from 'rollup-plugin-node-resolve';
 const output = [{
         name: "css",
         file: "./build/css.js",
-        format: "iife",
-        exports:"default"
+        format: "iife"
     },{
         name: "css_cjs",
         file: "./build/css.node.js",
-        format: "cjs",
-        exports:"default"
+        format: "cjs"
     }];
 
 export default {

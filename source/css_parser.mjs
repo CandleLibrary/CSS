@@ -2,6 +2,7 @@ import ll from "@candlefw/ll";
 import whind from "@candlefw/whind";
 import css_parser from "./Parser/css.mjs";
 
+
 import { CSSRule } from "./rule.mjs";
 import { CSSSelector } from "./selector.mjs";
 import {
@@ -59,6 +60,28 @@ import pseudoClassSelector from "./selectors/pseudo_class.mjs"
 import pseudoElementSelector from "./selectors/pseudo_element.mjs"
 
 
+function parseDeclaration(sym, env, lex) {
+    let rule_name = sym[0];
+    let body_data = sym[2];
+    let important = sym[3] ? true : false
+
+    const IS_VIRTUAL = { is: false }
+    const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
+
+    if (parser && !IS_VIRTUAL.is) {
+
+        const prop = parser.parse(whind(body_data));
+
+        if (prop.length > 0)
+            return { name: rule_name, val: prop, original: body_data };
+
+    } else
+        //Need to know what properties have not been defined
+        console.warn(`Unable to get parser for css property ${rule_name}`);
+
+    return { name: rule_name, val: null, original: body_data };
+}
+
 const env = {
     functions: {
         compoundSelector,
@@ -69,32 +92,26 @@ const env = {
         attribSelector,
         pseudoClassSelector,
         pseudoElementSelector,
-        parseDeclaration: function(sym, env, lex) {
-            let rule_name = sym[0];
-            let body_data = sym[2];
-            let important = sym[3] ? true : false
+        parseDeclaration
 
-            const IS_VIRTUAL = { is: false }
-            const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
-
-            if (parser && !IS_VIRTUAL.is) {
-
-                const prop = parser.parse(whind(body_data));
-
-                if (prop.length > 0)
-                    return { name: rule_name, val: prop, original: body_data };
-
-            } else
-                //Need to know what properties have not been defined
-                console.warn(`Unable to get parser for css property ${rule_name}`);
-
-            return { name: rule_name, val: null, original: body_data };
-        },
     },
     body: null
 }
 
-export default function parse(string_data) {
+export {
+    compoundSelector,
+    comboSelector,
+    selector,
+    idSelector,
+    classSelector,
+    attribSelector,
+    pseudoClassSelector,
+    pseudoElementSelector,
+    parseDeclaration,
+    types
+}
+
+export function parse(string_data) {
     try {
         const nodes = css_parser(whind(string_data), env);
 

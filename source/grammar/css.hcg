@@ -10,9 +10,9 @@
 
 	<> CSS → STYLE_SHEET		
 
-	<> STYLE_SHEET → import(*) ( RULE_SET │ AT_RULE )(*)
+	<> STYLE_SHEET → (import)(*) ( RULE_SET │ AT_RULE )(*)
 
-	<> RULE_SET → COMPLEX_SELECTOR(*,) { declaration_list ;? } ↦c{this.selectors=sym[0]; this.body = sym[2]}
+	<> RULE_SET → COMPLEX_SELECTOR(*,) { declaration_list ;? } 					↦c{this.selectors=sym[0]; this.body = sym[2]}
 
 	<> GROUP_RULE_BODY → RULE_SET(*)
 
@@ -33,11 +33,11 @@
 
 # adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes#Formal_syntax
 
-	<> keyframes → \@ τkeyframes keyframes_names { keyframes_blocks(+) }		↦c { this.keyframes = sym[4] }
+	<> keyframes → \@ τkeyframes keyframes_names { keyframes_blocks(+) }		↦c { this.keyframes = $sym5 }
 
 	<> keyframes_names → τid │ string
 
-	<> keyframes_blocks → keyframe_selector(+,) { declaration_list (;)? }		↦c { this.selectors = sym[0]; this.props = sym[2].props; }
+	<> keyframes_blocks → keyframe_selector(+,) { declaration_list ;? }			↦c { this.selectors = $sym1; this.props = sym[2].props; }
 
 	<> keyframe_selector → τfrom │ τto │ percentage
 
@@ -103,7 +103,7 @@
 
 	<> url →  τurl ( string )
 
-	<>string → " θany(+") " │ ' θany(+") '
+	<>string → " (θany)(+") " │ ' (θany)(+") '
 
 ##############################################################################################
 #### Modified from https://drafts.csswg.org/selectors-4/#grammar
@@ -123,7 +123,7 @@
 	<> TYPE_SELECTOR →  WQ_NAME 											↦c ^selector
 		│ NS_PREFIX? *														↦c ^selector
 	
-	<> NS_PREFIX →  (θid │ * )? | 
+	<> NS_PREFIX →  (θid │ \* )? | 
 
 	<> WQ_NAME →  NS_PREFIX? θid 	
 
