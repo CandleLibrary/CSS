@@ -20,7 +20,7 @@ export default  class CSS_String extends String {
         return ele;
     }
 
-    static parse(l, rule, r) {
+    static parse(l) {
         if (l.ty == l.types.str) {
             let tx = l.tx;
             l.next();

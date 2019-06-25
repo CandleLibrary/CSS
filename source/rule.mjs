@@ -9,7 +9,7 @@ export class CSSRule {
          * Collection of properties held by this rule.
          * @public
          */
-        this.props = {};
+        this.props = [];
         this.LOADED = false;
         this.root = root;
 
@@ -52,8 +52,8 @@ export class CSSRule {
             }else
                 return "";
         } else {
-            for (let a in this.props) {
-                if (this.props[a] !== null) {
+            for (const a of this.props) {
+                if (a !== null) {
                     if (Array.isArray(this.props[a]))
                         str.push(offset, a.replace(/\_/g, "-"), ":", this.props[a].join(" "), ";\n");
                     else

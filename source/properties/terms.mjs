@@ -5,15 +5,67 @@ import { JUX, checkDefaults } from "./productions";
 import { types } from "./property_and_type_definitions";
 
 
+class LiteralTerm{
 
+    constructor(value, type) {
+        
+        if(type == whind.types.string)
+            value = value.slice(1,-1);
 
-class ValueTerm {
+        this.value = value;
+        this.HAS_PROP = false;
+    }
+
+    seal(){}
+
+    parse(data){
+        const prop_data = [];
+
+        this.parseLVL1(data instanceof whind.constructor ? data : whind(data + ""), prop_data)
+
+        return prop_data;
+    }
+
+    parseLVL1(l, r, root = true) {
+
+        if (typeof(l) == "string")
+            l = whind(l);
+
+        if (root) {
+            switch(checkDefaults(l)){
+                case 1:
+                rule.push(l.tx);
+                return true;
+                case 0:
+                return false;
+            }
+        }
+
+        let v = l.tx;
+        
+        if (v == this.value) {
+            l.next();
+            r.push(v);
+            //if (this.HAS_PROP  && !this.virtual && root)
+            //    rule[0] = v;
+
+            return true;
+        }
+        return false;
+    }
+
+    get OPTIONAL (){ return false }
+    set OPTIONAL (a){}
+}
+
+class ValueTerm extends LiteralTerm{
 
     constructor(value, getPropertyParser, definitions, productions) {
+        
+        super(value)
 
         if(value instanceof JUX)
             return value;
-        
 
         this.value = null;
 
@@ -25,141 +77,62 @@ class ValueTerm {
         if (!(this.value = types[u_value]))
             this.value = getPropertyParser(u_value, IS_VIRTUAL, definitions, productions);
 
-        this.prop = "";
-
         if (!this.value)
             return new LiteralTerm(value);
 
         if(this.value instanceof JUX){
+
             if (IS_VIRTUAL.is)
                 this.value.virtual = true;
+
             return this.value;
         }
-
     }
 
-    seal(){}
-
-    parse(l, rule, r, ROOT = true) {
+    parseLVL1(l, r, ROOT = true) {
         if (typeof(l) == "string")
             l = whind(l);
 
         if (ROOT) {
-
             switch(checkDefaults(l)){
                 case 1:
-                rule[this.prop] = l.tx;
+                r.push(l.tx);
                 return true;
                 case 0:
                 return false;
             }
         }
 
-        let rn = { v: null };
+        //const rn = [];
 
-        let v = this.value.parse(l, rule, rn);
+        const v = this.value.parse(l);
 
-        if (rn.v) {
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v)) {
-                        if (Array.isArray(rn.v) && !this.virtual)
-                            r.v = r.v.concat(rn.v);
-                        else
-                            r.v.push(rn.v);
-                    } else {
-                        if (Array.isArray(rn.v) && !this.virtual)
-                            r.v = ([r.v]).concat(rn.v);
-                        else
-                            r.v = [r.v, rn.v];
-                    }
-                } else
-                    r.v = (this.virtual) ? [rn.v] : rn.v;
+        /*if (rn.length > 0) {
+            
+           // r.push(...rn);
 
-            if (this.prop && !this.virtual)
-                rule[this.prop] = rn.v;
+            // if (this.HAS_PROP && !this.virtual)
+            //     rule[0] = rn.v;
 
             return true;
 
-        } else if (v) {
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v))
-                        r.v.push(v);
-                    else
-                        r.v = [r.v, v];
-                } else
-                    r.v = v;
+        } else */if (v) {
 
-            if (this.prop && !this.virtual && ROOT)
-                rule[this.prop] = v;
+            r.push(v);
+
+            //if (this.HAS_PROP && !this.virtual && ROOT)
+            //    rule[0] = v;
 
             return true;
         } else
             return false;
     }
-
-    get OPTIONAL (){ return false }
-    set OPTIONAL (a){}
 }
 
-class LiteralTerm {
 
-    constructor(value, type) {
-        
-        if(type == whind.types.string)
-            value = value.slice(1,-1);
-
-        this.value = value;
-        this.prop = null;
-    }
-
-    seal(){}
-
-    parse(l, rule, r, root = true) {
-
-        if (typeof(l) == "string")
-            l = whind(l);
-
-        if (root) {
-            switch(checkDefaults(l)){
-                case 1:
-                rule[this.prop] = l.tx;
-                return true;
-                case 0:
-                return false;
-            }
-        }
-
-        let v = l.tx;
-        if (v == this.value) {
-            l.next();
-
-            if (r)
-                if (r.v) {
-                    if (Array.isArray(r.v))
-                        r.v.push(v);
-                    else {
-                        let t = r.v;
-                        r.v = [t, v];
-                    }
-                } else
-                    r.v = v;
-
-            if (this.prop  && !this.virtual && root)
-                rule[this.prop] = v;
-
-            return true;
-        }
-        return false;
-    }
-
-    get OPTIONAL (){ return false }
-    set OPTIONAL (a){}
-}
 
 class SymbolTerm extends LiteralTerm {
-    parse(l, rule, r) {
+    parseLVL1(l, rule, r) {
         if (typeof(l) == "string")
             l = whind(l);
 

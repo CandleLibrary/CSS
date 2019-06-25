@@ -1,7 +1,7 @@
 import  {CBezier}  from "@candlefw/math";
 
 export default class CSS_Bezier extends CBezier {
-	static parse(l, rule, r) {
+	static parse(l) {
 
 		let out = null;
 

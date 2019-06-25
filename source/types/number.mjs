@@ -21,7 +21,7 @@ export default class CSS_Number extends Number {
         return ele;
     }
 
-    static parse(l, rule, r) {
+    static parse(l) {
         
         let sign = 1;
 

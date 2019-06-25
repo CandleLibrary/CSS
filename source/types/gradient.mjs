@@ -23,7 +23,7 @@ class Stop{
 
 export default  class CSS_Gradient{
 
-    static parse(l, rule, r) {
+    static parse(l) {
         let tx = l.tx,
             pky = l.pk.ty;
         if (l.ty == l.types.id) {
@@ -51,8 +51,8 @@ export default  class CSS_Gradient{
                     }
                     
                     if(l.ch != ","){
-                        if(!(len = CSS_Length.parse(l, rule, r)))
-                            len = CSS_Percentage.parse(l,rule,r);
+                        if(!(len = CSS_Length.parse(l)))
+                            len = CSS_Percentage.parse(l);
                     }else
                         l.next();
                     

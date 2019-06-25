@@ -1,7 +1,7 @@
 import  ll  from "@candlefw/ll";
 import  whind from "@candlefw/whind";
 
-import {CSSRule } from "./rule.mjs";
+import CSSProps  from "./rule.mjs";
 import {CSSSelector} from "./selector.mjs";
 
 import { types } from "./properties/property_and_type_definitions";
@@ -9,7 +9,7 @@ import { CSSRuleBody } from "./body";
 import  UIMaster  from "./ui/builder.mjs";
 import UIRuleSet from "./ui/ui_ruleset.mjs"
 
-export { CSSRule, CSSSelector };
+//export { CSSRule, CSSSelector };
 
 
 

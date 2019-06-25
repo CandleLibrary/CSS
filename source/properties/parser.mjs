@@ -12,35 +12,36 @@ const standard_productions = {
     ValueTerm,
     SymbolTerm
 }
+
 export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null, productions = standard_productions) {
 
-    let prop = definitions[property_name];
+    let parser_val = definitions[property_name];
 
-    if (prop) {
+    if (parser_val) {
 
-        if (typeof(prop) == "string") {
-            prop = definitions[property_name] = CreatePropertyParser(prop, property_name, definitions, productions);
+        if (typeof(parser_val) == "string") {
+            parser_val = definitions[property_name] = CreatePropertyParser(parser_val, property_name, definitions, productions);
         }
-        prop.name = property_name;
-        return prop;
+        parser_val.name = property_name;
+        return parser_val;
     }
 
     if (!definitions.__virtual)
         definitions.__virtual = Object.assign({}, virtual_property_definitions);
 
-    prop = definitions.__virtual[property_name];
+    parser_val = definitions.__virtual[property_name];
 
-    if (prop) {
+    if (parser_val) {
 
         IS_VIRTUAL.is = true;
 
-        if (typeof(prop) == "string") {
-            prop = definitions.__virtual[property_name] = CreatePropertyParser(prop, "", definitions, productions);
-            prop.virtual = true;
-            prop.name = property_name;
+        if (typeof(parser_val) == "string") {
+            parser_val = definitions.__virtual[property_name] = CreatePropertyParser(parser_val, "", definitions, productions);
+            parser_val.virtual = true;
+            parser_val.name = property_name;
         }
 
-        return prop;
+        return parser_val;
     }
 
     return null;
@@ -59,7 +60,7 @@ function CreatePropertyParser(notation, name, definitions, productions) {
     //if (n instanceof productions.JUX && n.terms.length == 1 && n.r[1] < 2)
     //    n = n.terms[0];
 
-    n.prop = name;
+    n.HAS_PROP = true;
     n.IMP = important.is;
 
     /*//******** DEV 

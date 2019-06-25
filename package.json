@@ -2,13 +2,15 @@
   "name": "@candlefw/css",
   "version": "0.0.8",
   "description": "CSS Parser",
-  "main": "source/css.mjs",
+  "main": "source/css_parser.mjs",
   "scripts": {
     "test": "mocha test/test.js -r esm",
     "test.watch": "mocha test/test.js -r esm --watch",
     "build": "rollup --config ./build/config/config.js",
     "build.watch": "rollup --config  ./build/config/config.js --watch",
     "build.ui.watch": "rollup --config  ./build/config/ui.config.js --watch",
+    "compile": "hydrocarbon compile -u -o ./source/Parser -t mjs ./source/grammar/css.hcg",
+    "compile.mount": "hydrocarbon compile -d -m ./source/grammar/css.hcg",
     "prepare": "npm run build && npm test"
   },
   "repository": {

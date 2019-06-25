@@ -19,7 +19,7 @@ export default function CSS_Media_handle(type, prefix) {
     }
 
     return {
-        parse: function(a, b, c) {
+        parse: function(a) {
             debugger;
         }
     };
