@@ -30,6 +30,6 @@ export default class attribSelector{
 	}
 
 	toString(){
-
+		return `[${this.key+this.op+this.val+this.mod}]`;
 	}
 }

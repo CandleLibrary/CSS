@@ -4,7 +4,7 @@ export default class comboSelector {
             this.op = sym[0];
             this.selector = sym[1];
         } else {
-            this.op = ""
+            this.op = " ";
             this.selector = sym[0]
         }
 
@@ -46,6 +46,6 @@ export default class comboSelector {
     }
 
     toString() {
-
+        return  this.op + this.selector + "";
     }
 }

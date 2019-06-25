@@ -11,7 +11,7 @@ import {
 } from "./properties/property_and_type_definitions";
 import { types } from "./properties/property_and_type_definitions";
 import { CSSRuleBody } from "./body";
-import  UIMaster  from "./ui/builder.mjs";
+import UIMaster from "./ui/builder.mjs";
 import UIRuleSet from "./ui/ui_ruleset.mjs"
 
 import { getPropertyParser } from "./properties/parser";
@@ -53,6 +53,10 @@ function parseProperty(lexer, rule, definitions) {
     }
     if (lexer.ch == ";") lexer.next();
 }
+import stylesheet from "./stylesheet.mjs"
+import ruleset from "./ruleset.mjs"
+import stylerule from "./stylerule.mjs"
+import styleprop from "./styleprop.mjs"
 import compoundSelector from "./selectors/compound.mjs"
 import comboSelector from "./selectors/combo.mjs"
 import selector from "./selectors/selector.mjs"
@@ -66,23 +70,21 @@ import pseudoElementSelector from "./selectors/pseudo_element.mjs"
 function parseDeclaration(sym, env, lex) {
     let rule_name = sym[0];
     let body_data = sym[2];
-    let important = sym[3] ? true : false
+    let important = sym[3] ? true : false;
+    let prop = null;
 
     const IS_VIRTUAL = { is: false }
     const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
 
     if (parser && !IS_VIRTUAL.is) {
 
-        const prop = parser.parse(whind(body_data));
-
-        if (prop.length > 0)
-            return { name: rule_name, val: prop, original: body_data };
+        prop = parser.parse(whind(body_data));
 
     } else
         //Need to know what properties have not been defined
         console.warn(`Unable to get parser for css property ${rule_name}`);
 
-    return { name: rule_name, val: null, original: body_data };
+    return new styleprop(rule_name, body_data, prop);
 }
 
 const env = {
@@ -102,6 +104,8 @@ const env = {
 }
 
 export {
+    stylerule,
+    ruleset,
     compoundSelector,
     comboSelector,
     selector,
@@ -111,11 +115,12 @@ export {
     pseudoClassSelector,
     pseudoElementSelector,
     parseDeclaration,
+    stylesheet,
     types
 }
 import CSS_Length from "./types/length.mjs";
 import CSS_URL from "./types/url.mjs";
-export {CSSRuleBody, CSS_Length, CSS_URL, UIMaster, UIRuleSet}
+export { CSSRuleBody, CSS_Length, CSS_URL, UIMaster, UIRuleSet }
 
 export default function parse(string_data) {
     try {
@@ -143,6 +148,6 @@ export default function parse(string_data) {
         console.error(e);
     }
 }
-export {parse}
+export { parse }
 
 parse.types = types;

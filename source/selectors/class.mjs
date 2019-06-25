@@ -12,6 +12,6 @@ export default class classSelector{
 	}
 
 	toString(){
-
+		return "."+this.val;
 	}
 }

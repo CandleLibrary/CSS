@@ -45,4 +45,13 @@ export default class compoundSelector {
             return this.match(element);
         }
     }
+
+    toString() {
+        const 
+            tag = this.tag ? this.tag + "" : "",
+            subclass = this.subclass ? this.subclass.join("") + "" : "",
+            pseudo = this.pseudo ? this.pseudo + "" : "";
+
+        return `${tag + subclass + pseudo}`;
+    }
 }

@@ -12,6 +12,6 @@ export default class idSelector{
 	}
 
 	toString(){
-
+		return "#"+ this.val;
 	}
 }

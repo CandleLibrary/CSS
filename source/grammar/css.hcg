@@ -8,13 +8,13 @@
 ##############################################################################################
 ##############################################################################################	
 
-	<> CSS → STYLE_SHEET		
+	<> CSS → STYLE_SHEET															↦c ^stylesheet
 
-	<> STYLE_SHEET → (import)(*) ( RULE_SET │ AT_RULE )(*)
+	<> STYLE_SHEET → (import)(*) ( STYLE_RULE │ AT_RULE )(*)						↦r {new fn.ruleset($$sym1, $$sym2)}
 
-	<> RULE_SET → COMPLEX_SELECTOR(*,) { declaration_list ;? } 					↦c{this.selectors=sym[0]; this.body = sym[2]}
+	<> STYLE_RULE → COMPLEX_SELECTOR(*,) { declaration_list ;? } 					↦r {new fn.stylerule($$sym1, $$sym3)}
 
-	<> GROUP_RULE_BODY → RULE_SET(*)
+	<> GROUP_RULE_BODY → STYLE_RULE(*)
 
 	<> AT_RULE → media ;
 		│ import ;
@@ -156,14 +156,14 @@
 #### Body
 ##############################################################################################
 
-	<> declaration_list → (declaration)(+;) ;?								↦r { ({props: sym[0], at_rules:[]}) }
-		│ AT_RULE 															↦r { ({props: [], at_rules:[sym[0]]}) }
-		│ declaration_list AT_RULE 											↦r {  sym[0].at_rules.push(sym[1]), sym[0] }
-		│ declaration_list (declaration)(+;) ;?	 							↦r {  sym[0].props.push(...sym[1]), sym[0] }
+	<> declaration_list → (declaration)(+\;) \;?							↦r { $sym1 }
+		│ AT_RULE 															↦r { $sym1 }
+		│ declaration_list AT_RULE 											↦r { sym[0].push(sym[1]), sym[0] }
+		│ declaration_list (declaration)(+;) ;?	 							↦r { sym[0].push(...sym[1]), sym[0] }
 		
 
 	<> declaration → θid \: declaration_values ( \! τimportant )?			↦r ^parseDeclaration
 
-	<> declaration_values → ( θws │ θany )(+")
+	<> declaration_values → ( θws │ θany │ θid )(+")
 		│\( declaration_values \)	 										↦r { sym.join("") }
 		│ declaration_values declaration_values 							↦r { sym.join("") }
