@@ -82,26 +82,26 @@
 		│ general_enclosed
 
 	<> media_feature → \( ( mf_plain │ mf_boolean │ mf_range ) \)
-	<> general_enclosed → θid\( (θany│θws)(*") \)
-		│ \( θid (θany│θws)(*") \)
+	<> general_enclosed → identifier\( (θany│θws)(*") \)
+		│ \( identifier (θany│θws)(*") \)
 
 	<> mf_plain → mf_name : mf_value 
 
 	<> mf_range → mf_name ( < │ > │ <= │ >= │ = ) mf_value
 		│ mf_value ( < │ > │ <= │ >= │ = ) mf_name
-		│ mf_value ( > │ >= ) θid ( > │ >= ) mf_value
-		│ mf_value ( < │ <= ) θid ( < │ <= ) mf_value
+		│ mf_value ( > │ >= ) identifier ( > │ >= ) mf_value
+		│ mf_value ( < │ <= ) identifier ( < │ <= ) mf_value
 
 	<> mf_value → θnum │ dimension │ mf_name │ ratio
-	<> mf_boolean → θid
-	<> mf_name → θid
-	<> media_type → θid
+	<> mf_boolean → identifier
+	<> mf_name → identifier
+	<> media_type → identifier
 
 	<> ratio → θnum / θnum
 	<> percentage → θnum % 
 	<> dimension → θnum ( τpx │ τin │ τrad ) 
 
-	<> url →  τurl ( string )
+	<> url →  τurl \( string \)
 
 	<>string → " (θany)(+") " │ ' (θany)(+") '
 
@@ -109,7 +109,7 @@
 #### Modified from https://drafts.csswg.org/selectors-4/#grammar
 ##############################################################################################
 
-	<> COMPLEX_SELECTOR →  COMPOUND_SELECTOR ( COMBINATOR? COMPOUND_SELECTOR ↦r ^comboSelector)(*)
+	<> COMPLEX_SELECTOR →  COMPOUND_SELECTOR ( COMBINATOR? COMPOUND_SELECTOR ↦c ^comboSelector)(*)
 		↦r{len>1? [sym[0]].concat(sym[1]) : [sym[0]]}
 
 	<> COMPOUND_SELECTOR →  [ TYPE_SELECTOR? SUBCLASS_SELECTOR(*) ( PSEUDO_ELEMENT_SELECTOR PSEUDO_CLASS_SELECTOR(*) )(*) ]
@@ -123,21 +123,21 @@
 	<> TYPE_SELECTOR →  WQ_NAME 											↦c ^selector
 		│ NS_PREFIX? *														↦c ^selector
 	
-	<> NS_PREFIX →  (θid │ \* )? | 
+	<> NS_PREFIX →  (identifier │ \* )? | 
 
-	<> WQ_NAME →  NS_PREFIX? θid 	
+	<> WQ_NAME →  NS_PREFIX? identifier 	
 
 	<> SUBCLASS_SELECTOR →  ID_SELECTOR 
 		│ CLASS_SELECTOR 
 		│ ATTRIBUTE_SELECTOR 
 		│ PSEUDO_CLASS_SELECTOR
 
-	<> ID_SELECTOR →  \# θid  												↦c ^idSelector
+	<> ID_SELECTOR →  \# identifier  												↦c ^idSelector
 
-	<> CLASS_SELECTOR →  . θid 												↦c ^classSelector
+	<> CLASS_SELECTOR →  . identifier 												↦c ^classSelector
 
 	<> ATTRIBUTE_SELECTOR →  \[ WQ_NAME \] 									↦c ^attribSelector
-		│ \[ WQ_NAME ATTR_MATCHER ( θid │ θstr ) ATTR_MODIFIER? \]			↦c ^attribSelector
+		│ \[ WQ_NAME ATTR_MATCHER ( identifier │ θstr ) ATTR_MODIFIER? \]			↦c ^attribSelector
 
 	<> ATTR_MATCHER → ~=												
 		│ ^= 																
@@ -148,7 +148,7 @@
 	<> ATTR_MODIFIER →  τi 
 		│ τs
 
-	<> PSEUDO_CLASS_SELECTOR →  : θid ( \( COMPLEX_SELECTOR \) )?   		↦c ^pseudoClassSelector
+	<> PSEUDO_CLASS_SELECTOR →  : identifier ( \( COMPLEX_SELECTOR \) )?   		↦c ^pseudoClassSelector
 
 	<> PSEUDO_ELEMENT_SELECTOR →  : PSEUDO_CLASS_SELECTOR 					↦c ^pseudoElementSelector
 
@@ -162,8 +162,10 @@
 		│ declaration_list (declaration)(+;) ;?	 							↦r { sym[0].push(...sym[1]), sym[0] }
 		
 
-	<> declaration → θid \: declaration_values ( \! τimportant )?			↦r ^parseDeclaration
+	<> declaration → identifier \: declaration_values ( \! τimportant )?			↦r ^parseDeclaration
 
-	<> declaration_values → ( θws │ θany │ θid )(+")
+	<> declaration_values → ( θws │ θany │ θid)(+")
 		│\( declaration_values \)	 										↦r { sym.join("") }
 		│ declaration_values declaration_values 							↦r { sym.join("") }
+
+	<> identifier → (θid) ( θid │ \- │ \_ )(*") (θws │ θnl)?  ↦ r { $sym1 + $sym2 } 

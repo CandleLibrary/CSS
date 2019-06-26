@@ -38,9 +38,9 @@ export default class compoundSelector {
         return element;
     }
 
-    matchBU(element, selector_array, selector = null, index = 0) {
+    matchBottomUp(element, selector_array, selector = null, index = 0) {
         if (index + 1 < selector_array.length) {
-            return selector_array[index + 1].matchBU(element, selector_array, this, index + 1);
+            return selector_array[index + 1].matchBottomUP(element, selector_array, this, index + 1);
         } else {
             return this.match(element);
         }

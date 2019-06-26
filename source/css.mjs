@@ -1,198 +1,131 @@
-import  ll  from "@candlefw/ll";
-import  whind from "@candlefw/whind";
+import ll from "@candlefw/ll";
+import whind from "@candlefw/whind";
+import css_parser from "./Parser/css.mjs";
 
-import CSSProps  from "./rule.mjs";
-import {CSSSelector} from "./selector.mjs";
 
+import { CSSRule } from "./rule.mjs";
+import { CSSSelector } from "./selector.mjs";
+import {
+    property_definitions,
+    media_feature_definitions
+} from "./properties/property_and_type_definitions";
 import { types } from "./properties/property_and_type_definitions";
 import { CSSRuleBody } from "./body";
-import  UIMaster  from "./ui/builder.mjs";
+import UIMaster from "./ui/builder.mjs";
 import UIRuleSet from "./ui/ui_ruleset.mjs"
 
-//export { CSSRule, CSSSelector };
+import { getPropertyParser } from "./properties/parser";
 
+function parseProperty(lexer, rule, definitions) {
+    const name = lexer.tx.replace(/\-/g, "_");
 
-
-/**
- * Container for all rules found in a CSS string or strings.
- *
- * @memberof module:wick~internals.css
- * @alias CSSRootNode
- */
-class CSSRootNode {
-    constructor() {
-        this.promise = null;
-        /**
-         * Media query selector
-         */
-        this.pending_build = 0;
-        this.resolves = [];
-        this.res = null;
-        this.observers = [];
-        
-        this.addChild(new CSSRuleBody());
+    //Catch any comments
+    if (lexer.ch == "/") {
+        lexer.comment(true);
+        let bool = parseProperty(lexer, rule, definitions);
+        return
     }
-
-    _resolveReady_(res, rej) {
-        if (this.pending_build > 0) this.resolves.push(res);
-        res(this);
+    lexer.next().a(":");
+    //allow for short circuit < | > | =
+    const p = lexer.pk;
+    while ((p.ch !== "}" && p.ch !== ";") && !p.END) {
+        //look for end of property;
+        p.next();
     }
-
-    _setREADY_() {
-        if (this.pending_build < 1) {
-            for (let i = 0, l = this.resolves; i < l; i++) this.resolves[i](this);
-            this.resolves.length = 0;
-            this.res = null;
+    const out_lex = lexer.copy();
+    out_lex.useExtendedId();
+    lexer.sync();
+    out_lex.fence(p);
+    if (!false /*this._getPropertyHook_(out_lex, name, rule)*/ ) {
+        try {
+            const IS_VIRTUAL = {
+                is: false
+            };
+            const parser = getPropertyParser(name, IS_VIRTUAL, definitions);
+            if (parser && !IS_VIRTUAL.is) {
+                if (!rule.props) rule.props = {};
+                parser.parse(out_lex, rule.props);
+            } else
+                //Need to know what properties have not been defined
+                console.warn(`Unable to get parser for css property ${name}`);
+        } catch (e) {
+            console.log(e);
         }
     }
+    if (lexer.ch == ";") lexer.next();
+}
+import stylesheet from "./stylesheet.mjs"
+import ruleset from "./ruleset.mjs"
+import stylerule from "./stylerule.mjs"
+import styleprop from "./styleprop.mjs"
+import compoundSelector from "./selectors/compound.mjs"
+import comboSelector from "./selectors/combo.mjs"
+import selector from "./selectors/selector.mjs"
+import idSelector from "./selectors/id.mjs"
+import classSelector from "./selectors/class.mjs"
+import attribSelector from "./selectors/attribute.mjs"
+import pseudoClassSelector from "./selectors/pseudo_class.mjs"
+import pseudoElementSelector from "./selectors/pseudo_element.mjs"
 
-    READY() {
-        if (!this.res) this.res = this._resolveReady_.bind(this);
-        return new Promise(this.res);
-    }
-    /**
-     * Creates a new instance of the object with same properties as the original.
-     * @return     {CSSRootNode}  Copy of this object.
-     * @public
-     */
-    clone() {
-        let rn = new this.constructor();
-        rn._selectors_ = this._selectors_;
-        rn._sel_a_ = this._sel_a_;
-        rn._media_ = this._media_;
-        return rn;
-    }
 
-    * getApplicableSelectors(element, win = window) {
+function parseDeclaration(sym, env, lex) {
+    let rule_name = sym[0];
+    let body_data = sym[2];
+    let important = sym[3] ? true : false;
+    let prop = null;
 
-        for (let node = this.fch; node; node = this.getNextChild(node)) {
+    const IS_VIRTUAL = { is: false }
+    const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
 
-            if(node.matchMedia(win)){
-                let gen = node.getApplicableSelectors(element, win);
-                let v = null;
-                while ((v = gen.next().value))
-                    yield v;
-            }
-        }
-    }
+    if (parser && !IS_VIRTUAL.is) {
 
-    /**
-     * Retrieves the set of rules from all matching selectors for an element.
-     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
-     * @public
-     */
-    getApplicableRules(element, rule = new CSSRule(), win = window) {
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            node.getApplicableRules(element, rule, win);
-        return rule;
-    }
+        prop = parser.parse(whind(body_data).useExtendedId());
 
-    /**
-     * Gets the last rule matching the selector
-     * @param      {string}  string  The string
-     * @return     {CSSRule}  The combined set of rules that match the selector.
-     */
-    getRule(string) {
-        let r = null;
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            r = node.getRule(string, r);
-        return r;
-    }
+    } else
+        //Need to know what properties have not been defined
+        console.warn(`Unable to get parser for css property ${rule_name}`);
 
-    toString(off = 0) {
-        let str = "";
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            str += node.toString(off);
-        return str;
-    }
-
-    addObserver(observer) {
-        this.observers.push(observer);
-    }
-
-    removeObserver(observer) {
-        for (let i = 0; i < this.observers.length; i++)
-            if (this.observers[i] == observer) return this.observers.splice(i, 1);
-    }
-
-    updated() {
-        if (this.observers.length > 0)
-            for (let i = 0; i < this.observers.length; i++) this.observers[i].updatedCSS(this);
-    }
-
-    parse(lex, root) {
-        if (typeof(lex) == "string")
-            lex = whind(lex);
-
-        if (lex.sl > 0) {
-
-            if (!root && root !== null) {
-                root = this;
-                this.pending_build++;
-            }
-
-            return this.fch.parse(lex, this).then(e => {
-                this._setREADY_();
-                this.updated();
-                return this;
-            });
-        }
-    }
-
-    merge(inCSSRootNode){
-        if(inCSSRootNode instanceof CSSRootNode){
-            
-            let children = inCSSRootNode.children;
-            outer:
-            for(let i = 0; i < children.length; i++){
-                //determine if this child matches any existing selectors
-                let child = children[i];
-                
-                for(let i = 0; i < this.children.length; i++){
-                    let own_child = this.children[i];
-
-                    if(own_child.isSame(child)){
-                        own_child.merge(child);
-                        continue outer;
-                    }
-                }
-
-                this.children.push(child);
-            }
-        }
-    }
+    return new styleprop(rule_name, body_data, prop);
 }
 
-/**
- * CSSRootNode implements all of ll
- * @extends ll
- * @memberof  module:wick~internals.html.CSSRootNode
- * @private
- */
-ll.mixinTree(CSSRootNode);
+const env = {
+    functions: {
+        compoundSelector,
+        comboSelector,
+        selector,
+        idSelector,
+        classSelector,
+        attribSelector,
+        pseudoClassSelector,
+        pseudoElementSelector,
+        parseDeclaration,
+        stylerule,
+        ruleset,
+        stylesheet,
+    },
+    body: null
+}
 
-export { CSSRootNode };
-/*
- * Expecting ID error check.
- */
-const _err_ = "Expecting Identifier";
-
-/**
- * Builds a CSS object graph that stores `selectors` and `rules` pulled from a CSS string. 
- * @function
- * @param {string} css_string - A string containing CSS data.
- * @param {string} css_string - An existing CSSRootNode to merge with new `selectors` and `rules`.
- * @return {Promise} A `Promise` that will return a new or existing CSSRootNode.
- * @memberof module:wick.core
- * @alias css
- */
-export const CSSParser = (css_string, root = null) => (root = (!root || !(root instanceof CSSRootNode)) ? new CSSRootNode() : root, root.parse(whind(css_string)));
-
-CSSParser.types = types;
-
+export {
+    stylerule,
+    ruleset,
+    compoundSelector,
+    comboSelector,
+    selector,
+    idSelector,
+    classSelector,
+    attribSelector,
+    pseudoClassSelector,
+    pseudoElementSelector,
+    parseDeclaration,
+    stylesheet,
+    types
+}
 import CSS_Length from "./types/length.mjs";
 import CSS_URL from "./types/url.mjs";
+export { CSSRuleBody, CSS_Length, CSS_URL, UIMaster, UIRuleSet }
 
-export default CSSParser;
-export {CSSRuleBody, CSS_Length, CSS_URL, UIMaster, UIRuleSet}
+export default function parse(string_data) { return css_parser(whind(string_data), env) }
+export { parse }
 
+parse.types = types;

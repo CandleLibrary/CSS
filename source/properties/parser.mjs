@@ -13,6 +13,22 @@ const standard_productions = {
     SymbolTerm
 }
 
+function getExtendedIdentifier(l) {
+    let pk = l.pk;
+
+    let id = ""
+
+    while (!pk.END && (pk.ty & (whind.types.id | whind.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next() }
+
+    id = pk.slice(l);
+
+    l.sync();
+
+    l.tl = 0;
+
+    return id;
+}
+
 export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, definitions = null, productions = standard_productions) {
 
     let parser_val = definitions[property_name];
@@ -51,10 +67,12 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 function CreatePropertyParser(notation, name, definitions, productions) {
 
     const l = whind(notation);
+    l.useExtendedId();
+    
     const important = { is: false };
 
     let n = d(l, definitions, productions);
-    
+
     n.seal();
 
     //if (n instanceof productions.JUX && n.terms.length == 1 && n.r[1] < 2)
@@ -98,14 +116,16 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                 break;
 
             case "<":
+                let id = getExtendedIdentifier(l.next())
 
-                v = new ValueTerm(l.next().tx, getPropertyParser, definitions, productions);
+                v = new ValueTerm(id, getPropertyParser, definitions, productions);
+
                 l.next().assert(">")
 
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
+                    if (term instanceof JUX /*&& term.isRepeating()*/ ) term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
@@ -186,7 +206,7 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                 v = checkExtensions(l, v, productions)
 
                 if (term) {
-                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
+                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/ ) term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
@@ -198,8 +218,7 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
 }
 
 function checkExtensions(l, term, productions) {
-    outer:
-    while (true) {
+    outer: while (true) {
 
         switch (l.ch) {
             case "!":

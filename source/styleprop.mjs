@@ -1,9 +1,13 @@
 export default class styleprop {
 	constructor(name, original_value, val){
 		this.val = val;
-        this.name = name;
+        this.name = name.replace(/\-/g, "_");
         this.original_value = original_value;
 	}
+
+    get value(){
+        return this.val.length > 1 ? this.val : this.val[0];
+    }
 
     toString(offset = 0){
         const 

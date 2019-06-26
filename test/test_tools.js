@@ -1,4 +1,6 @@
-import { CSSRuleBody, CSS_Length, CSS_URL } from "../source/css.mjs";
+import css, { CSSRuleBody, CSS_Length, CSS_URL } from "../source/css.mjs";
+import chai from "chai";
+chai.should();
 import whind from "@candlefw/whind";
 
 function checkF(f) {
@@ -114,7 +116,7 @@ export const test = {
     set value(v) {
         this.ONLY = false;
         this.v = v;
-        this.prop_name = (new whind(v)).tx.replace(/\-/g, "_");
+        this.prop_name = (new whind(v)).useExtendedId().tx.replace(/\-/g, "_");
     },
     set check(f) {
         if (!this.v)
@@ -126,17 +128,20 @@ export const test = {
 
 
         (this.ONLY ? itOnly : it)(`Parses property {${v}}`, async () => {
-            const body = new CSSRuleBody();
+            let sheet = css(`a{${v}}`);
+            /*
             try{
             	await body.parse(whind(`{${v}}`));
             }catch(e){
             	throw "expected error"
             }
+            */
+            console.log(prop_name)
 
-            body.rules[0].props.should.have.property(prop_name)
-            const prop = body.rules[0].props[prop_name];
+            sheet.ruleset.rules[0].should.have.property(prop_name+"")
+            const prop = sheet.ruleset.rules[0][prop_name];
 
-            f(prop);
+            f(prop.value);
         });
         this.prop_name = ""
         this.v = "";

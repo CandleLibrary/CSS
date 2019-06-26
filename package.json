@@ -2,7 +2,7 @@
   "name": "@candlefw/css",
   "version": "0.0.8",
   "description": "CSS Parser",
-  "main": "source/css_parser.mjs",
+  "main": "source/css.mjs",
   "scripts": {
     "test": "mocha test/test.js -r esm",
     "test.watch": "mocha test/test.js -r esm --watch",

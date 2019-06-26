@@ -4,7 +4,7 @@
 
 export default class stylerule {
 
-	constructor(selectors, props){
+	constructor(selectors = [], props = []){
 		
 		this.selectors = selectors;
 		this.props = props;
@@ -15,20 +15,49 @@ export default class stylerule {
         //Versioning
         this.ver = 0;
 
-        console.log(this + "")
+        this.par = null;
+
+        for(const prop of props){
+            this[prop.name] = prop;
+        }
+
+        /*
+        return new Proxy(this, {
+            get:(obj, prop_name)=>{
+                
+                if(!this[prop_name]){
+                    console.log(prop_name, props, props.filter(p=>p.name == prop_name))
+                    return props.filter(p=>p.name == prop_name)[0];
+                }
+
+                return obj[prop_name];
+            }
+        })*/
 	}
 
-	getApplicableRules(element, rule = new CSSRule(), win = window) {
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            node.getApplicableRules(element, rule, win);
-        return rule;
+    addProperty(props) {
+        if(props instanceof stylerule){
+            props = props.props;
+        }
+
+        props = Array.isArray(props) ? props : [props];
+
+        for(const prop of props){
+            this.props.push(prop);
+        }
     }
 
-    getRule(string) {
-        let r = null;
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            r = node.getRule(string, r);
-        return r;
+    match(element, window){
+        for(const selector_array of this.selectors)
+            if(selector_array[0].matchBottomUp(element, selector_array) !== null)
+                return true;
+        return false;
+    }
+
+    * getApplicableSelectors(element, window){
+        for(const selector_array of this.selectors)
+            if(selector_array[0].matchBU(element, selector_array) !== null)
+                yield selector_array;
     }
 
     incrementRef(){
@@ -52,11 +81,6 @@ export default class stylerule {
         }
 
         return `${this.selectors.join("")}{${str.join(";")}}`; 
-    }
-
-    addProperty(prop, rule) {
-        if (prop)
-            this.props[prop.name] = prop.value;
     }
 
     merge(rule) {

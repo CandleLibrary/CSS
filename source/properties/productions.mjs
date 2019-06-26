@@ -43,13 +43,13 @@ class JUX { /* Juxtaposition */
 
     }
 
-    sp(value, rule) { /* Set Property */
+    sp(value, out_val) { /* Set Property */
         if (this.HAS_PROP) {
             if (value)
                 if (Array.isArray(value) && value.length === 1 && Array.isArray(value[0]))
-                    rule[0] = value[0];
+                    out_val[0] = value[0];
                 else
-                    rule[0] = value;
+                    out_val[0] = value;
         }
     }
 
@@ -77,7 +77,7 @@ class JUX { /* Juxtaposition */
         if (ROOT) {
             switch (checkDefaults(lx)) {
                 case 1:
-                    this.sp(lx.tx, rule);
+                    this.sp(lx.tx, out_val);
                     return true;
                 case 0:
                     return false;
