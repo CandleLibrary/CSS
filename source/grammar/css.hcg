@@ -109,8 +109,8 @@
 #### Modified from https://drafts.csswg.org/selectors-4/#grammar
 ##############################################################################################
 
-	<> COMPLEX_SELECTOR →  COMPOUND_SELECTOR ( COMBINATOR? COMPOUND_SELECTOR ↦c ^comboSelector)(*)
-		↦r{len>1? [sym[0]].concat(sym[1]) : [sym[0]]}
+	<> COMPLEX_SELECTOR →  COMPOUND_SELECTOR ( COMBINATOR? COMPOUND_SELECTOR ↦c ^comboSelector)(*)  ↦c ^selector
+	
 
 	<> COMPOUND_SELECTOR →  [ TYPE_SELECTOR? SUBCLASS_SELECTOR(*) ( PSEUDO_ELEMENT_SELECTOR PSEUDO_CLASS_SELECTOR(*) )(*) ]
 		↦c ^compoundSelector
@@ -120,12 +120,12 @@
 		│ ~ 								
 		│ || 								
 
-	<> TYPE_SELECTOR →  WQ_NAME 											↦c ^selector
-		│ NS_PREFIX? *														↦c ^selector
+	<> TYPE_SELECTOR →  WQ_NAME 											↦c ^typeselector
+		│ NS_PREFIX? *														↦r {new fn.type_selector([$sym1, $$sym2])}
 	
 	<> NS_PREFIX →  (identifier │ \* )? | 
 
-	<> WQ_NAME →  NS_PREFIX? identifier 	
+	<> WQ_NAME →  NS_PREFIX? identifier 									↦r {[$sym1, $$sym2]}
 
 	<> SUBCLASS_SELECTOR →  ID_SELECTOR 
 		│ CLASS_SELECTOR 

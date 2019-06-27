@@ -7,8 +7,8 @@ export default class classSelector{
 		return "class"
 	}
 
-	match(element, result){
-		return element.classList.contains(this.val);
+	matchReturnElement(element, window){
+		return element.classList.contains(this.val) ? element : null;
 	}
 
 	toString(){

@@ -9,12 +9,17 @@ export default class ruleset {
         this.parent = null;
 	}
 
-    * getApplicableSelectors(element, new_rule = new stylerule, win = window) {
+    * getApplicableSelectors(element, win = window) {
         for(const rule of this.rules)
-            yield * rule.getApplicableSelectors(element)
+            yield * rule.getApplicableSelectors(element, win)
     }
-	
-	getApplicableRules(element, new_rule = new stylerule, win = window) {
+
+	* getApplicableRules(element, win = window){
+        for(const rule of this.rules)
+            yield * rule.getApplicableRules(element, window)
+    }
+    /*
+	getApplicableRules(element, new_rule = new stylerule, win = window, us) {
 
         for(const rule of this.rules){
             if(rule.match(element, win))
@@ -22,7 +27,7 @@ export default class ruleset {
         }
         
         return new_rule;
-    }
+    }*/
 
     getRule(string) {
         let r = null;

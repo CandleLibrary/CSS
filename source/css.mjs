@@ -16,44 +16,6 @@ import UIRuleSet from "./ui/ui_ruleset.mjs"
 
 import { getPropertyParser } from "./properties/parser";
 
-function parseProperty(lexer, rule, definitions) {
-    const name = lexer.tx.replace(/\-/g, "_");
-
-    //Catch any comments
-    if (lexer.ch == "/") {
-        lexer.comment(true);
-        let bool = parseProperty(lexer, rule, definitions);
-        return
-    }
-    lexer.next().a(":");
-    //allow for short circuit < | > | =
-    const p = lexer.pk;
-    while ((p.ch !== "}" && p.ch !== ";") && !p.END) {
-        //look for end of property;
-        p.next();
-    }
-    const out_lex = lexer.copy();
-    out_lex.useExtendedId();
-    lexer.sync();
-    out_lex.fence(p);
-    if (!false /*this._getPropertyHook_(out_lex, name, rule)*/ ) {
-        try {
-            const IS_VIRTUAL = {
-                is: false
-            };
-            const parser = getPropertyParser(name, IS_VIRTUAL, definitions);
-            if (parser && !IS_VIRTUAL.is) {
-                if (!rule.props) rule.props = {};
-                parser.parse(out_lex, rule.props);
-            } else
-                //Need to know what properties have not been defined
-                console.warn(`Unable to get parser for css property ${name}`);
-        } catch (e) {
-            console.log(e);
-        }
-    }
-    if (lexer.ch == ";") lexer.next();
-}
 import stylesheet from "./stylesheet.mjs"
 import ruleset from "./ruleset.mjs"
 import stylerule from "./stylerule.mjs"
@@ -61,37 +23,19 @@ import styleprop from "./styleprop.mjs"
 import compoundSelector from "./selectors/compound.mjs"
 import comboSelector from "./selectors/combo.mjs"
 import selector from "./selectors/selector.mjs"
+import typeselector from "./selectors/typeselector.mjs"
 import idSelector from "./selectors/id.mjs"
 import classSelector from "./selectors/class.mjs"
 import attribSelector from "./selectors/attribute.mjs"
 import pseudoClassSelector from "./selectors/pseudo_class.mjs"
 import pseudoElementSelector from "./selectors/pseudo_element.mjs"
-
-
-function parseDeclaration(sym, env, lex) {
-    let rule_name = sym[0];
-    let body_data = sym[2];
-    let important = sym[3] ? true : false;
-    let prop = null;
-
-    const IS_VIRTUAL = { is: false }
-    const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
-
-    if (parser && !IS_VIRTUAL.is) {
-
-        prop = parser.parse(whind(body_data).useExtendedId());
-
-    } else
-        //Need to know what properties have not been defined
-        console.warn(`Unable to get parser for css property ${rule_name}`);
-
-    return new styleprop(rule_name, body_data, prop);
-}
+import parseDeclaration from "./properties/parse_declaration.mjs"
 
 const env = {
     functions: {
         compoundSelector,
         comboSelector,
+        typeselector,
         selector,
         idSelector,
         classSelector,
@@ -111,6 +55,7 @@ export {
     ruleset,
     compoundSelector,
     comboSelector,
+    typeselector,
     selector,
     idSelector,
     classSelector,

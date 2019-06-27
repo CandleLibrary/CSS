@@ -4,11 +4,11 @@ export default class pseudoElementSelector{
 	}
 
 	get type(){
-		return "pseudoElement"
+		return "pseudo-element"
 	}
 
-	match(element){
-		return true;
+	matchReturnElement(element){
+		return element;
 	}
 
 	toString(){

@@ -1,19 +1,23 @@
-export default class selector{
-	constructor(sym,env){
-		if(sym.len > 1)
-			this.namespace = sym[0];
-		this.val = ((sym.len > 1) ? sym[2] : sym[0]).toLowerCase();
-	}
+export default class selector {
+    constructor(sym, env) {
+        if (sym.length > 1)
+            this.vals = [sym, ...sym[1]];
+        else
+            this.vals = sym;
 
-	get type(){
-		return "type"
-	}
+        this.parent = null;
+    }
 
-	match(element, result){
-		return element.tagName.toLowerCase() == this.val;
-	}
+    match(element, win = window) {
 
-	toString(){
-		return "";
-	}
+        for (const selector of this.vals.reverse()) {
+            if (!(element = selector.matchReturnElement(element, win)))
+                return false;
+        }
+        return true;
+    }
+
+    toString() {
+        return this.vals.join(" ");
+    }
 }

@@ -136,10 +136,10 @@ export const test = {
             	throw "expected error"
             }
             */
-            console.log(prop_name)
 
-            sheet.ruleset.rules[0].should.have.property(prop_name+"")
-            const prop = sheet.ruleset.rules[0][prop_name];
+            sheet.ruleset.rules[0].props[prop_name].should.not.be.undefined
+            sheet.ruleset.rules[0].props[prop_name].should.not.be.null
+            const prop = sheet.ruleset.rules[0].props[prop_name];
 
             f(prop.value);
         });

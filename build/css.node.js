@@ -3540,7 +3540,7 @@ function parser(l, e = {}) {
  * @memberof module:wick~internals.css
  * @alias CSSRule
  */
-class CSSRule$1 {
+class CSSRule {
     constructor(root) {
         /**
          * Collection of properties held by this rule.
@@ -7642,7 +7642,7 @@ function _eID_(lexer) {
  * The empty CSSRule instance
  * @alias module:wick~internals.css.empty_rule
  */
-const er = Object.freeze(new CSSRule$1());
+const er = Object.freeze(new CSSRule());
 
 class _selectorPart_ {
     constructor() {
@@ -7766,7 +7766,7 @@ class CSSRuleBody {
         Retrieves the set of rules from all matching selectors for an element.
             element HTMLElement - An DOM element that should be matched to applicable rules. 
     */
-    getApplicableRules(element, rule = new CSSRule$1(), win = window) {
+    getApplicableRules(element, rule = new CSSRule(), win = window) {
 
         if (!this.matchMedia(win)) return;
 
@@ -8066,7 +8066,7 @@ class CSSRuleBody {
                     case "{":
                         //Check to see if a rule body for the selector exists already.
                         let MERGED = false;
-                        let rule = new CSSRule$1(this);
+                        let rule = new CSSRule(this);
                         this._applyProperties_(lexer.next(), rule);
                         for (let i = -1, sel = null; sel = selectors[++i];)
                             if (sel.r) {sel.r.merge(rule); MERGED = true;}
@@ -8159,7 +8159,7 @@ class CSSRuleBody {
             if (!this._selectors_[selector.id]) {
                 this._selectors_[selector.id] = selector;
                 this._sel_a_.push(selector);
-                const rule = new CSSRule$1(this);
+                const rule = new CSSRule(this);
                 selector.addRule(rule);
                 this.rules.push(rule);
             } else
@@ -9549,98 +9549,164 @@ class UIMaster {
     }
 }
 
+class styleprop {
+	constructor(name, original_value, val){
+		this.val = val;
+        this.name = name.replace(/\-/g, "_");
+        this.original_value = original_value;
+	}
+
+    get value(){
+        return this.val.length > 1 ? this.val : this.val[0];
+    }
+
+    toString(offset = 0){
+        const 
+            str = [],
+            off = ("    ").repeat(offset);
+
+        return `${off+this.name.replace(/\_/g, "-")}:${this.val.join(" ")}`;
+    }
+}
+
+function parseDeclaration(sym) {
+    if(sym.length == 0)
+        return null;
+
+    let rule_name = sym[0];
+    let body_data = sym[2];
+    let important = sym[3] ? true : false;
+    let prop = null;
+
+    const IS_VIRTUAL = { is: false };
+    const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
+
+    if (parser && !IS_VIRTUAL.is) {
+
+        prop = parser.parse(whind$1(body_data).useExtendedId());
+
+    } else
+        //Need to know what properties have not been defined
+        console.warn(`Unable to get parser for css property ${rule_name}`);
+
+    return new styleprop(rule_name, body_data, prop);
+}
+
+function setParent(array, parent) {
+    for (const prop of array)
+        prop.parent = parent;
+}
 /*
  * Holds a set of css style properties.
  */
 
 class stylerule {
 
-	constructor(selectors = [], props = []){
-		
-		this.selectors = selectors;
-		this.props = props;
+    constructor(selectors = [], props = []) {
 
-		//Reference Counting
+        this.selectors = selectors;
+        this.properties = new Map;
+
+        this.addProp(props);
+        //Reference Counting
         this.refs = 0;
 
         //Versioning
         this.ver = 0;
 
-        this.par = null;
+        this.parent = null;
 
-        for(const prop of props){
-            this[prop.name] = prop;
-        }
+        setParent(this.selectors, this);
+        setParent(this.properties.values(), this);
 
-        /*
-        return new Proxy(this, {
-            get:(obj, prop_name)=>{
-                
-                if(!this[prop_name]){
-                    console.log(prop_name, props, props.filter(p=>p.name == prop_name))
-                    return props.filter(p=>p.name == prop_name)[0];
-                }
-
-                return obj[prop_name];
-            }
-        })*/
-	}
-
-    addProperty(props) {
-        if(props instanceof stylerule){
-            props = props.props;
-        }
-
-        props = Array.isArray(props) ? props : [props];
-
-        for(const prop of props){
-            this.props.push(prop);
-        }
+        this.props = new Proxy(this, this);
+        this.addProperty = this.addProp;
+        this.addProps = this.addProp;
     }
 
-    match(element, window){
-        for(const selector_array of this.selectors)
-            if(selector_array[0].matchBottomUp(element, selector_array) !== null)
+    get type(){
+        return "stylerule"
+    }
+
+    get(obj, name) {
+        let prop = obj.properties.get(name);
+        if (prop)
+            prop.parent = this;
+        return prop;
+    }
+
+    addProp(props) {
+        if (typeof props == "string") {
+            return this.addProps(
+                props.split(";")
+                .filter(e=> e !== "")
+                .map((e, a) => (a = e.split(":"), a.splice(1, 0, null), a))
+                .map(parseDeclaration)
+            )
+        }
+
+        if (props.type == "stylerule")
+            props = props.properties.values();
+        else
+        if (!Array.isArray(props))
+            props = [props];
+
+        for (const prop of props)
+            if (prop)
+                this.properties.set(prop.name, prop);
+
+        this.ver++;
+    }
+
+    match(element, window) {
+        for (const selector of this.selectors)
+            if (selector.match(element, window))
                 return true;
         return false;
     }
 
-    * getApplicableSelectors(element, window){
-        for(const selector_array of this.selectors)
-            if(selector_array[0].matchBU(element, selector_array) !== null)
-                yield selector_array;
+    * getApplicableSelectors(element, window) {
+        for (const selector of this.selectors)
+            if (selector.match(element, window))
+                yield selector;
     }
 
-    incrementRef(){
+    * getApplicableRules(element, window) {
+        if (this.match(element, window))
+            yield this;
+    }
+
+    * iterateProps() {
+        for (const prop of this.properties.values())
+            yield prop;
+    }
+
+    incrementRef() {
         this.refs++;
     }
 
-    decrementRef(){
+    decrementRef() {
         this.refs--;
-        if(this.refs <= 0){
+        if (this.refs <= 0) {
             //TODO: remove from rules entries.
             debugger
         }
     }
 
     toString(off = 0, rule = "") {
+
         let str = [],
             offset = ("    ").repeat(off);
 
-        for(const prop of this.props){
-        	str.push(prop.toString(off));
-        }
+        for (const prop of this.properties.values())
+            str.push(prop.toString(off));
 
-        return `${this.selectors.join("")}{${str.join(";")}}`; 
+        return `${this.selectors.join("")}{${str.join(";")}}`;
     }
 
     merge(rule) {
-        if (rule.props) {
-            for (let n in rule.props)
-                this.props[n] = rule.props[n];
-            this.LOADED = true;
-            this.ver++;
-        }
+        if (rule.type ==  "stylerule")
+            this.addProp(rule);
     }
 
     get _wick_type_() { return 0; }
@@ -9663,7 +9729,7 @@ class stylesheet {
 
         this.observers = [];
     }
-    
+
     /**
      * Creates a new instance of the object with same properties as the original.
      * @return     {CSSRootNode}  Copy of this object.
@@ -9713,11 +9779,7 @@ class stylesheet {
         }
     }
 
-    getApplicableRules(element, rule = new CSSRule(), win = window) {
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            node.getApplicableRules(element, rule, win);
-        return rule;
-    }
+
 
     updated() {
         if (this.observers.length > 0)
@@ -9734,16 +9796,23 @@ class stylesheet {
     }
 
     * getApplicableSelectors(element, win = window) {
-        yield* this.ruleset.getApplicableSelectors(element, window);
+        yield * this.ruleset.getApplicableSelectors(element, window);
     }
 
-    /**
-     * Retrieves the set of rules from all matching selectors for an element.
-     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
-     * @public
-     */
-    getApplicableRules(element, rule = new stylerule, win = window) {
-        return this.ruleset.getApplicableRules(element, rule, win);
+    getApplicableRules(element, win = window, RETURN_ITERATOR = false, new_rule = new stylerule) {
+        const iter = this.ruleset.getApplicableRules(element, win);
+        if (RETURN_ITERATOR) {
+            return iter
+        } else
+            for (const rule of iter) {
+                new_rule.addProperty(rule);
+            }
+        return new_rule;
+    }
+
+    * getApplicableProperties(element, win = window){
+        for(const rule of this.getApplicableRules(element, win))
+            yield * rule.iterateProps();
     }
 
     getRule(string) {
@@ -9767,12 +9836,17 @@ class ruleset {
         this.parent = null;
 	}
 
-    * getApplicableSelectors(element, new_rule = new stylerule, win = window) {
+    * getApplicableSelectors(element, win = window) {
         for(const rule of this.rules)
-            yield * rule.getApplicableSelectors(element);
+            yield * rule.getApplicableSelectors(element, win);
     }
-	
-	getApplicableRules(element, new_rule = new stylerule, win = window) {
+
+	* getApplicableRules(element, win = window){
+        for(const rule of this.rules)
+            yield * rule.getApplicableRules(element, window);
+    }
+    /*
+	getApplicableRules(element, new_rule = new stylerule, win = window, us) {
 
         for(const rule of this.rules){
             if(rule.match(element, win))
@@ -9780,7 +9854,7 @@ class ruleset {
         }
         
         return new_rule;
-    }
+    }*/
 
     getRule(string) {
         let r = null;
@@ -9794,31 +9868,19 @@ class ruleset {
     }
 }
 
-class styleprop {
-	constructor(name, original_value, val){
-		this.val = val;
-        this.name = name.replace(/\-/g, "_");
-        this.original_value = original_value;
-	}
-
-    get value(){
-        return this.val.length > 1 ? this.val : this.val[0];
-    }
-
-    toString(offset = 0){
-        const 
-            str = [],
-            off = ("    ").repeat(offset);
-
-        return `${off+this.name.replace(/\_/g, "-")}:${this.val.join(" ")}`;
-    }
-}
-
 class compoundSelector {
     constructor(sym, env) {
+
+        if(sym.length = 1)
+            if(Array.isArray(sym[0]) && sym[0].length == 1)
+                return sym[0][0]
+            else
+                return sym[0]
+
         this.subclass = null;
         this.tag = null;
         this.pseudo = null;
+
 
         if (sym[0].type == "type")
             this.tag = sym.shift();
@@ -9830,40 +9892,32 @@ class compoundSelector {
     }
 
     get type() {
-        return "basic"
+        return "compound"
     }
 
-    match(element) {
+    matchReturnElement(element, win) {
         if (this.tag) {
-            if (!this.tag.match(element))
+            if (!this.tag.matchReturnElement(element, win))
                 return null;
         }
 
         if (this.subclass) {
             for (const sel of this.subclass) {
-                if (!sel.match(element))
+                if (!sel.matchReturnElement(element, win))
                     return null;
             }
         }
 
         if (this.pseudo) {
-            if (!this.subclass.match(element))
+            if (!this.subclass.matchReturnElement(element, win))
                 return null;
         }
 
         return element;
     }
 
-    matchBottomUp(element, selector_array, selector = null, index = 0) {
-        if (index + 1 < selector_array.length) {
-            return selector_array[index + 1].matchBottomUP(element, selector_array, this, index + 1);
-        } else {
-            return this.match(element);
-        }
-    }
-
     toString() {
-        const 
+        const
             tag = this.tag ? this.tag + "" : "",
             subclass = this.subclass ? this.subclass.join("") + "" : "",
             pseudo = this.pseudo ? this.pseudo + "" : "";
@@ -9872,47 +9926,43 @@ class compoundSelector {
     }
 }
 
-class comboSelector {
+class combination_selector_part {
     constructor(sym, env) {
         if (sym.length > 1) {
             this.op = sym[0];
             this.selector = sym[1];
-        } else {
-            this.op = " ";
-            this.selector = sym[0];
-        }
-
+        } else 
+            return sym[0]
     }
 
     get type() {
-        return "basic"
+        return "complex"
     }
 
-    matchBU(element, selector_array, selector = null, index = 0) {
+    matchReturnElement(element, selector_array, selector = null, index = 0) {
         let ele;
-        if (index < selector_array.length) {
-            if ((ele = this.selector.matchBU(element, selector_array, null, index))) {
-                switch (this.op) {
-                    case ">":
-                        return selector.match(ele.parentElement);
-                    case "+":
-                        return selector.match(ele.previousElementSibling);
-                    case "~":
-                        let children = ele.parentElement.children.slice(0, element.index);
 
-                        for (const child of children) {
-                            if (selector.match(child))
-                                return child;
-                        }
-                        return null;
-                    default:
+        if ((ele = this.selector.matchReturnElement(element, selector_array))) {
+            switch (this.op) {
+                case ">":
+                    return selector.match(ele.parentElement);
+                case "+":
+                    return selector.match(ele.previousElementSibling);
+                case "~":
+                    let children = ele.parentElement.children.slice(0, element.index);
+
+                    for (const child of children) {
+                        if (selector.match(child))
+                            return child;
+                    }
+                    return null;
+                default:
+                    ele = ele.parentElement;
+                    while (ele) {
+                        if (selector.match(ele))
+                            return ele;
                         ele = ele.parentElement;
-                        while (ele) {
-                            if (selector.match(ele))
-                                return ele;
-                            ele = ele.parentElement;
-                        }
-                }
+                    }
             }
         }
 
@@ -9920,27 +9970,54 @@ class comboSelector {
     }
 
     toString() {
-        return  this.op + this.selector + "";
+        return this.op + this.selector + "";
     }
 }
 
-class selector{
-	constructor(sym,env){
-		if(sym.len > 1)
-			this.namespace = sym[0];
-		this.val = ((sym.len > 1) ? sym[2] : sym[0]).toLowerCase();
+class selector {
+    constructor(sym, env) {
+        if (sym.length > 1)
+            this.vals = [sym, ...sym[1]];
+        else
+            this.vals = sym;
+
+        this.parent = null;
+    }
+
+    match(element, win = window) {
+
+        for (const selector of this.vals.reverse()) {
+            if (!(element = selector.matchReturnElement(element, win)))
+                return false;
+        }
+        return true;
+    }
+
+    toString() {
+        return this.vals.join(" ");
+    }
+}
+
+class type_selector_part{
+	constructor(sym){
+		const val = sym[0];
+		this.namespace = "";
+
+		if(val.length > 1)
+			this.namespace = val[0];
+		this.val = ((val.length > 1) ? val[1] : val[0]).toLowerCase();
 	}
 
 	get type(){
 		return "type"
 	}
 
-	match(element, result){
-		return element.tagName.toLowerCase() == this.val;
+	matchReturnElement(element, win){
+		return element.tagName.toLowerCase() == this.val ? element : null;
 	}
 
 	toString(){
-		return "";
+		return  this.namespace + " " + this.val;
 	}
 }
 
@@ -9953,8 +10030,8 @@ class idSelector{
 		return "id"
 	}
 
-	match(element){
-		return element.id == this.val;
+	matchReturnElement(element){
+		return element.id == this.val ? element : null;
 	}
 
 	toString(){
@@ -9971,8 +10048,8 @@ class classSelector{
 		return "class"
 	}
 
-	match(element, result){
-		return element.classList.contains(this.val);
+	matchReturnElement(element, window){
+		return element.classList.contains(this.val) ? element : null;
 	}
 
 	toString(){
@@ -9999,16 +10076,16 @@ class attribSelector{
 		return "attrib"
 	}
 
-	match(element, result){
+	matchReturnElement(element, result){
 		
 		let attr = element.getAttribute(this.key);
 
 		if(!attr)
-			return false
+			return null
 		if(this.val && attr !== this.val)
-			return false;
+			return null;
 		
-		return true;
+		return element;
 	}
 
 	toString(){
@@ -10025,8 +10102,8 @@ class pseudoClassSelector{
 		return "pseudoClass"
 	}
 
-	match(element){
-		return true;
+	matchReturnElement(element){
+		return element;
 	}
 
 	toString(){
@@ -10040,11 +10117,11 @@ class pseudoElementSelector{
 	}
 
 	get type(){
-		return "pseudoElement"
+		return "pseudo-element"
 	}
 
-	match(element){
-		return true;
+	matchReturnElement(element){
+		return element;
 	}
 
 	toString(){
@@ -10052,70 +10129,11 @@ class pseudoElementSelector{
 	}
 }
 
-function parseProperty(lexer, rule, definitions) {
-    const name = lexer.tx.replace(/\-/g, "_");
-
-    //Catch any comments
-    if (lexer.ch == "/") {
-        lexer.comment(true);
-        let bool = parseProperty(lexer, rule, definitions);
-        return
-    }
-    lexer.next().a(":");
-    //allow for short circuit < | > | =
-    const p = lexer.pk;
-    while ((p.ch !== "}" && p.ch !== ";") && !p.END) {
-        //look for end of property;
-        p.next();
-    }
-    const out_lex = lexer.copy();
-    out_lex.useExtendedId();
-    lexer.sync();
-    out_lex.fence(p);
-    if (!false /*this._getPropertyHook_(out_lex, name, rule)*/ ) {
-        try {
-            const IS_VIRTUAL = {
-                is: false
-            };
-            const parser$$1 = getPropertyParser(name, IS_VIRTUAL, definitions);
-            if (parser$$1 && !IS_VIRTUAL.is) {
-                if (!rule.props) rule.props = {};
-                parser$$1.parse(out_lex, rule.props);
-            } else
-                //Need to know what properties have not been defined
-                console.warn(`Unable to get parser for css property ${name}`);
-        } catch (e) {
-            console.log(e);
-        }
-    }
-    if (lexer.ch == ";") lexer.next();
-}
-
-
-function parseDeclaration(sym, env, lex) {
-    let rule_name = sym[0];
-    let body_data = sym[2];
-    let important = sym[3] ? true : false;
-    let prop = null;
-
-    const IS_VIRTUAL = { is: false };
-    const parser$$1 = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
-
-    if (parser$$1 && !IS_VIRTUAL.is) {
-
-        prop = parser$$1.parse(whind$1(body_data).useExtendedId());
-
-    } else
-        //Need to know what properties have not been defined
-        console.warn(`Unable to get parser for css property ${rule_name}`);
-
-    return new styleprop(rule_name, body_data, prop);
-}
-
 const env = {
     functions: {
         compoundSelector,
-        comboSelector,
+        comboSelector: combination_selector_part,
+        typeselector: type_selector_part,
         selector,
         idSelector,
         classSelector,
@@ -10137,7 +10155,8 @@ parse.types = types;
 exports.stylerule = stylerule;
 exports.ruleset = ruleset;
 exports.compoundSelector = compoundSelector;
-exports.comboSelector = comboSelector;
+exports.comboSelector = combination_selector_part;
+exports.typeselector = type_selector_part;
 exports.selector = selector;
 exports.idSelector = idSelector;
 exports.classSelector = classSelector;

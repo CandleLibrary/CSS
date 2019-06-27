@@ -17,16 +17,16 @@ export default class attribSelector{
 		return "attrib"
 	}
 
-	match(element, result){
+	matchReturnElement(element, result){
 		
 		let attr = element.getAttribute(this.key);
 
 		if(!attr)
-			return false
+			return null
 		if(this.val && attr !== this.val)
-			return false;
+			return null;
 		
-		return true;
+		return element;
 	}
 
 	toString(){

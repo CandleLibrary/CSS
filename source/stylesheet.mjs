@@ -17,7 +17,7 @@ export default class stylesheet {
 
         this.observers = [];
     }
-    
+
     /**
      * Creates a new instance of the object with same properties as the original.
      * @return     {CSSRootNode}  Copy of this object.
@@ -67,12 +67,6 @@ export default class stylesheet {
         }
     }
 
-    getApplicableRules(element, rule = new CSSRule(), win = window) {
-        for (let node = this.fch; node; node = this.getNextChild(node))
-            node.getApplicableRules(element, rule, win);
-        return rule;
-    }
-
     updated() {
         if (this.observers.length > 0)
             for (let i = 0; i < this.observers.length; i++) this.observers[i].updatedCSS(this);
@@ -88,16 +82,26 @@ export default class stylesheet {
     }
 
     * getApplicableSelectors(element, win = window) {
-        yield* this.ruleset.getApplicableSelectors(element, window);
+        yield * this.ruleset.getApplicableSelectors(element, window);
     }
 
-    /**
-     * Retrieves the set of rules from all matching selectors for an element.
-     * @param      {HTMLElement}  element - An element to retrieve CSS rules.
-     * @public
-     */
-    getApplicableRules(element, rule = new stylerule, win = window) {
-        return this.ruleset.getApplicableRules(element, rule, win);
+    getApplicableRules(element, win = window, RETURN_ITERATOR = false, new_rule = new stylerule) {
+        if(!(element instanceof HTMLElement))
+            return new_rule;
+
+        const iter = this.ruleset.getApplicableRules(element, win);
+        if (RETURN_ITERATOR) {
+            return iter
+        } else
+            for (const rule of iter) {
+                new_rule.addProperty(rule);
+            }
+        return new_rule;
+    }
+
+    * getApplicableProperties(element, win = window){
+        for(const rule of this.getApplicableRules(element, win))
+            yield * rule.iterateProps();
     }
 
     getRule(string) {

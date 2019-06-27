@@ -7,8 +7,8 @@ export default class idSelector{
 		return "id"
 	}
 
-	match(element){
-		return element.id == this.val;
+	matchReturnElement(element){
+		return element.id == this.val ? element : null;
 	}
 
 	toString(){
