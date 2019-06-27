@@ -11,7 +11,6 @@ function setParent(array, parent) {
 export default class stylerule {
 
     constructor(selectors = [], props = []) {
-
         this.selectors = selectors;
         this.properties = new Map;
 

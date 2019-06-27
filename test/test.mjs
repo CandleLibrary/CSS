@@ -1,4 +1,4 @@
-import css from "../source/css.mjs";
+const css = require("../source/css.mjs").default;
 
 const chai = require("chai");
 
@@ -16,7 +16,6 @@ describe('CandleFW CSS tests', function() {
             /**
              * Global `fetch` polyfill - basic support
              */
-             /*
             global.fetch = (url, data) =>
                 new Promise((res, rej) => {
                     let p = path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
@@ -36,12 +35,11 @@ describe('CandleFW CSS tests', function() {
                     })
                 });
 
-*/
+
             /* 
                 Forcefully delete the node.js "require" cache. 
                 This is a lazy way to ensure all source files will load correctly when changed.
             */
-            return
 
             delete require.cache;
 

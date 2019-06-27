@@ -116,12 +116,13 @@ class JUX { /* Juxtaposition */
                 for (let i = 0, l = this.terms.length; i < l; i++) {
 
                     let term = this.terms[i];
-
-                    if (!term.parseLVL1(copy, out_val, false)) {
+                    const temp = [];
+                    if (!term.parseLVL1(copy, temp, false)) {
                         if (!term.OPTIONAL) {
                             break repeat;
                         }
-                    }
+                    }else
+                        out_val.push(...temp);
                 }
 
                 //if (temp_r.v)
@@ -183,10 +184,13 @@ class AND extends JUX {
 
                             let term = this.terms[i];
 
-                            if (!term.parseLVL1(copy, out_val, false)) {
+                            const temp = [];
+
+                            if (!term.parseLVL1(copy, temp, false)) {
                                 if (term.OPTIONAL)
                                     HIT[i] = 1;
                             } else {
+                                out_val.push(...temp);
                                 HIT[i] = 2;
                                 continue and;
                             }

@@ -19,8 +19,8 @@ function dragover(e){
 
 class UISelectorPart{
 
-    constructor(name, index){
-        this.txt = name;
+    constructor(selector_part, index){
+        this.txt = selector_part + "";
         this.index = index;
         this.element = document.createElement("span");
         this.element.classList.add("selector");
@@ -67,7 +67,7 @@ function drop(e){
 
             part.unmount();
             let d = parent.remove(part);
-            this.add(part, ...d);
+            this.add(part, d);
             part.mount(this.element, this);
             break;
         }
@@ -84,11 +84,11 @@ export default class UISelector {
         this.selector = selector;
         this.parts = [];
         
-        selector.v.forEach((e, i) => {
+        selector.vals.forEach((e, i) => {
             this.parts.push(new UISelectorPart(e, i))
         })
         
-        this.text = selector.v.join();
+        this.text = selector + "";
     }
 
     update() {
@@ -114,16 +114,16 @@ export default class UISelector {
         let index = part.index;
         this.parts.splice(index,1);
         this.parts.forEach((e,i)=>e.index = i);
-        const a = this.selector.a.splice(index,1)[0];
-        const v = this.selector.v.splice(index,1)[0];
+        //const a = this.selector.a.splice(index,1)[0];
+        const v = this.selector.vals.splice(index,1)[0];
         this.update();
-        return [a,v]
+        return v
     }
 
-    add(part, a, v){
+    add(part, v){
         this.parts.push(part)
-        this.selector.a.push(a);
-        this.selector.v.push(v);
+        //this.selector.a.push(a);
+        this.selector.vals.push(v);
         this.parts.forEach((e,i)=>e.index = i);
         this.update();
     }
@@ -131,10 +131,9 @@ export default class UISelector {
     rebuild(selector){
         this.parts.forEach(e=>e.unmount(false))
         this.parts.length = 0;
-        selector.v.forEach((e,i) => {
+        selector.vals.forEach((e,i) => {
             this.parts.push(new UISelectorPart(e, i))
         })
         this.mount(this.parent);
-
     }
 }

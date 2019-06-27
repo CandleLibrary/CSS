@@ -2,39 +2,26 @@
 <html>
 <head>
 	<title>CFW CSS - Style Your Way</title>
+	<script src="/cfw/css"></script>
 	<script src="/cfw/wick"></script>
 </head>
 <body>
-	<div id="mable"></div>
-	<div>
-		<span>
-			<div id="test" gravy="maplesyrup">This is the test Div</div>
-		</span>
-	</div>
-
-	<template id="temp">
-		<scope>
-			<style>
-				div{
-					color:red;
-				}
-			</style>
-			<textarea type="text" value="((test_))"></textarea>
-		</scope>
-	</template>
 
 	<script src="./build/css.js"></script>
 	<script>
 		async function start(){
-			console.log(document.getElementById("temp").outerHTML);
-			(await wick(`<scope>
-			<style>
-				div{
-					color:red;
-				}
-			</style>
-			<textarea type="text" value="((test_))"></textarea>
-		</scope>`, {custom:{css}})).mount(document.getElementById("mable"));
+
+			let ui = css.ui(css.parse(`div{color:red; border: 2px solid black}span{font-size:2px}`))
+
+			ui.mount(document.body);
+
+			const comp = wick("<div>((ui_data))</div>")
+			let s;
+			comp.mount(document.body).then(scope=>s=scope);
+
+			ui.css.addObserver({updatedCSS:css=>{
+				s.update({ui_data:css + ""})
+			}})
 		}
 		start();
 	</script>

@@ -1,18 +1,22 @@
 import whind from "@candlefw/whind";
-import UIRuleSet from "./ui_ruleset.mjs";
+import ui_stylerule from "./ui_ruleset.mjs";
 
 export default class UIMaster {
     constructor(css) {
+
         css.addObserver(this);
         this.css = css;
         this.rule_sets = [];
-        this.selectors = [];
+        
         this.element = document.createElement("div");
         this.element.classList.add("cfw_css");
         this.update_mod = 0;
 
 
         this.rule_map = new Map();
+
+        if(css)
+            this.build();
     }
 
     // Builds out the UI elements from collection of rule bodies and associated selector groups. 
@@ -24,42 +28,19 @@ export default class UIMaster {
         //Extract rule bodies and set as keys for the rule_map. 
         //Any existing mapped body that does not have a matching rule should be removed. 
         
-        const rule_sets = css.children;
+        const rule_set = css.ruleset;
 
-        for(let i= 0; i < rule_sets.length; i++){
-            let rule_set = rule_sets[i];
+        for(const rule of rule_set.rules){
 
-            for(let i = 0; i < rule_set.rules.length; i++){
-
-                let rule = rule_set.rules[i];
-
-                if(!this.rule_map.get(rule))
-                    this.rule_map.set(rule, new UIRuleSet(rule, this));
-                else {
-                    this.rule_map.get(rule).rebuild(rule);
-                }
-            }
-
-        
-            const selector_array = rule_set._sel_a_;
-
-            for(let i = 0; i < selector_array.length; i++){
-                let selector = selector_array[i];
-                let rule_ref = selector.r;
-
-                let rule_ui = this.rule_map.get(rule_ref);
-
-                rule_ui.addSelector(selector);
+            if(!this.rule_map.get(rule))
+                this.rule_map.set(rule, new ui_stylerule(rule, this));
+            else {
+                this.rule_map.get(rule).rebuild(rule);
             }
         }
 
-
         this.css = css;
-
-        let children = css.children;
-
         this.rule_sets = [];
-        this.selectors = [];
     }
 
     updatedCSS(css) {

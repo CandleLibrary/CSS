@@ -8,25 +8,25 @@ import {
     media_feature_definitions,
     types
 } from "../properties/property_and_type_definitions.mjs";
-//import { CSSRule as R, CSSSelector as S } from "../nodes.mjs";
 import { getPropertyParser } from "../properties/parser.mjs";
 
 
 const props = Object.assign({}, property_definitions);
-export default class UIRuleSet {
-    constructor(rule_body, parent) {
+
+export default class ui_stylerule {
+    constructor(stylerule, parent) {
 
         this.parent = parent;
         this.hash = 0;
-        this.rules = [];
-        this.selectors = null;
+        this.props = [];
+        this.selectors = [];
 
         this.element = document.createElement("div");
         this.element.classList.add("rule")
         this.selector_space = document.createElement("div");
         this.selector_space.classList.add("rule_selectors")
         this.rule_space = document.createElement("div");
-        this.rule_space.classList.add("rule_body")
+        this.rule_space.classList.add("stylerule")
 
         this.element.addEventListener("dragover", dragover)
         this.element.addEventListener("drop", (e)=>{
@@ -42,16 +42,16 @@ export default class UIRuleSet {
             this.addProp(type, value);
             parent.removeProp(type)
 
-            //move the dragee's data into this ruleset
+            //move the dragee's data into this propset
         })
 
         this.element.appendChild(this.selector_space);
         this.element.appendChild(this.rule_space);
 
-        this.build(rule_body);
+        this.build(stylerule);
         this.mount(this.parent.element);
 
-        this.ver = rule_body;
+        this.ver = stylerule;
     }
 
     addData(){
@@ -65,16 +65,12 @@ export default class UIRuleSet {
     }
 
     addSelector(selector){
+        
+        const ui_selector = new UISelector(selector);
 
-        //Add to list of selectors and update UI
-        if(!this.selectors){
+        this.selectors.push(ui_selector);
 
-            this.selectors = new UISelector(selector);
-
-            this.selectors.mount(this);
-        }else{
-            this.selectors.rebuild(selector);
-        }
+        ui_selector.mount(this);
     }
 
     mount(element) {
@@ -87,79 +83,69 @@ export default class UIRuleSet {
             this.element.parentElement.removeChild(this.element);
     }
 
-    build(rule_body = this.rule_body) {
+    build(stylerule = this.stylerule) {
 
-
-        this.rule_body = rule_body;
+        this.stylerule = stylerule;
 
         let i = -1;
 
-        for (let a in rule_body.props) {
-            let rule;
+        for (const prop of stylerule.properties.values()) {
+            let own_prop;
             
             //Reuse Existing Rule Bodies
-            if(++i < this.rules.length){
-                rule = this.rules[i];
+            if(++i < this.props.length){
+                own_prop = this.props[i];
             }else{
-                rule = new UIProp(a,  this);
-                this.rules.push(rule);
+                own_prop = new UIProp(prop.name,  this);
+                this.props.push(own_prop);
             }
-            rule.build(a, rule_body.toString(0, a));
-            rule.mount(this.rule_space)
+            own_prop.build(prop.name, prop.value_string);
+            own_prop.mount(this.rule_space)
+        }
+
+        for(const selector of stylerule.selectors){
+            this.addSelector(selector);
         }
     }
 
-    rebuild(rule_body){
-        if(true || this.ver !== rule_body.ver){
+    rebuild(stylerule){
+        if(true || this.ver !== stylerule.ver){
             this.rule_space.innerHTML = "";
-            this.rules.length = 0;
-            this.build(rule_body);
-            this.ver = this.rule_body.ver;
+            this.props.length = 0;
+            this.build(stylerule);
+            this.ver = this.stylerule.ver;
         }
     }
 
     update(type, value) {
 
-        if(type && value){
-
-            console.log(type, value)
-
-            let lexer = whind(value);
-            
-            const IS_VIRTUAL = {
-                is: false
-            };
-            
-            const parser = getPropertyParser(type, IS_VIRTUAL, property_definitions);
-            const rule = this.rule_body;
-            if (parser && !IS_VIRTUAL.is) {
-                if (!rule.props) rule.props = {};
-                parser.parse(lexer, rule.props);
-            }
-        }
+        if(type && value)
+            this.stylerule.addProp(`${type}:${value}`);
 
         this.parent.update(this);
     }
 
     addProp(type, value){
         this.update(type, value);
-        //Increment the version of the rule_body
-        this.rule_body.ver++;
+        //Increment the version of the stylerule
+        this.stylerule.ver++;
        
-        this.rebuild(this.rule_body);
+        this.rebuild(this.stylerule);
     }
 
     removeProp(type){
-        const rule = this.rule_body;
+        const rule = this.stylerule;
         if(rule.props[type]){
-            delete rule.props[type];
+
+            rule.properties.delete(type);
+            //delete rule.props[type];
 
 
-            //Increment the version of the rule_body
-            this.rule_body.ver++;
+            //Increment the version of the stylerule
+            this.stylerule.ver++;
 
             this.parent.update();
-            this.rebuild(this.rule_body);
+            this.rebuild(this.stylerule);
         }
     }
 

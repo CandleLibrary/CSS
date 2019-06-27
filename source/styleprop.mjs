@@ -9,11 +9,15 @@ export default class styleprop {
         return this.val.length > 1 ? this.val : this.val[0];
     }
 
+    get value_string(){
+        return this.val.join(" ");        
+    }
+
     toString(offset = 0){
         const 
             str = [],
             off = ("    ").repeat(offset);
 
-        return `${off+this.name.replace(/\_/g, "-")}:${this.val.join(" ")}`;
+        return `${off+this.name.replace(/\_/g, "-")}:${this.value_string}`;
     }
 }

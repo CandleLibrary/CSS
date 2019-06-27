@@ -16,7 +16,8 @@ export default function parseDeclaration(sym) {
     let important = sym[3] ? true : false;
     let prop = null;
 
-    const IS_VIRTUAL = { is: false }
+    const IS_VIRTUAL = { is: false };
+
     const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
 
     if (parser && !IS_VIRTUAL.is) {
@@ -25,7 +26,7 @@ export default function parseDeclaration(sym) {
 
     } else
         //Need to know what properties have not been defined
-        console.warn(`Unable to get parser for css property ${rule_name}`);
+        console.warn(`Unable to get parser for CSS property ${rule_name}`);
 
     return new styleprop(rule_name, body_data, prop);
 }
