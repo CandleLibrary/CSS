@@ -10,14 +10,14 @@
 	<script src="./build/css.js"></script>
 	<script>
 		async function start(){
-
+			debugger
 			let ui = css.ui(css.parse(`div{color:red; border: 2px solid black}span{font-size:2px}`))
 
 			ui.mount(document.body);
 
 			const comp = wick("<div>((ui_data))</div>")
 			let s;
-			comp.mount(document.body).then(scope=>s=scope);
+			comp.mount(document.body, null, false).then(scope=>s=scope);
 
 			ui.css.addObserver({updatedCSS:css=>{
 				s.update({ui_data:css + ""})

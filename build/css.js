@@ -1,350 +1,6 @@
 var css = (function (exports) {
     'use strict';
 
-    /**
-     * To be extended by objects needing linked list methods.
-     */
-    const LinkedList = {
-
-        props: {
-            /**
-             * Properties for horizontal graph traversal
-             * @property {object}
-             */
-            defaults: {
-                /**
-                 * Next sibling node
-                 * @property {object | null}
-                 */
-                nxt: null,
-
-                /**
-                 * Previous sibling node
-                 * @property {object | null}
-                 */
-                prv: null
-            },
-
-            /**
-             * Properties for vertical graph traversal
-             * @property {object}
-             */
-            children: {
-                /**
-                 * Number of children nodes.
-                 * @property {number}
-                 */
-                noc: 0,
-                /**
-                 * First child node
-                 * @property {object | null}
-                 */
-                fch: null,
-            },
-            parent: {
-                /**
-                 * Parent node
-                 * @property {object | null}
-                 */
-                par: null
-            }
-        },
-
-        methods: {
-            /**
-             * Default methods for Horizontal traversal
-             */
-            defaults: {
-
-                insertBefore: function(node) {
-
-                    if (!this.nxt && !this.prv) {
-                        this.nxt = this;
-                        this.prv = this;
-                    }
-
-                    if(node){
-                        if (node.prv)
-                           node.prv.nxt = node.nxt;
-                        
-                        if(node.nxt) 
-                            node.nxt.prv = node.prv;
-                    
-                        node.prv = this.prv;
-                        node.nxt = this;
-                        this.prv.nxt = node;
-                        this.prv = node;
-                    }else{
-                        if (this.prv)
-                            this.prv.nxt = node;
-                        this.prv = node;
-                    } 
-                },
-
-                insertAfter: function(node) {
-
-                    if (!this.nxt && !this.prv) {
-                        this.nxt = this;
-                        this.prv = this;
-                    }
-
-                    if(node){
-                        if (node.prv)
-                           node.prv.nxt = node.nxt;
-                        
-                        if(node.nxt) 
-                            node.nxt.prv = node.prv;
-                    
-                        node.nxt = this.nxt;
-                        node.prv = this;
-                        this.nxt.prv = node;
-                        this.nxt = node;
-                    }else{
-                        if (this.nxt)
-                            this.nxt.prv = node;
-                        this.nxt = node;
-                    } 
-                }
-            },
-            /**
-             * Methods for both horizontal and vertical traversal.
-             */
-            parent_child: {
-                /**
-                 *  Returns eve. 
-                 * @return     {<type>}  { description_of_the_return_value }
-                 */
-                root() {
-                    return this.eve();
-                },
-                /**
-                 * Returns the root node. 
-                 * @return     {Object}  return the very first node in the linked list graph.
-                 */
-                eve() {
-                    if (this.par)
-                        return this.par.eve();
-                    return this;
-                },
-
-                push(node) {
-                    this.addChild(node);
-                },
-
-                unshift(node) {
-                    this.addChild(node, (this.fch) ? this.fch.pre : null);
-                },
-
-                replace(old_node, new_node) {
-                    if (old_node.par == this && old_node !== new_node) {
-                        if (new_node.par) new_node.par.remove(new_node);
-
-                        if (this.fch == old_node) this.fch = new_node;
-                        new_node.par = this;
-
-
-                        if (old_node.nxt == old_node) {
-                            new_node.nxt = new_node;
-                            new_node.prv = new_node;
-                        } else {
-                            new_node.prv = old_node.prv;
-                            new_node.nxt = old_node.nxt;
-                            old_node.nxt.prv = new_node;
-                            old_node.prv.nxt = new_node;
-                        }
-
-                        old_node.par = null;
-                        old_node.prv = null;
-                        old_node.nxt = null;
-                    }
-                },
-
-                insertBefore: function(node) {
-                    if (this.par)
-                        this.par.addChild(node, this.pre);
-                    else
-                        LinkedList.methods.defaults.insertBefore.call(this, node);
-                },
-
-                insertAfter: function(node) {
-                    if (this.par)
-                        this.par.addChild(node, this);
-                    else
-                        LinkedList.methods.defaults.insertAfter.call(this, node);
-                },
-
-                addChild: function(child = null, prev = null) {
-
-                    if (!child) return;
-
-                    if (child.par)
-                        child.par.removeChild(child);
-
-                    if (prev && prev.par && prev.par == this) {
-                        if (child == prev) return;
-                        child.prv = prev;
-                        prev.nxt.prv = child;
-                        child.nxt = prev.nxt;
-                        prev.nxt = child;
-                    } else if (this.fch) {
-                        child.prv = this.fch.prv;
-                        this.fch.prv.nxt = child;
-                        child.nxt = this.fch;
-                        this.fch.prv = child;
-                    } else {
-                        this.fch = child;
-                        child.nxt = child;
-                        child.prv = child;
-                    }
-
-                    child.par = this;
-                    this.noc++;
-                },
-
-                /**
-                 * Analogue to HTMLElement.removeChild()
-                 *
-                 * @param      {HTMLNode}  child   The child
-                 */
-                removeChild: function(child) {
-                    if (child.par && child.par == this) {
-                        child.prv.nxt = child.nxt;
-                        child.nxt.prv = child.prv;
-
-                        if (child.prv == child || child.nxt == child) {
-                            if (this.fch == child)
-                                this.fch = null;
-                        } else if (this.fch == child)
-                            this.fch = child.nxt;
-
-                        child.prv = null;
-                        child.nxt = null;
-                        child.par = null;
-                        this.noc--;
-                    }
-                },
-
-                /**
-                 * Gets the next node. 
-                 *
-                 * @param      {HTMLNode}  node    The node to get the sibling of.
-                 * @return {HTMLNode | TextNode | undefined}
-                 */
-                getNextChild: function(node = this.fch) {
-                    if (node && node.nxt != this.fch && this.fch)
-                        return node.nxt;
-                    return null;
-                },
-
-                /**
-                 * Gets the child at index.
-                 *
-                 * @param      {number}  index   The index
-                 */
-                getChildAtIndex: function(index, node = this.fch) {
-                    if(node.par !== this)
-                        node = this.fch;
-
-                    let first = node;
-                    let i = 0;
-                    while (node && node != first) {
-                        if (i++ == index)
-                            return node;
-                        node = node.nxt;
-                    }
-
-                    return null;
-                },
-            }
-        },
-
-        gettersAndSetters : {
-            peer : {
-                next: {
-                    enumerable: true,
-                    configurable: true,
-                    get: function() {
-                        return this.nxt;
-                    },
-                    set: function(n) {
-                        this.insertAfter(n);
-                    }
-                },
-                previous: {
-                    enumerable: true,
-                    configurable: true,
-                    get: function() {
-                        return this.prv;
-                    },
-                    set: function(n) {
-                        this.insertBefore(n);
-                    }   
-                }
-            },
-            tree : {
-                children: {
-                    enumerable: true,
-                    configurable: true,
-                    /**
-                     * @return {array} Returns an array of all children.
-                     */
-                    get: function() {
-                        for (var z = [], i = 0, node = this.fch; i++ < this.noc;)(
-                            z.push(node), node = node.nxt
-                        );
-                        return z;
-                    },
-                    set: function(e) {
-                        /* No OP */
-                    }
-                },
-                parent: {
-                    enumerable: true,
-                    configurable: true,
-                    /**
-                     * @return parent node
-                     */
-                    get: function() {
-                        return this.par;
-                    },
-                    set: function(p) {
-                        if(p && p.addChild)
-                            p.addChild(this);
-                        else if(p === null && this.par)
-                            this.par.removeChild(this);
-                    }
-                }
-            }
-        },
-
-
-        mixin : (constructor)=>{
-            const proto = (typeof(constructor) == "function") ? constructor.prototype : (typeof(constructor) == "object") ? constructor : null;
-            if(proto){
-                Object.assign(proto, 
-                    LinkedList.props.defaults, 
-                    LinkedList.methods.defaults
-                );
-            }
-            Object.defineProperties(proto, LinkedList.gettersAndSetters.peer);
-        },
-
-        mixinTree : (constructor)=>{
-            const proto = (typeof(constructor) == "function") ? constructor.prototype : (typeof(constructor) == "object") ? constructor : null;
-            if(proto){
-                Object.assign(proto, 
-                    LinkedList.props.defaults, 
-                    LinkedList.props.children, 
-                    LinkedList.props.parent, 
-                    LinkedList.methods.defaults, 
-                    LinkedList.methods.parent_child
-                    );
-                Object.defineProperties(proto, LinkedList.gettersAndSetters.tree);
-                Object.defineProperties(proto, LinkedList.gettersAndSetters.peer);
-            }
-        }
-    };
-
     const A = 65;
     const a = 97;
     const ACKNOWLEDGE = 6;
@@ -908,7 +564,6 @@ var css = (function (exports) {
             destination.line = this.line;
             destination.sl = this.sl;
             destination.masked_values = this.masked_values;
-            destination.USE_EXTENDED_ID = this.USE_EXTENDED_ID;
             return destination;
         }
 
@@ -947,7 +602,7 @@ var css = (function (exports) {
                 number_of_tabs = this.str
                     .slice(this.off - this.char + nls + nls, this.off + nls)
                     .split("")
-                    .reduce((r, v) => (r + ((v.charCodeAt(0) == HORIZONTAL_TAB) | 0)), 0),
+                    .reduce((r, v$$1) => (r + ((v$$1.charCodeAt(0) == HORIZONTAL_TAB) | 0)), 0),
 
                 arrow = String.fromCharCode(0x2b89),
 
@@ -1036,9 +691,9 @@ var css = (function (exports) {
             }
 
             //Token builder
-            const l = marker.sl,
+            const l$$1 = marker.sl,
                 str = marker.str,
-                number_and_identifier_table = this.id_lu,
+                number_and_identifier_table$$1 = this.id_lu,
                 IWS = marker.IWS;
 
             let length = marker.tl,
@@ -1049,9 +704,9 @@ var css = (function (exports) {
                 char = marker.char,
                 root = marker.off;
 
-            if (off >= l) {
+            if (off >= l$$1) {
                 length = 0;
-                base = l;
+                base = l$$1;
                 //char -= base - off;
                 marker.char = char + (base - marker.off);
                 marker.type = type;
@@ -1068,14 +723,14 @@ var css = (function (exports) {
                 let code = str.charCodeAt(off);
                 let off2 = off;
                 let map = this.symbol_map,
-                    m;
-                let i = 0;
+                    m$$1;
+                let i$$1 = 0;
 
                 while (code == 32 && IWS)
                     (code = str.charCodeAt(++off2), off++);
 
-                while ((m = map.get(code))) {
-                    map = m;
+                while ((m$$1 = map.get(code))) {
+                    map = m$$1;
                     off2 += 1;
                     code = str.charCodeAt(off2);
                 }
@@ -1102,9 +757,9 @@ var css = (function (exports) {
 
                         switch (jump_table[code]) {
                             case 0: //NUMBER
-                                while (++off < l && (12 & number_and_identifier_table[str.charCodeAt(off)]));
+                                while (++off < l$$1 && (12 & number_and_identifier_table$$1[str.charCodeAt(off)]));
 
-                                if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table[str.charCodeAt(off + 1)])) {
+                                if ((str[off] == "e" || str[off] == "E") && (12 & number_and_identifier_table$$1[str.charCodeAt(off + 1)])) {
                                     off++;
                                     if (str[off] == "-") off++;
                                     marker.off = off;
@@ -1119,7 +774,7 @@ var css = (function (exports) {
 
                                 break;
                             case 1: //IDENTIFIER
-                                while (++off < l && ((10 & number_and_identifier_table[str.charCodeAt(off)])));
+                                while (++off < l$$1 && ((10 & number_and_identifier_table$$1[str.charCodeAt(off)])));
                                 type = identifier;
                                 length = off - base;
                                 break;
@@ -1127,18 +782,18 @@ var css = (function (exports) {
                                 if (this.PARSE_STRING) {
                                     type = symbol;
                                 } else {
-                                    while (++off < l && str.charCodeAt(off) !== code);
+                                    while (++off < l$$1 && str.charCodeAt(off) !== code);
                                     type = string;
                                     length = off - base + 1;
                                 }
                                 break;
                             case 3: //SPACE SET
-                                while (++off < l && str.charCodeAt(off) === SPACE);
+                                while (++off < l$$1 && str.charCodeAt(off) === SPACE);
                                 type = white_space;
                                 length = off - base;
                                 break;
                             case 4: //TAB SET
-                                while (++off < l && str[off] === HORIZONTAL_TAB);
+                                while (++off < l$$1 && str[off] === HORIZONTAL_TAB);
                                 type = white_space;
                                 length = off - base;
                                 break;
@@ -1175,7 +830,7 @@ var css = (function (exports) {
                     }
 
                     if (IWS && (type & white_space_new_line)) {
-                        if (off < l) {
+                        if (off < l$$1) {
                             type = symbol;
                             //off += length;
                             continue;
@@ -1344,9 +999,9 @@ var css = (function (exports) {
                 off = lex.off;
 
             for (; lex.off < lex.sl; lex.off++) {
-                const c = jump_table[lex.string.charCodeAt(lex.off)];
+                const c$$1 = jump_table[lex.string.charCodeAt(lex.off)];
 
-                if (c > 2 && c < 7) {
+                if (c$$1 > 2 && c$$1 < 7) {
 
                     if (space_count >= leave_leading_amount) {
                         off++;
@@ -1364,9 +1019,9 @@ var css = (function (exports) {
             off = lex.sl;
 
             for (; lex.sl > lex.off; lex.sl--) {
-                const c = jump_table[lex.string.charCodeAt(lex.sl - 1)];
+                const c$$1 = jump_table[lex.string.charCodeAt(lex.sl - 1)];
 
-                if (c > 2 && c < 7) {
+                if (c$$1 > 2 && c$$1 < 7) {
                     if (space_count >= leave_trailing_amount) {
                         off--;
                     } else {
@@ -1398,13 +1053,13 @@ var css = (function (exports) {
 
             let map = this.symbol_map;
 
-            for (let i = 0; i < sym.length; i++) {
-                let code = sym.charCodeAt(i);
-                let m = map.get(code);
-                if (!m) {
-                    m = map.set(code, new Map).get(code);
+            for (let i$$1 = 0; i$$1 < sym.length; i$$1++) {
+                let code = sym.charCodeAt(i$$1);
+                let m$$1 = map.get(code);
+                if (!m$$1) {
+                    m$$1 = map.set(code, new Map).get(code);
                 }
-                map = m;
+                map = m$$1;
             }
             map.IS_SYM = true;
         }
@@ -1418,7 +1073,7 @@ var css = (function (exports) {
             return this.sl - this.off;
         }
 
-        set string_length(s) {}
+        set string_length(s$$1) {}
 
         /**
          * The current token in the form of a new Lexer with the current state.
@@ -1487,7 +1142,7 @@ var css = (function (exports) {
         get n() { return this.next() }
 
         get END() { return this.off >= this.sl }
-        set END(v) {}
+        set END(v$$1) {}
 
         get type() {
             return 1 << (this.masked_values & TYPE_MASK);
@@ -3537,7 +3192,7 @@ var css = (function (exports) {
                 }
             }
         return o[0];
-    };
+    }
 
     class Color extends Float64Array {
 
@@ -3842,6 +3497,8 @@ var css = (function (exports) {
         }
 
         toString(){
+            if(this.a !== 1)
+                return this.toRGBString();
             return `#${("0"+this.r.toString(16)).slice(-2)}${("0"+this.g.toString(16)).slice(-2)}${("0"+this.b.toString(16)).slice(-2)}`
         }
         toRGBString(){
@@ -4903,8 +4560,8 @@ var css = (function (exports) {
         if (typeof(global) !== "undefined") {
 
             const 
-                fs = (await import('fs')).promises,
-                path = (await import('path'));
+                fs = (await import("fs")).promises,
+                path = (await import("path"));
 
 
             global.Location = (class extends URL {});
@@ -6744,7 +6401,7 @@ var css = (function (exports) {
                 if (!lx.pk.pk.END) // These values should be the only ones present. Failure otherwise.
                     return 0; // Default value present among other values. Invalid
                 return 1; // Default value present only. Valid
-        };
+        }
         return 2; // Default value not present. Ignore
     }
 
@@ -7518,7 +7175,7 @@ var css = (function (exports) {
 
             return false;
         }
-    };
+    }
 
     class ValueTerm$1 extends ValueTerm {
 
@@ -7575,7 +7232,7 @@ var css = (function (exports) {
 
                 slot.innerHTML = this.value;
                 if (slot) {
-                    let element = this.value.valueHandler();
+                    let element = this.value.valueHandler(this.value, slot);
                     element.addEventListener("change", e => {
 
                         let value = element.value;
@@ -7585,7 +7242,7 @@ var css = (function (exports) {
                     slot.setValueHandler(element);
                 } else {
                     let sub = new Segment();
-                    sub.setValueHandler(this.value);
+                    sub.setValueHandler(this.value, sub);
                     seg.addSub(sub);
                 }
             });
@@ -8170,7 +7827,7 @@ var css = (function (exports) {
 
     function d$1(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
         let term, nt, v;
-        const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
+        const { JUX: JUX$$1, AND: AND$$1, OR: OR$$1, ONE_OF: ONE_OF$$1, LiteralTerm: LiteralTerm$$1, ValueTerm: ValueTerm$$1, SymbolTerm: SymbolTerm$$1 } = productions;
 
         let GROUP_BREAK = false;
 
@@ -8187,7 +7844,7 @@ var css = (function (exports) {
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX && term.isRepeating()) term = foldIntoProduction(productions, new JUX, term);
+                        if (term instanceof JUX$$1 && term.isRepeating()) term = foldIntoProduction(productions, new JUX$$1, term);
                         term = foldIntoProduction(productions, term, v);
                     } else
                         term = v;
@@ -8196,14 +7853,14 @@ var css = (function (exports) {
                 case "<":
                     let id = getExtendedIdentifier(l.next());
 
-                    v = new ValueTerm(id, getPropertyParser, definitions, productions);
+                    v = new ValueTerm$$1(id, getPropertyParser, definitions, productions);
 
                     l.next().assert(">");
 
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX /*&& term.isRepeating()*/ ) term = foldIntoProduction(productions, new JUX, term);
+                        if (term instanceof JUX$$1 /*&& term.isRepeating()*/ ) term = foldIntoProduction(productions, new JUX$$1, term);
                         term = foldIntoProduction(productions, term, v);
                     } else {
                         term = v;
@@ -8217,7 +7874,7 @@ var css = (function (exports) {
                         if (and_group)
                             return term;
 
-                        nt = new AND();
+                        nt = new AND$$1();
 
                         if (!term) throw new Error("missing term!");
 
@@ -8242,7 +7899,7 @@ var css = (function (exports) {
                             if (or_group || and_group)
                                 return term;
 
-                            nt = new OR();
+                            nt = new OR$$1();
 
                             nt.terms.push(term);
 
@@ -8261,7 +7918,7 @@ var css = (function (exports) {
                             if (oneof_group || or_group || and_group)
                                 return term;
 
-                            nt = new ONE_OF();
+                            nt = new ONE_OF$$1();
 
                             nt.terms.push(term);
 
@@ -8279,12 +7936,12 @@ var css = (function (exports) {
                     break;
                 default:
 
-                    v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
+                    v = (l.ty == l.types.symbol) ? new SymbolTerm$$1(l.tx) : new LiteralTerm$$1(l.tx, l.ty);
                     l.next();
                     v = checkExtensions(l, v, productions);
 
                     if (term) {
-                        if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/ ) term = foldIntoProduction(productions, new JUX, term);
+                        if (term instanceof JUX$$1 /*&& (term.isRepeating() || term instanceof ONE_OF)*/ ) term = foldIntoProduction(productions, new JUX$$1, term);
                         term = foldIntoProduction(productions, term, v);
                     } else {
                         term = v;
@@ -8415,7 +8072,7 @@ var css = (function (exports) {
             return this.txt;
         }
 
-    };
+    }
 
 
     function drop(e){
@@ -8531,7 +8188,7 @@ var css = (function (exports) {
             }
             return r;
         };
-    };
+    }
 
     const props = Object.assign({}, property_definitions);
 
@@ -8758,35 +8415,36 @@ var css = (function (exports) {
     class UIMaster {
         constructor(css) {
 
-            css.addObserver(this);
+
             this.css = css;
             this.rule_sets = [];
-            
+
             this.element = document.createElement("div");
             this.element.classList.add("cfw_css");
             this.update_mod = 0;
 
-
             this.rule_map = new Map();
 
-            if(css)
+            if (css) {
+                css.addObserver(this);
                 this.build();
+            }
         }
 
         // Builds out the UI elements from collection of rule bodies and associated selector groups. 
         // css - A CandleFW_CSS object. 
         // meta - internal 
         build(css = this.css) {
-            if(this.update_mod++%3 !== 0) return;
+            if (this.update_mod++ % 3 !== 0) return;
 
             //Extract rule bodies and set as keys for the rule_map. 
             //Any existing mapped body that does not have a matching rule should be removed. 
-            
+
             const rule_set = css.ruleset;
 
-            for(const rule of rule_set.rules){
+            for (const rule of rule_set.rules) {
 
-                if(!this.rule_map.get(rule))
+                if (!this.rule_map.get(rule))
                     this.rule_map.set(rule, new ui_stylerule(rule, this));
                 else {
                     this.rule_map.get(rule).rebuild(rule);
@@ -8798,7 +8456,7 @@ var css = (function (exports) {
         }
 
         updatedCSS(css) {
-            if(this.UPDATE_MATCHED) return void (this.UPDATE_MATCHED = false);      
+            if (this.UPDATE_MATCHED) return void(this.UPDATE_MATCHED = false);
             //this.element.innerHTML = "";
             this.build(css);
             //this.render();
@@ -8819,9 +8477,9 @@ var css = (function (exports) {
                 this.element.parentElement.removeChild(this.element);
         }
 
-        update(){
+        update() {
             this.UPDATE_MATCHED = true;
-        	this.css.updated();
+            this.css.updated();
         }
     }
 
@@ -9432,29 +9090,29 @@ var css = (function (exports) {
     const parse = function (string_data) { return parser(whind$1(string_data), env) };
     const ui = function(css) { if (css instanceof stylesheet) { return new UIMaster(css); } };
 
-    parse.types = types;
-
+    exports.css_parser = parser;
+    exports.parse = parse;
+    exports.ui = ui;
+    exports.length = CSS_Length;
     exports.CSS_Length = CSS_Length;
     exports.CSS_URL = CSS_URL;
-    exports.UIMaster = UIMaster;
-    exports.UIRuleSet = ui_stylerule;
-    exports.attribSelector = attribSelector;
-    exports.classSelector = classSelector;
-    exports.comboSelector = combination_selector_part;
+    exports.url = CSS_URL;
+    exports.ui_stylesheet = UIMaster;
+    exports.ui_stylerule = ui_stylerule;
+    exports.stylerule = stylerule;
+    exports.ruleset = ruleset;
     exports.compoundSelector = compoundSelector;
-    exports.css_parser = parser;
+    exports.comboSelector = combination_selector_part;
+    exports.typeselector = type_selector_part;
+    exports.selector = selector;
     exports.idSelector = idSelector;
-    exports.parse = parse;
-    exports.parseDeclaration = parseDeclaration;
+    exports.classSelector = classSelector;
+    exports.attribSelector = attribSelector;
     exports.pseudoClassSelector = pseudoClassSelector;
     exports.pseudoElementSelector = pseudoElementSelector;
-    exports.ruleset = ruleset;
-    exports.selector = selector;
-    exports.stylerule = stylerule;
+    exports.parseDeclaration = parseDeclaration;
     exports.stylesheet = stylesheet;
     exports.types = types;
-    exports.typeselector = type_selector_part;
-    exports.ui = ui;
 
     return exports;
 

@@ -1,4 +1,4 @@
-import css from "../source/css.mjs";
+import * as css from "../source/css.mjs";
 
 const chai = require("chai");
 
@@ -92,7 +92,7 @@ a {
   border-top-color: green;
 }`
         it("Parses well formed CSS and returns an object graph of CSS rules", function(done) {
-            css(test_data).then((og) => {
+            css.parse(test_data).then((og) => {
                 let rule = og.getRule("a");
                 rule.should.have.property("props");
                 rule.props.should.have.property("border_top_color");
@@ -109,7 +109,7 @@ a {
                     <span class="class"></span>
                 </div>
             </a>`
-            css(`
+            css.parse(`
                 a+div.bar #roo span.class{font-size:2px; color:green}
                 span {color:yellow}
             `).then(og => {
@@ -121,7 +121,7 @@ a {
             }).catch(e => done(e));
         })
 
-        it("Parses color values", () => css(`
+        it("Parses color values", () => css.parse(`
             .one{color:rgba(255,255,255,0.5)}
             .two{color:rgb(255,255,255)}
             .three{color:#FFFFFF}
@@ -142,7 +142,7 @@ a {
                 </div>
             </a>`
 
-                css("@media (min-width : 200px) { a+div.bar #roo span.class{font-size:2px; color:green} }")
+                css.parse("@media (min-width : 200px) { a+div.bar #roo span.class{font-size:2px; color:green} }")
                     .then((og) => {
                         let span = ele.getElementsByTagName("span")[0];
                         let rule = og.getApplicableRules(span);
@@ -159,7 +159,7 @@ a {
             it("@import url(\"/test/data/import.css\")", function(done) {
                 this.timeout(5000);
 
-                css(`@import url("/test/data/import.css"); a{font-size:2px}`)
+                css.parse(`@import url("/test/data/import.css"); a{font-size:2px}`)
                     .then((og) => {
                         let ele = document.createElement("div");
                         ele.innerHTML = `<a></a>`;

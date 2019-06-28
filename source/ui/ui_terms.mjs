@@ -56,7 +56,7 @@ export class ValueTerm extends terms.ValueTerm {
 
             slot.innerHTML = this.value;
             if (slot) {
-                let element = this.value.valueHandler();
+                let element = this.value.valueHandler(this.value, slot);
                 element.addEventListener("change", e => {
 
                     let value = element.value;
@@ -66,7 +66,7 @@ export class ValueTerm extends terms.ValueTerm {
                 slot.setValueHandler(element);
             } else {
                 let sub = new Segment();
-                sub.setValueHandler(this.value)
+                sub.setValueHandler(this.value, sub)
                 seg.addSub(sub);
             }
         })

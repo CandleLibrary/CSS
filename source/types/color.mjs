@@ -193,6 +193,8 @@ export default class CSS_Color extends Color {
     }
 
     toString(){
+        if(this.a !== 1)
+            return this.toRGBString();
         return `#${("0"+this.r.toString(16)).slice(-2)}${("0"+this.g.toString(16)).slice(-2)}${("0"+this.b.toString(16)).slice(-2)}`
     }
     toRGBString(){

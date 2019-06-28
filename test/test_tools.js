@@ -1,4 +1,4 @@
-import css, { CSSRuleBody, CSS_Length, CSS_URL } from "../source/css.mjs";
+import * as css from "../source/css.mjs";
 import chai from "chai";
 chai.should();
 import whind from "@candlefw/whind";
@@ -23,7 +23,7 @@ export function message(string) {
 }
 
 export function checkURL(url) {
-    const URL = new CSS_URL(url)
+    const URL = new css.CSS_URL(url)
     return function(prop) {
         prop.should.have.property("host", URL.host);
         prop.should.have.property("port", URL.port);
@@ -120,7 +120,7 @@ export const test = {
     },
     set check(f) {
         if (!this.v)
-            throw new Error("Please provide CSS property value before defining a check funcition.")
+            throw new Error("Please provide css.CSS property value before defining a check funcition.")
         const v = this.v;
         const prop_name = this.prop_name;
 
@@ -128,7 +128,7 @@ export const test = {
 
 
         (this.ONLY ? itOnly : it)(`Parses property {${v}}`, async () => {
-            let sheet = css(`a{${v}}`);
+            let sheet = css.parse(`a{${v}}`);
             /*
             try{
             	await body.parse(whind(`{${v}}`));
@@ -149,50 +149,50 @@ export const test = {
 }
 
 export function px(n) {
-    return checkLength(new CSS_Length(n, "px"));
+    return checkLength(new css.CSS_Length(n, "px"));
 }
 
 export function mm(n) {
-    return checkLength(new CSS_Length(n, "mm"));
+    return checkLength(new css.CSS_Length(n, "mm"));
 }
 export function cm(n) {
-    return checkLength(new CSS_Length(n, "cm"));
+    return checkLength(new css.CSS_Length(n, "cm"));
 }
 export function _in(n) {
-    return checkLength(new CSS_Length(n, "_in"));
+    return checkLength(new css.CSS_Length(n, "_in"));
 }
 export function pc(n) {
-    return checkLength(new CSS_Length(n, "pc"));
+    return checkLength(new css.CSS_Length(n, "pc"));
 }
 export function pt(n) {
-    return checkLength(new CSS_Length(n, "pt"));
+    return checkLength(new css.CSS_Length(n, "pt"));
 }
 export function ch(n) {
-    return checkLength(new CSS_Length(n, "ch"));
+    return checkLength(new css.CSS_Length(n, "ch"));
 }
 export function em(n) {
-    return checkLength(new CSS_Length(n, "em"));
+    return checkLength(new css.CSS_Length(n, "em"));
 }
 export function ex(n) {
-    return checkLength(new CSS_Length(n, "ex"));
+    return checkLength(new css.CSS_Length(n, "ex"));
 }
 export function rem(n) {
-    return checkLength(new CSS_Length(n, "rem"));
+    return checkLength(new css.CSS_Length(n, "rem"));
 }
 export function vh(n) {
-    return checkLength(new CSS_Length(n, "vh"));
+    return checkLength(new css.CSS_Length(n, "vh"));
 }
 export function vw(n) {
-    return checkLength(new CSS_Length(n, "vw"));
+    return checkLength(new css.CSS_Length(n, "vw"));
 }
 export function vmin(n) {
-    return checkLength(new CSS_Length(n, "vmin"));
+    return checkLength(new css.CSS_Length(n, "vmin"));
 }
 export function vmax(n) {
-    return checkLength(new CSS_Length(n, "vmax"));
+    return checkLength(new css.CSS_Length(n, "vmax"));
 }
 export function deg(n) {
-    return checkLength(new CSS_Length(n, "deg"));
+    return checkLength(new css.CSS_Length(n, "deg"));
 }
 
 export const inherit = ["inherit", "unset", "revert"]
