@@ -50,8 +50,11 @@ class UIProp {
         this.element.appendChild(this.label)
         let pp = getPropertyParser(type, undefined, props, ui_productions);
         this._value = pp.buildInput(1, whind(value));
-        this._value.parent = this;
-        this._value.mount(this.element);
+
+        if(this._value){
+            this._value.parent = this;
+            this._value.mount(this.element);
+        }
     }
 
     update(value) {
