@@ -10,8 +10,7 @@
     "build.watch": "rollup --config  ./build/config/config.js --watch",
     "build.ui.watch": "rollup --config  ./build/config/ui.config.js --watch",
     "compile": "hydrocarbon compile -u -o ./source/Parser -t mjs ./source/grammar/css.hcg",
-    "compile.mount": "hydrocarbon compile -d -m ./source/grammar/css.hcg",
-    "prepare": "npm run build && npm test"
+    "compile.mount": "hydrocarbon compile -d -m ./source/grammar/css.hcg"
   },
   "repository": {
     "type": "git",
@@ -29,7 +28,6 @@
   "homepage": "https://github.com/candlefw/css#readme",
   "dependencies": {
     "@candlefw/color": "latest",
-    "@candlefw/ll": "latest",
     "@candlefw/math": "latest",
     "@candlefw/url": "latest",
     "@candlefw/whind": "latest"
@@ -37,7 +35,6 @@
   "devDependencies": {
     "chai": "latest",
     "esm": "^3.2.25",
-    "jsdom": "latest",
     "mocha": "latest",
     "rollup": "latest",
     "rollup-plugin-commonjs": "latest",
