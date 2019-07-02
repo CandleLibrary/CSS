@@ -1,4 +1,4 @@
-@SYMBOL || ^= $= *= <= 
+@SYMBOL || ^= $= *= <= >=
 
 @IGNORE θnl θws
 
@@ -46,8 +46,7 @@
 	<> supports → \@ τsupports supports_condition { GROUP_RULE_BODY }
 
 	<> supports_condition → τnot supports_in_parens
-		│ supports_in_parens (τand supports_in_parens)(*)
-		│ supports_in_parens (τor supports_in_parens)(*)
+		│ supports_in_parens ( ( τand │ τor )  supports_in_parens)(*)
 
 	<> supports_in_parens → \( supports_condition \)
 		│ supports_feature
@@ -103,7 +102,7 @@
 
 	<> url →  τurl \( string \)
 
-	<>string → " (θany)(+") " │ ' (θany)(+") '
+	<>string → " θany(+") " │ ' θany(+") '
 
 ##############################################################################################
 #### Modified from https://drafts.csswg.org/selectors-4/#grammar
