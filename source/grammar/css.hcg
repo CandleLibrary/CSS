@@ -86,8 +86,8 @@
 
 	<> mf_plain → mf_name : mf_value 
 
-	<> mf_range → mf_name ( < │ > │ <= │ >= │ = ) mf_value
-		│ mf_value ( < │ > │ <= │ >= │ = ) mf_name
+	<> mf_range → mf_name ( (< │ <=) │ (> │ >=) │ = ) mf_value
+		│ mf_value ( (< │ <=) │ (> │ >=) │ = ) mf_name
 		│ mf_value ( > │ >= ) identifier ( > │ >= ) mf_value
 		│ mf_value ( < │ <= ) identifier ( < │ <= ) mf_value
 
