@@ -41,7 +41,10 @@ export default class stylerule {
             prop.parent = this;
         return prop;
     }
-
+    /*  
+        Adds properties to the stylerule
+        arg1 string - accepts a string of semicolon seperated css style rules.   
+    */
     addProp(props) {
         if (typeof props == "string") {
             return this.addProps(
@@ -63,6 +66,8 @@ export default class stylerule {
                 this.properties.set(prop.name, prop);
 
         this.ver++;
+
+        return props;
     }
 
     match(element, window) {
