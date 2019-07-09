@@ -30,6 +30,12 @@ export default class stylerule {
         this.addProperty = this.addProp;
         this.addProps = this.addProp;
     }
+    
+    /* sends an update signal up the hiearchy to allow style sheets to alert observers of new changes. */
+    update(){
+        if(this.parent)
+            this.parent.update();
+    }
 
     get type(){
         return "stylerule"

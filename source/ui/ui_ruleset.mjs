@@ -119,8 +119,10 @@ export default class ui_stylerule {
 
     update(type, value) {
 
-        if(type && value)
+        if(type && value){
             this.stylerule.addProp(`${type}:${value}`);
+            this.stylerule.update();
+        }
 
         this.parent.update(this);
     }

@@ -73,7 +73,13 @@ export default class stylesheet {
     }
 
     addObserver(observer) {
+        if(observer.stylesheet == this){
+            return
+        }if(observer.stylesheet){
+            observer.stylesheet.removeObserver(observer)
+        }
         this.observers.push(observer);
+        observer.stylesheet = this;
     }
 
     removeObserver(observer) {

@@ -1,5 +1,6 @@
 export class Segment {
     constructor(parent) {
+
         this.parent = null;
 
         this.css_val = "";
@@ -9,7 +10,7 @@ export class Segment {
 
         this.list = document.createElement("div");
         this.list.classList.add("prop_list");
-        //this.list.style.display = "none"
+        this.list.style.display = "none"
 
         this.ext = document.createElement("button");
         this.ext.classList.add("prop_extender");

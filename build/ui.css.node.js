@@ -1458,6 +1458,7 @@ ONE_OF.step = 0;
 
 class Segment {
     constructor(parent) {
+        debugger
         this.parent = null;
 
         this.css_val = "";

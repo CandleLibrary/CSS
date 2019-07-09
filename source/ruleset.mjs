@@ -29,6 +29,12 @@ export default class ruleset {
         return new_rule;
     }*/
 
+    /* sends an update signal up the hiearchy to allow style sheets to alert observers of new changes. */
+    update(){
+        if(this.parent)
+            this.parent.updated();
+    }
+
     getRule(string) {
         let r = null;
         for (let node = this.fch; node; node = this.getNextChild(node))
