@@ -100,7 +100,7 @@ export default class stylesheet {
             return iter
         } else
             for (const rule of iter) {
-                new_rule.addProperty(rule);
+                new_rule.merge(rule);
             }
         return new_rule;
     }

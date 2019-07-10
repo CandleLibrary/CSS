@@ -2,7 +2,7 @@ import whind from "@candlefw/whind";
 import css_parser from "./Parser/css.mjs";
 import { types } from "./properties/property_and_type_definitions";
 import ui_stylesheet from "./ui/builder.mjs";
-import ui_stylerule from "./ui/ui_ruleset.mjs"
+import ui_stylerule from "./ui/ui_stylerule.mjs"
 import stylesheet from "./stylesheet.mjs"
 import ruleset from "./ruleset.mjs"
 import stylerule from "./stylerule.mjs"

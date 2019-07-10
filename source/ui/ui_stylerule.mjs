@@ -125,11 +125,35 @@ export default class ui_stylerule {
         }
     }
 
+    updatedCSSStyleRule(stylerule){
+        //this.rebuild(stylerule)
+        if(!this.GUARD_UPDATE_LOOP){
+
+                let i = -1;
+
+        for (const prop of stylerule.properties.values()) {
+            let own_prop;
+            
+            //Reuse Existing Rule Bodies
+            if(++i < this.props.length){
+                own_prop = this.props[i];
+            }else{
+                own_prop = new UIProp(prop.name,  this);
+                this.props.push(own_prop);
+            }
+            own_prop.build(prop.name, prop.value_string);
+            own_prop.mount(this.rule_space)
+        }
+        }
+        this.GUARD_UPDATE_LOOP = false;
+    }
+
     update(type, value) {
 
         if(type && value){
             this.stylerule.addProp(`${type}:${value}`);
             this.stylerule.update();
+            this.GUARD_UPDATE_LOOP = true;
         }
 
         this.parent.update(this);

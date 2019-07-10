@@ -29,22 +29,25 @@ export default class stylerule {
         this.props = new Proxy(this, this);
         this.addProperty = this.addProp;
         this.addProps = this.addProp;
-    }
-    
-    /* sends an update signal up the hiearchy to allow style sheets to alert observers of new changes. */
-    update(){
-        if(this.parent)
-            this.parent.update();
+
+        this.observers = [];
     }
 
-    get type(){
+    /* sends an update signal up the hiearchy to allow style sheets to alert observers of new changes. */
+    update() {
+        if (this.parent)
+            this.parent.update();
+        this.updated();
+    }
+
+    get type() {
         return "stylerule"
     }
 
     get(obj, name) {
         let prop = obj.properties.get(name);
-        if (prop)
-            prop.parent = this;
+        //if (prop)
+        //    prop.parent = this;
         return prop;
     }
     /*  
@@ -55,7 +58,7 @@ export default class stylerule {
         if (typeof props == "string") {
             return this.addProps(
                 props.split(";")
-                .filter(e=> e !== "")
+                .filter(e => e !== "")
                 .map((e, a) => (a = e.split(":"), a.splice(1, 0, null), a))
                 .map(parseDeclaration)
             )
@@ -68,8 +71,10 @@ export default class stylerule {
             props = [props];
 
         for (const prop of props)
-            if (prop)
+            if (prop) {
                 this.properties.set(prop.name, prop);
+                prop.parent = this;
+            }
 
         this.ver++;
 
@@ -123,11 +128,39 @@ export default class stylerule {
     }
 
     merge(rule) {
-        if (rule.type ==  "stylerule")
-            this.addProp(rule);
+        if(!rule) return;
+        if (rule.type == "stylerule"){
+            for (const prop of rule.properties.values()){
+                if (prop) {
+                    this.properties.set(prop.name, prop);
+                }
+            }
+        }
+                
     }
 
     get _wick_type_() { return 0; }
 
     set _wick_type_(v) {}
+
+    updated() {
+        if (this.observers.length > 0)
+            for (let i = 0; i < this.observers.length; i++) this.observers[i].updatedCSSStyleRule(this);
+    }
+
+    addObserver(observer) {
+        if (observer.stylesheet == this) {
+            return
+        }
+        if (observer.stylesheet) {
+            observer.stylesheet.removeObserver(observer)
+        }
+        this.observers.push(observer);
+        observer.stylesheet = this;
+    }
+
+    removeObserver(observer) {
+        for (let i = 0; i < this.observers.length; i++)
+            if (this.observers[i] == observer) return this.observers.splice(i, 1);
+    }
 }

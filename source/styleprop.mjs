@@ -3,6 +3,7 @@ export default class styleprop {
 		this.val = val;
         this.name = name.replace(/\-/g, "_");
         this.original_value = original_value;
+        this.rule = null;
 	}
 
     get value(){
@@ -19,5 +20,26 @@ export default class styleprop {
             off = ("    ").repeat(offset);
 
         return `${off+this.name.replace(/\_/g, "-")}:${this.value_string}`;
+    }
+
+    setValue(...values){
+        let i = 0;
+
+        for(const value of values){
+            const own_val = this.val[i];
+
+
+            if(value instanceof own_val.constructor)
+                this.val[i] = value;
+            else
+                this.val[i] = value;
+            i++
+        }
+
+        this.val.length = values.length;
+
+        if(this.parent){
+            this.parent.update();
+        }
     }
 }

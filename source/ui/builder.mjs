@@ -1,5 +1,5 @@
 import whind from "@candlefw/whind";
-import ui_stylerule from "./ui_ruleset.mjs";
+import ui_stylerule from "./ui_stylerule.mjs";
 
 export default class UIMaster {
     constructor(css) {
