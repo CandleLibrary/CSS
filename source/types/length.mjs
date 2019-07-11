@@ -4,18 +4,24 @@ import whind from "@candlefw/whind";
 
 export default class CSS_Length extends Number {
 
+    static setValue(ele, value){
+        ele.value = (value) ? value + 0 : 0;
+    }
+
     static valueHandler(value, ui_seg){
         let ele = document.createElement("input")
 
-
         ele.type = "number";
-        ele.value = (value) ? value + 0 : 0;
+
+        CSS_Length.setValue(ele, value);
         
-        ui_seg.css_value = ele.value + "%"
+        ui_seg.css_value = ele.value + "px";
         
         ele.addEventListener("change", (e)=>{
+            console.log(12321)
             ele.css_value = ele.value + "px";
         })
+
         return ele;
     }
 

@@ -104,10 +104,10 @@ export default class ui_stylerule {
             if(++i < this.props.length){
                 own_prop = this.props[i];
             }else{
-                own_prop = new UIProp(prop.name,  this);
+                own_prop = new UIProp(prop,  this);
                 this.props.push(own_prop);
             }
-            own_prop.build(prop.name, prop.value_string);
+            own_prop.build();
             own_prop.mount(this.rule_space)
         }
 
@@ -127,24 +127,10 @@ export default class ui_stylerule {
 
     updatedCSSStyleRule(stylerule){
         //this.rebuild(stylerule)
-        if(!this.GUARD_UPDATE_LOOP){
-
-                let i = -1;
-
-        for (const prop of stylerule.properties.values()) {
-            let own_prop;
-            
-            //Reuse Existing Rule Bodies
-            if(++i < this.props.length){
-                own_prop = this.props[i];
-            }else{
-                own_prop = new UIProp(prop.name,  this);
-                this.props.push(own_prop);
-            }
-            own_prop.build(prop.name, prop.value_string);
-            own_prop.mount(this.rule_space)
-        }
-        }
+        if(!this.GUARD_UPDATE_LOOP)
+            for (const prop of this.props) 
+                prop.updatedCSSStyleProperty()
+        
         this.GUARD_UPDATE_LOOP = false;
     }
 

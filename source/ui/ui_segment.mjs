@@ -1,6 +1,8 @@
-export class Segment {
-    constructor(parent) {
+import whind from "@candlefw/whind";
 
+export class Segment {
+    constructor(parent, production) {   
+        this.production = production;
         this.parent = null;
 
         this.css_val = "";
@@ -39,6 +41,8 @@ export class Segment {
         this.HAS_VALUE = false;
         this.DEMOTED = false;
 
+        this.sub_count = 0;
+
         this.element.addEventListener("mouseover", e => {
             //this.setList();
         })
@@ -56,12 +60,17 @@ export class Segment {
     }
 
     reset() {
-        this.list.innerHTML = "";
-        this.val.innerHTML = "";
+        //this.list.innerHTML = "";
+        //this.val.innerHTML = "";
+        this.sub_count = 0;
+        //this.subs.length = 0;
         //this.subs.forEach(e => e.destroy);
-        this.subs = [];
-        this.setElement = null;
-        this.changeEvent = null;
+        //this.setElement = null;
+        //this.changeEvent = null;
+    }
+
+    finalize(){
+        this.subs.length = this.sub_count;
     }
 
     clearSegments(){
@@ -88,28 +97,6 @@ export class Segment {
     mount(element) {
         element.appendChild(this.element);
     }
-
-
-    addSub(seg) {
-        this.menu_icon.setAttribute("superset", true)
-        seg.parent = this;
-        this.subs.push(seg);
-        this.val.appendChild(seg.element)
-    }
-
-    removeSub(seg) {
-        if (seg.parent == this) {
-            for (let i = 0; i < this.subs.length; i++) {
-                if (this.subs[i] == seg) {
-                    this.val.removeChild(seg.element);
-                    seg.parent = null;
-                    break;
-                }
-            }
-        }
-        return seg;
-    }
-
     setList() {
         //if(this.DEMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
@@ -125,8 +112,10 @@ export class Segment {
     }
 
     setValueHandler(element, change_event_function) {
+
         this.val.innerHTML = "";
         this.val.appendChild(element);
+        this.value_element = element;
 
         if (change_event_function) {
             this.setElement = element;
@@ -157,7 +146,12 @@ export class Segment {
     }
 
     demote() {
-        let seg = new Segment;
+        this.reset();
+
+        const seg = this.getSub();
+
+        seg.reset()
+        seg.production = this.production;
         seg.prod = this.prod;
         seg.css_val = this.css_val;
 
@@ -169,14 +163,10 @@ export class Segment {
 
         let subs = this.subs;
 
-        if (subs.length > 0) {
-
-            for (let i = 0; i < this.subs.length; i++) 
+        if (subs.length > 1) {
+            for (let i = 1; i < this.subs.length; i++) 
                 seg.addSub(this.subs[i]);
-            
         } else {
-
-
             let children = this.val.childNodes;
 
             if (children.length > 0) {
@@ -188,7 +178,6 @@ export class Segment {
             }
         }
 
-
         this.menu_icon.innerHTML = ""
         this.menu_icon.style.display = "none";
         this.menu_icon.setAttribute("superset", false)
@@ -197,9 +186,51 @@ export class Segment {
         this.reset();
 
         this.addSub(seg);
+
         seg.setList();
         
         this.DEMOTED = true;
+    }
+
+    getSub(production = null){
+        const sub =  this.subs[this.sub_count] || new Segment();
+        sub.production =  production;
+        sub.reset();
+        return sub;
+    }
+
+    addSub(seg) {
+        this.menu_icon.setAttribute("superset", true)
+        seg.parent = this;
+        seg.id = this.sub_count;
+
+        if(this.subs[this.sub_count++] !== seg){
+            this.subs[this.sub_count-1] = seg;
+            this.val.appendChild(seg.element)
+        }
+    }
+
+    removeSub(seg) {
+        if (seg.parent == this) {
+            for (let i = 0; i < this.subs.length; i++) {
+                if (this.subs[i] == seg) {
+                    this.val.removeChild(seg.element);
+                    seg.parent = null;
+                    break;
+                }
+            }
+        }
+        return seg;
+    }
+
+
+    getRepeat(){
+        if(this.parent){
+            if(this.parent.subs[this.id+1])
+                return this.parent.subs[this.id+1]
+        }
+
+        return new Segment();
     }
 
     addRepeat(seg) {
@@ -284,7 +315,6 @@ export class Segment {
                 window.addEventListener("pointerup", up)
             }
 
-
             /*
             this.ext.onclick = e => {
                 if (this.subs.length == 0)
@@ -301,7 +331,8 @@ export class Segment {
             this.ext.style.display = "none";
         }
         this.setList();
-        this.update();
+        
+        //this.update();
     }
 
     get width() {
@@ -314,6 +345,11 @@ export class Segment {
         else {
             let val = this.getValue();
         }
+    }
+
+    setValue(value){
+        //debugger
+        this.production.buildInput(0, whind(value.toString()), this);
     }
 
     getValue() {

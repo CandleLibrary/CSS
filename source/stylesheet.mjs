@@ -106,7 +106,7 @@ export default class stylesheet {
     }
 
     * getApplicableProperties(element, win = window){
-        for(const rule of this.getApplicableRules(element, win))
+        for(const rule of this.getApplicableRules(element, win, true))
             yield * rule.iterateProps();
     }
 

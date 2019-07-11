@@ -11,8 +11,9 @@ class JUX extends prod.JUX {
     //Adds an entry in options list. 
 
 
-    createSegment() {
-        let segment = new Segment()
+    createSegment(segment) {
+        segment.reset();
+        segment.production = this;
         segment.start = this.start;
         segment.end = this.end;
         segment.prod = this;
@@ -39,9 +40,8 @@ class JUX extends prod.JUX {
         }
         let count = 0;
         //Build List
-        for (let i = 0, l = this.terms.length; i < l; i++) {
+        for (let i = 0, l = this.terms.length; i < l; i++) 
             count += this.terms[i].list(list, slot);
-        }
 
         return count > 1;
     }
@@ -53,25 +53,30 @@ class JUX extends prod.JUX {
         if (typeof(lx) == "string")
             lx = whind(lx);
 
-        return this.pi(lx, segment, list);
+        const out = this.pi(lx, segment, list);
+
+        segment.finalize();
+
+        return out;
     }
 
     default (segment, EXTENDED = true) {
-        let seg = this.createSegment();
+        
+        const sub_segment = this.createSegment(segment.getSub(this));
 
-        segment.addSub(seg);
+        segment.addSub(sub_segment);
 
-        for (let i = 0, l = this.terms.length; i < l; i++) {
-            this.terms[i].default(seg, l > 1);
-        }
-        seg.setList();
+        for (let i = 0, l = this.terms.length; i < l; i++) 
+            this.terms[i].default(sub_segment, l > 1);
 
-        if (!EXTENDED) seg.repeat();
+        sub_segment.setList();
+
+        if (!EXTENDED) sub_segment.repeat();
     }
 
-    pi(lx, ele, lister = this, start = this.start, end = this.end) {
+    pi(lx, master_segment, lister = this, start = this.start, end = this.end) {
         
-        let segment = this.createSegment()
+        const segment = this.createSegment(master_segment.getSub(this));
 
         let bool = false,
             j = 0,
@@ -84,7 +89,7 @@ class JUX extends prod.JUX {
 
                 let copy = lx.copy();
 
-                let seg = (REPEAT) ? new Segment : segment;
+                let seg = (REPEAT) ? segment.getSub(this) : segment;
 
                 seg.prod = this;
 
@@ -110,41 +115,45 @@ class JUX extends prod.JUX {
                     segment.addRepeat(seg);
             }
 
-            this.capParse(segment, ele, bool)
+            this.capParse(segment, master_segment, bool)
             
             return bool;
     }
 
-    capParse(segment, ele, bool){
+    capParse(sub_segment, master_segment, bool){
         if (bool) {
-            segment.repeat();
-            if (ele)
-                ele.addSub(segment);
-            this.last_segment = segment;
+            sub_segment.repeat();
+            if (master_segment)
+                master_segment.addSub(sub_segment);
+            this.last_sub_segment = sub_segment;
+            sub_segment.finalize();
         }else {
-            segment.destroy();
+            sub_segment.destroy();
             if(this.OPTIONAL){
-                if(ele){
-                    let segment = this.createSegment();
+                if(master_segment){
+                    let sub_segment = this.createsub_segment();
                     let blank = new BlankTerm();
-                    blank.parseInput(segment);
-                    segment.prod = this;
+                    blank.parseInput(sub_segment);
+                    sub_segment.prod = this;
                     
-                    segment.repeat();
-                    ele.addSub(segment)
+                    sub_segment.repeat();
+                    master_segment.addSub(sub_segment)
                 }
             }
         }
+
     }
 
-    buildInput(repeat = 1, lex) {
+    buildInput(repeat = 1, lex, segment = new Segment(null, this)) {
+        this.last_segment = segment;
+        
+        segment.reset();
+        segment.start = this.start;
+        segment.end = this.end;
+        segment.prod = this;
+        this.parseInput(lex, segment, this);
+        segment.finalize();
 
-        this.last_segment = null;
-        let seg = new Segment;
-        seg.start = this.start;
-        seg.end = this.end;
-        seg.prod = this;
-        this.parseInput(lex, seg, this);
         return this.last_segment;
     }
 
@@ -156,12 +165,9 @@ class JUX extends prod.JUX {
 class AND extends JUX {
 
     default (segment, EXTENDED = false) {
-        //let seg = this.createSegment();
-        //segment.addSub(seg);
-        for (let i = 0, l = this.terms.length; i < l; i++) {
+
+        for (let i = 0, l = this.terms.length; i < l; i++) 
             this.terms[i].default(segment, i > 1);
-        }
-        //seg.repeat();
     }
 
     list(ele, slot) {
@@ -189,11 +195,11 @@ class AND extends JUX {
         return 1;
     }
 
-    pi(lx, ele, lister = this, start = 1, end = 1) {
+    pi(lx, segment, lister = this, start = 1, end = 1) {
 
         outer: for (let j = 0; j < end && !lx.END; j++) {
             for (let i = 0, l = this.terms.length; i < l; i++)
-                if (!this.terms[i].parseInput(lx, ele)) return (start === 0) ? true : false
+                if (!this.terms[i].parseInput(lx, segment)) return (start === 0) ? true : false
         }
 
         segment.repeat();
@@ -243,10 +249,8 @@ class OR extends JUX {
         return 1;
     }
 
-    pi(lx, ele, lister = this, start = this.start, end = this.end) {
+    pi(lx, master_segment, lister = this, start = this.start, end = this.end) {
         
-        let segment = ele //this.createSegment()
-
         let bool = false;
 
         let j = 0;
@@ -254,10 +258,9 @@ class OR extends JUX {
         let OVERALL_BOOL = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
-            const REPEAT = j > 0
-
-            let seg = (REPEAT) ? new Segment : segment;
-
+            const 
+                REPEAT = j > 0,
+                sub_segment = (REPEAT) ? master_segment.getSub(this) : master_segment;
 
             bool = false;
 
@@ -269,7 +272,7 @@ class OR extends JUX {
                 for (let i = 0, l = this.terms.length; i < l; i++) {
                     //if(this.terms[i].count == this.count) continue
 
-                    if (this.terms[i].parseInput(lx, seg, true)) {
+                    if (this.terms[i].parseInput(lx, sub_segment, true)) {
                         this.terms[i].count = this.count;
                         OVERALL_BOOL = true;
                         bool = true;
@@ -291,15 +294,15 @@ class OR extends JUX {
                 bool = false;
             } else if (start === 0)
                 bool = true;
-                if (REPEAT)
-            segment.addRepeat(seg);
+
+            if (REPEAT)
+                master_segment.addRepeat(sub_segment);
         }
 
         if (OVERALL_BOOL) {
-            segment.repeat();
-            //if (ele)
-            //    ele.addSub(segment);
-            this.last_segment = segment;
+            master_segment.repeat();
+            master_segment.finalize();
+            this.last_segment = master_segment;
         }
 
 
@@ -343,9 +346,9 @@ class ONE_OF extends JUX {
         return 1;
     }
 
-    pi(lx, ele, lister = this, start = this.start, end = this.end) {
+    pi(lx, master_segment, lister = this, start = this.start, end = this.end) {
         //List
-        let segment = this.createSegment()
+        let segment = master_segment.getSub(this);
 
         //Add new
         let bool = false;
@@ -359,8 +362,8 @@ class ONE_OF extends JUX {
             let seg = segment;
             
             if(REPEAT){
-                seg = new Segment;
-                seg.prod = this;
+                seg = segment.getSub(this);
+                seg.production = this;
             }
 
             bool = false;
@@ -381,7 +384,7 @@ class ONE_OF extends JUX {
 
         }
 
-        this.capParse(segment, ele, bool)
+        this.capParse(segment, master_segment, bool)
 
         return  bool;
     }

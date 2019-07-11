@@ -20,22 +20,20 @@ function dragstart(e){
 }
 
 class UIProp {
-    constructor(type,  parent) {
+    constructor(prop,  parent) {
         // Predefine all members of this object.
+        this.prop = prop;
         this.hash = 0;
-        this.type = "";
-        this.parent = null;
-        this._value = null;
-        this.setupElement(type);
-        this.init(type, parent)
-    }
-
-    init(type,  parent){
-        this.type = type;
+        this.type = prop.name;
         this.parent = parent;
+        this._value = null;
+        this.setupElement(this.type);
+        this.prop.addObserver(this);
+        this.build();
     }
 
     destroy(){
+        this.prop.removeObserver(this);
         this.hash = 0;
         this.type = "";
         this.parent = null;
@@ -43,32 +41,6 @@ class UIProp {
         this.type = null;
         this.parent = null;
         this.unmount();
-    }
-
-    build(type, value){
-        this.element.innerHTML =""
-        this.element.appendChild(this.label)
-        let pp = getPropertyParser(type, undefined, props, ui_productions);
-        this._value = pp.buildInput(1, whind(value));
-
-        if(this._value){
-            this._value.parent = this;
-            this._value.mount(this.element);
-        }
-    }
-
-    update(value) {
-        this.parent.update(this.type, value.toString());
-    }
-
-    mount(element) {
-        if (element instanceof HTMLElement)
-            element.appendChild(this.element)
-    }
-
-    unmount() {
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
     }
 
     setupElement(type) {
@@ -81,8 +53,46 @@ class UIProp {
         this.label.innerHTML = `${type.replace(/[\-\_]/g, " ")}`;
     }
 
+    build(){
+        const type = this.prop.name;
+        const value = this.prop.value_string;
+
+        this.element.innerHTML =""
+        this.element.appendChild(this.label)
+        let pp = getPropertyParser(type, undefined, props, ui_productions);
+        this._value = pp.buildInput(1, whind(value));
+
+        if(this._value){
+            this._value.parent = this;
+            this._value.mount(this.element);
+        }
+    }
+
+    mount(element) {
+        if (element instanceof HTMLElement)
+            element.appendChild(this.element)
+    }
+
+    unmount() {
+        if (this.element.parentElement)
+            this.element.parentElement.removeChild(this.element);
+    }
+
     get value(){
         return this._value.toString();
+    }
+
+    update(value) {
+        this.UPDATE_LOOP_GAURD = true;
+        this.prop.setValueFromString(value.toString());
+        this.UPDATE_LOOP_GAURD = false;
+        //this.parent.update(this.type, );
+    }
+
+    updatedCSSStyleProperty(prop = this.prop){
+        if(!this.UPDATE_LOOP_GAURD)
+            this._value.setValue(prop.value_string);
+        this.UPDATE_LOOP_GAURD = false;
     }
 }
 

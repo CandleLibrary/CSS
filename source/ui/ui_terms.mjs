@@ -5,18 +5,28 @@ export class ValueTerm extends terms.ValueTerm {
 
     default (seg, APPEND = false, value = null) {
         if (!APPEND) {
-            let element = this.value.valueHandler(value, seg);
 
-            if (value) {
+            if(seg.vh !== this.value){
+                const element = this.value.valueHandler(value, seg, )
+
+                if (value) 
+                    seg.css_val = value.toString();
+                
+                seg.setValueHandler(element, (ele, seg, event) => {
+                    seg.css_val = element.css_value;
+                    seg.update();
+                });
+            }else if (value) {
+                this.value.setValue(seg.value_element, value)
                 seg.css_val = value.toString();
             }
-            seg.setValueHandler(element, (ele, seg, event) => {
-                seg.css_val = element.css_value;
-                seg.update();
-            });
+
+            seg.vh = this.value;
         } else {
-            let sub = new Segment();
+            let sub = seg.getSub(this);
+
             let element = this.value.valueHandler(value, sub);
+
             if (value)
                 sub.css_val = value.toString();
 
@@ -26,13 +36,14 @@ export class ValueTerm extends terms.ValueTerm {
             });
             //sub.prod = list;
             seg.addSub(sub);
+
+            sub.finalize();
         }
     }
 
-    buildInput(rep = 1, value) {
-        let seg = new Segment();
-        this.default(seg, false, value);
-        return seg;
+    buildInput(rep = 1, value, segment = new Segment()) {
+        this.default(segment, false, value);
+        return segment;
     }
 
     parseInput(l, seg, APPEND = false) {
@@ -65,7 +76,7 @@ export class ValueTerm extends terms.ValueTerm {
                 })
                 slot.setValueHandler(element);
             } else {
-                let sub = new Segment();
+                let sub = seg.getSub();
                 sub.setValueHandler(this.value, sub)
                 seg.addSub(sub);
             }
@@ -86,7 +97,7 @@ export class BlankTerm extends terms.LiteralTerm {
         if (!APPEND) {
             seg.value = "  ";
         } else {
-            let sub = new Segment();
+            let sub = seg.getSub();
             sub.value = "";
             seg.addSub(sub);
         }
@@ -113,7 +124,7 @@ export class LiteralTerm extends terms.LiteralTerm {
         if (!APPEND) {
             seg.value = this.value;
         } else {
-            let sub = new Segment();
+            let sub = seg.getSub();
             sub.value = this.value;
             seg.addSub(sub);
         }
@@ -155,7 +166,7 @@ export class SymbolTerm extends LiteralTerm {
 
         if (l.tx == this.value) {
             l.next();
-            let sub = new Segment();
+            let sub = seg.getSub();
             sub.value = this.value + "";
             seg.addSub(sub);
             return true;
