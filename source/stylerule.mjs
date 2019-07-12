@@ -30,6 +30,7 @@ export default class stylerule {
         this.props = new Proxy(this, this);
         this.addProperty = this.addProp;
         this.addProps = this.addProp;
+        this.UPDATE_LOOP_GAURD = false;
     }
 
     destroy(){
@@ -49,6 +50,7 @@ export default class stylerule {
 
     /* sends an update signal up the hiearchy to allow style sheets to alert observers of new changes. */
     update() {
+        //if(this.UPDATE_LOOP_GAURD) return;
         if (this.parent)
             this.parent.update();
         this.updateObservers();
@@ -84,13 +86,22 @@ export default class stylerule {
         if (!Array.isArray(props))
             props = [props];
 
+
+       // this.UPDATE_LOOP_GAURD = true;
         for (const prop of props)
             if (prop) {
-                this.properties.set(prop.name, prop);
+                if(this.properties.has(prop.name))
+                    this.properties.get(prop.name).setValue(...prop.val);
+                else
+                    this.properties.set(prop.name, prop);
+                
                 prop.parent = this;
             }
+        //this.UPDATE_LOOP_GAURD = false;
 
         this.ver++;
+
+        this.update();
 
         return props;
     }

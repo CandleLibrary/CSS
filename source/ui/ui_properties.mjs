@@ -30,6 +30,7 @@ class UIProp {
         this.setupElement(this.type);
         this.prop.addObserver(this);
         this.build();
+        this.ver = 0;
     }
 
     destroy(){
@@ -66,6 +67,8 @@ class UIProp {
             this._value.parent = this;
             this._value.mount(this.element);
         }
+
+       // this.ver = this.prop.ver;
     }
 
     mount(element) {
@@ -90,6 +93,12 @@ class UIProp {
     }
 
     updatedCSSStyleProperty(prop = this.prop){
+        
+        if(prop == this.prop && this.ver == prop.ver)
+            return;
+
+       // this.ver = prop.ver;
+
         if(!this.UPDATE_LOOP_GAURD)
             this._value.setValue(prop.value_string);
         this.UPDATE_LOOP_GAURD = false;

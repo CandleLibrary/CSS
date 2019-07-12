@@ -8,6 +8,7 @@ export default class styleprop {
         this.name = name.replace(/\-/g, "_");
         this.original_value = original_value;
         this.rule = null;
+        this.ver = 0;
 	}
 
     destroy(){
@@ -55,7 +56,7 @@ export default class styleprop {
             const own_val = this.val[i];
 
 
-            if(value instanceof own_val.constructor)
+            if(own_val && value instanceof own_val.constructor)
                 this.val[i] = value;
             else
                 this.val[i] = value;
@@ -63,6 +64,8 @@ export default class styleprop {
         }
 
         this.val.length = values.length;
+
+        this.ver++;
 
         this.updated();
     }

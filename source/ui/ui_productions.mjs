@@ -131,7 +131,7 @@ class JUX extends prod.JUX {
             sub_segment.destroy();
             if(this.OPTIONAL){
                 if(master_segment){
-                    let sub_segment = this.createsub_segment();
+                    let sub_segment = this.createSegment(master_segment.getSub(this));
                     let blank = new BlankTerm();
                     blank.parseInput(sub_segment);
                     sub_segment.prod = this;
