@@ -9,6 +9,13 @@ export default class ruleset {
         this.parent = null;
 	}
 
+    destroy(){
+        for(const rule of this.rules)
+            rule.destroy();
+        this.rules = null;
+        this.parent = null;
+    }
+
     * getApplicableSelectors(element, win = window) {
         for(const rule of this.rules)
             yield * rule.getApplicableSelectors(element, win)
@@ -18,16 +25,6 @@ export default class ruleset {
         for(const rule of this.rules)
             yield * rule.getApplicableRules(element, window)
     }
-    /*
-	getApplicableRules(element, new_rule = new stylerule, win = window, us) {
-
-        for(const rule of this.rules){
-            if(rule.match(element, win))
-                new_rule.addProperty(rule);
-        }
-        
-        return new_rule;
-    }*/
 
     /* sends an update signal up the hiearchy to allow style sheets to alert observers of new changes. */
     update(){

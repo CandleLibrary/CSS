@@ -2,6 +2,10 @@ export default  class CSS_String extends String {
     
     static list(){}
 
+    static setValue(ele, value){
+        ele.value = value || "";
+    }
+
     static valueHandler(existing_value){
         let ele = document.createElement("input");
         ele.type = "text"

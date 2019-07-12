@@ -1,12 +1,21 @@
 export default class CSS_Number extends Number {
 
-    static valueHandler(value){
-        let ele = document.createElement("input")
-        ele.type = "number";
+    static setValue(ele, value){
         ele.value = (value) ? value + 0 : 0;
+    }
+
+    static valueHandler(value){
+        
+        let ele = document.createElement("input")
+
+        ele.type = "number";
+
+        CSS_Number.setValue(ele, value);
+
         ele.addEventListener("change", (e)=>{
             ele.css_value = ele.value;
         })
+
         return ele;
     }
 

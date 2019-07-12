@@ -5,43 +5,49 @@ export class ValueTerm extends terms.ValueTerm {
 
     default (seg, APPEND = false, value = null) {
         if (!APPEND) {
+            if (seg.vh !== this.value) {
 
-            if(seg.vh !== this.value){
-                const element = this.value.valueHandler(value, seg, )
-
-                if (value) 
-                    seg.css_val = value.toString();
-                
-                seg.setValueHandler(element, (ele, seg, event) => {
-                    seg.css_val = element.css_value;
+                const element = this.value.valueHandler(seg, value, (ele, seg, event) => {
+                    seg.css_val = ele.css_value;
                     seg.update();
-                });
-            }else if (value) {
-                this.value.setValue(seg.value_element, value)
+                })
+
+                if (value)
+                    seg.css_val = value.toString();
+
+            } else if (value) {
+                this.value.setValue(seg, value)
                 seg.css_val = value.toString();
             }
 
-            seg.vh = this.value;
+
         } else {
-            let sub = seg.getSub(this);
+            if (seg.vh !== this.value) {
+                let sub = seg.getSub(this);
 
-            let element = this.value.valueHandler(value, sub);
+                let element = this.value.valueHandler(value, sub);
 
-            if (value)
-                sub.css_val = value.toString();
+                if (value)
+                    sub.css_val = value.toString();
 
-            sub.setValueHandler(element, (ele, seg, event) => {
-                seg.css_val = element.css_value;
-                seg.update();
-            });
-            //sub.prod = list;
-            seg.addSub(sub);
+                sub.setValueHandler(element, (ele, seg, event) => {
+                    seg.css_val = element.css_value;
+                    seg.update();
+                });
+                //sub.prod = list;
+                seg.addSub(sub);
 
-            sub.finalize();
+                sub.finalize();
+            } else {
+                this.value.setValue(seg.subs[0].value_element, value);
+                seg.css_val = value.toString();
+            }
         }
+
+        seg.vh = this.value;
     }
 
-    buildInput(rep = 1, value, segment = new Segment()) {
+    buildInput(rep = 1, value, segment = new Segment(null, this)) {
         this.default(segment, false, value);
         return segment;
     }

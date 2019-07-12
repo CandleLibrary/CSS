@@ -1,10 +1,10 @@
+import observer from "@candlefw/observer";
+
 import stylerule from "./stylerule.mjs";
-import whind from "@candlefw/whind";
 import css_parser from "./Parser/css.mjs";
-import observer from "./observer_mixin.mjs";
 
 export default class stylesheet {
-    
+
     constructor(sym) {
         this.ruleset = null;
 
@@ -19,6 +19,11 @@ export default class stylesheet {
     }
 
     destroy(){
+        
+        this.ruleset.destroy();
+        this.parent = null;
+        this.READY = false;
+
         observer.destroy(this);
     }
 

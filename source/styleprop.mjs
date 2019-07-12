@@ -1,7 +1,8 @@
 import parseDeclaration from "./properties/parse_declaration.mjs";
-import observer from "./observer_mixin.mjs";
+import observer from "@candlefw/observer";
 
 export default class styleprop {
+    
 	constructor(name, original_value, val){
 		this.val = val;
         this.name = name.replace(/\-/g, "_");
@@ -14,7 +15,7 @@ export default class styleprop {
         this.name = "";
         this.original_value = "";
         this.rule = null;
-        observer_mixin.destroy(this);
+        observer.destroy(this);
     }
 
     updated() {

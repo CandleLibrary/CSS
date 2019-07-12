@@ -1,14 +1,14 @@
 import parseDeclaration from "./properties/parse_declaration.mjs";
-import observer from "./observer_mixin.mjs";
+import observer from "@candlefw/observer";
 
 function setParent(array, parent) {
     for (const prop of array)
         prop.parent = parent;
 }
+
 /*
  * Holds a set of css style properties.
  */
-
 export default class stylerule {
 
     constructor(selectors = [], props = []) {
@@ -44,7 +44,7 @@ export default class stylerule {
         this.selectors = null;
         this.properties = null;
 
-        observer_mixin.destroy(this);
+        observer.destroy(this);
     }
 
     /* sends an update signal up the hiearchy to allow style sheets to alert observers of new changes. */

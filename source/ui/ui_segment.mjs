@@ -2,6 +2,8 @@ import whind from "@candlefw/whind";
 
 export class Segment {
     constructor(parent, production) {   
+        if(!production)
+            debugger;
         this.production = production;
         this.parent = null;
 
@@ -110,37 +112,6 @@ export class Segment {
         if (this.changeEvent)
             this.changeEvent(this.setElement, this, e);
     }
-
-    setValueHandler(element, change_event_function) {
-
-        this.val.innerHTML = "";
-        this.val.appendChild(element);
-        this.value_element = element;
-
-        if (change_event_function) {
-            this.setElement = element;
-            this.changeEvent = change_event_function;
-            this.setElement.onchange = this.change.bind(this);
-        }
-
-        this.HAS_VALUE = true;
-        //this.menu_icon.style.display = "none";
-        this.setList();
-    }
-
-    set value(v) {
-        this.val.innerHTML = v;
-        this.css_val = v;
-        this.HAS_VALUE = true;
-        this.setList();
-    }
-
-    get value_count() {
-        if (this.subs.length > 0)
-            return this.subs.length
-        return (this.HAS_VALUE) ? 1 : 0;
-    }
-
     promote() {
 
     }
@@ -192,8 +163,8 @@ export class Segment {
         this.DEMOTED = true;
     }
 
-    getSub(production = null){
-        const sub =  this.subs[this.sub_count] || new Segment();
+    getSub(production = this.production){
+        const sub =  this.subs[this.sub_count] || new Segment(null, production);
         sub.production =  production;
         sub.reset();
         return sub;
@@ -346,6 +317,37 @@ export class Segment {
             let val = this.getValue();
         }
     }
+
+    setValueHandler(element, change_event_function) {
+
+        this.val.innerHTML = "";
+        this.val.appendChild(element);
+        this.value_element = element;
+
+        if (change_event_function) {
+            this.setElement = element;
+            this.changeEvent = change_event_function;
+            this.setElement.onchange = this.change.bind(this);
+        }
+
+        this.HAS_VALUE = true;
+        //this.menu_icon.style.display = "none";
+        this.setList();
+    }
+
+    set value(v) {
+        this.val.innerHTML = v;
+        this.css_val = v;
+        this.HAS_VALUE = true;
+        this.setList();
+    }
+
+    get value_count() {
+        if (this.subs.length > 0)
+            return this.subs.length
+        return (this.HAS_VALUE) ? 1 : 0;
+    }
+
 
     setValue(value){
         //debugger

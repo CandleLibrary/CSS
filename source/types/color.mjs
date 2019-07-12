@@ -16,14 +16,22 @@ export default class CSS_Color extends Color {
 
     static list(){}
 
-    static valueHandler(existing_value){
-        let ele = document.createElement("input");
-        ele.type = "color"
-        ele.value = (existing_value) ? existing_value+ "" : "#000000";
+    static setValue(ui_segment, value){
+        ui_segment.setElement.value = (value) ? value + "" : "#000000";
+    }
+
+    static valueHandler(ui_segment, value, update_function){
+        const ele = document.createElement("input");
+
+        ele.type = "color";
+
         ele.addEventListener("change", (e)=>{
             ele.css_value = ele.value;
         })
-        return ele;
+
+        ui_segment.setValueHandler(ele, update_function);
+
+        CSS_Color.setValue(ui_segment, value);
     }
 
     static setInput(input, value){

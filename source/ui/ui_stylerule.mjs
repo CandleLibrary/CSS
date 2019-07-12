@@ -10,10 +10,10 @@ import {
 } from "../properties/property_and_type_definitions.mjs";
 import { getPropertyParser } from "../properties/parser.mjs";
 
-
 const props = Object.assign({}, property_definitions);
 
 export default class ui_stylerule {
+    
     constructor(stylerule, parent) {
 
         this.parent = parent;
@@ -47,29 +47,29 @@ export default class ui_stylerule {
 
         this.element.appendChild(this.selector_space);
         this.element.appendChild(this.rule_space);
+        this.stylerule = stylerule;
+        this.stylerule.addObserver(this);
 
         this.build(stylerule);
-
-
         this.mount(this.parent.element);
-
-        this.ver = stylerule;
-
-        this.ver.addObserver(this);
     }
 
     destroy(){
-        this.ver.removeObserver(this);
-    }
+        this.stylerule.removeObserver(this);
+        this.stylerule = null;
+        this.parent = null;
 
-    addData(){
+        if(this.element.parentElement)
+            this.element.parentElement.removeChild(this.element);
 
-    }
+        for(const prop of this.props)
+            prop.destroy();
 
-    updateSelectors(obj){
-        if(obj.parts.length < 1){
-            //remove selector from the rule set.
-        }
+        for(const selector of this.selector)
+            selector.destroy();
+
+        this.props = null;
+        this.selectors = null;
     }
 
     addSelector(selector){
@@ -168,8 +168,6 @@ export default class ui_stylerule {
             this.rebuild(this.stylerule);
         }
     }
-
-    generateHash() {}
 }
 
 function dragover(e){

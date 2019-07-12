@@ -1,16 +1,25 @@
 export default class CSS_Percentage extends Number {
+    
     static setInput(input, value){
         input.type = "number";
         input.value = parseFloat(value);
     }
 
+    static setValue(ele, value){
+        ele.value = parseFloat(value) || 0;
+        ele.css_value = ele.value + "%";
+    }
+
     static buildInput(value){
         let ele = document.createElement("input")
         ele.type = "number";
-        ele.value = parseFloat(value) || 0;
+
+        CSS_Percentage.setValue(ele, value);
+
         ele.addEventListener("change", (e)=>{
             ele.css_value = ele.value + "%"
         })
+        
         return ele;
     }
     
