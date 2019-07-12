@@ -1,4 +1,5 @@
 import parseDeclaration from "./properties/parse_declaration.mjs";
+import observer from "./observer_mixin.mjs";
 
 function setParent(array, parent) {
     for (const prop of array)
@@ -29,15 +30,28 @@ export default class stylerule {
         this.props = new Proxy(this, this);
         this.addProperty = this.addProp;
         this.addProps = this.addProp;
+    }
 
-        this.observers = [];
+    destroy(){
+        
+        for(const prop of this.properties.values())
+            prop.destroy();
+
+        for(const selector of this.selectors)
+            selector.destroy();
+
+        this.parent = null;
+        this.selectors = null;
+        this.properties = null;
+
+        observer_mixin.destroy(this);
     }
 
     /* sends an update signal up the hiearchy to allow style sheets to alert observers of new changes. */
     update() {
         if (this.parent)
             this.parent.update();
-        this.updated();
+        this.updateObservers();
     }
 
     get type() {
@@ -142,25 +156,6 @@ export default class stylerule {
     get _wick_type_() { return 0; }
 
     set _wick_type_(v) {}
-
-    updated() {
-        if (this.observers.length > 0)
-            for (let i = 0; i < this.observers.length; i++) this.observers[i].updatedCSSStyleRule(this);
-    }
-
-    addObserver(observer) {
-        if (observer.stylesheet == this) {
-            return
-        }
-        if (observer.stylesheet) {
-            observer.stylesheet.removeObserver(observer)
-        }
-        this.observers.push(observer);
-        observer.stylesheet = this;
-    }
-
-    removeObserver(observer) {
-        for (let i = 0; i < this.observers.length; i++)
-            if (this.observers[i] == observer) return this.observers.splice(i, 1);
-    }
 }
+
+observer("updatedCSSStyleRule", stylerule.prototype);

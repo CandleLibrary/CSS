@@ -1,8 +1,10 @@
 import stylerule from "./stylerule.mjs";
 import whind from "@candlefw/whind";
 import css_parser from "./Parser/css.mjs";
+import observer from "./observer_mixin.mjs";
 
 export default class stylesheet {
+    
     constructor(sym) {
         this.ruleset = null;
 
@@ -14,8 +16,10 @@ export default class stylesheet {
         this.parent = null;
 
         this.READY = true;
+    }
 
-        this.observers = [];
+    destroy(){
+        observer.destroy(this);
     }
 
     /**
@@ -68,23 +72,7 @@ export default class stylesheet {
     }
 
     updated() {
-        if (this.observers.length > 0)
-            for (let i = 0; i < this.observers.length; i++) this.observers[i].updatedCSS(this);
-    }
-
-    addObserver(observer) {
-        if(observer.stylesheet == this){
-            return
-        }if(observer.stylesheet){
-            observer.stylesheet.removeObserver(observer)
-        }
-        this.observers.push(observer);
-        observer.stylesheet = this;
-    }
-
-    removeObserver(observer) {
-        for (let i = 0; i < this.observers.length; i++)
-            if (this.observers[i] == observer) return this.observers.splice(i, 1);
+        this.updateObservers();
     }
 
     * getApplicableSelectors(element, win = window) {
@@ -121,3 +109,5 @@ export default class stylesheet {
         return this.ruleset + "";
     }
 }
+
+observer("updatedCSS", stylesheet.prototype);

@@ -1,4 +1,5 @@
 import parseDeclaration from "./properties/parse_declaration.mjs";
+import observer from "./observer_mixin.mjs";
 
 export default class styleprop {
 	constructor(name, original_value, val){
@@ -6,33 +7,21 @@ export default class styleprop {
         this.name = name.replace(/\-/g, "_");
         this.original_value = original_value;
         this.rule = null;
-        this.observers = null;
 	}
 
+    destroy(){
+        this.val = null;
+        this.name = "";
+        this.original_value = "";
+        this.rule = null;
+        observer_mixin.destroy(this);
+    }
+
     updated() {
-        if (this.observers && this.observers.length > 0)
-            for (let i = 0; i < this.observers.length; i++) this.observers[i].updatedCSSStyleProperty(this);
+        this.updateObservers();
+
         if(this.parent)
             this.parent.update();
-    }
-
-    addObserver(observer) {
-        if(observer.property == this){
-            return
-        }if(observer.property){
-            observer.property.removeObserver(observer)
-        }
-        if(!this.observers)
-            this.observers = [];
-        
-        this.observers.push(observer);
-        
-        observer.property = this;
-    }
-
-    removeObserver(observer) {
-        for (let i = 0; i < this.observers.length; i++)
-            if (this.observers[i] == observer) return this.observers.splice(i, 1);
     }
 
     get value(){
@@ -59,8 +48,6 @@ export default class styleprop {
 
     setValue(...values){
 
-        
-
         let i = 0;
 
         for(const value of values){
@@ -79,3 +66,5 @@ export default class styleprop {
         this.updated();
     }
 }
+
+observer("updatedCSSStyleProperty", styleprop.prototype);
