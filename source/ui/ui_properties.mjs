@@ -1,4 +1,6 @@
 import whind from "@candlefw/whind";
+import cached_factory from "@candlefw/cached_factory"
+
 import UISelector from "./ui_selectors.mjs";
 import * as ui_productions from "./ui_productions.mjs";
 import createCache from "./create_cache.mjs";
@@ -14,34 +16,51 @@ const props = Object.assign({}, property_definitions);
 
 var dragee = null;
 
-function dragstart(e){
-    event.dataTransfer.setData('text/plain',null)
+function dragstart(e) {
+    event.dataTransfer.setData('text/plain', null)
     UIProp.dragee = this;
 }
 
 class UIProp {
-    constructor(prop,  parent) {
+    constructor(prop, parent) {
         // Predefine all members of this object.
-        this.prop = prop;
-        this.hash = 0;
-        this.type = prop.name;
-        this.parent = parent;
+        this.type = "";
+
+        this.prop = null;
+        this.parent = null;
         this._value = null;
-        this.setupElement(this.type);
-        this.prop.addObserver(this);
-        this.build();
+
+        this.hash = 0;
         this.ver = 0;
     }
 
-    destroy(){
-        this.prop.removeObserver(this);
+    initializer(prop, parent) {
+        this.prop = prop;
+        this.type = prop.name;
+        this.parent = parent;
+
+        this.setupElement(this.type);
+        this.prop.addObserver(this);
+        this.build();
+    }
+
+    destructor() {
+
+        this._value && this.value.destroy();
+        this.prop && this.prop.removeObserver(this);
+
         this.hash = 0;
+        this.ver = 0;
         this.type = "";
-        this.parent = null;
+
         this._value = null;
         this.type = null;
         this.parent = null;
         this.unmount();
+    }
+
+    destroy() {
+        cached_factory.collect(this);
     }
 
     setupElement(type) {
@@ -54,21 +73,19 @@ class UIProp {
         this.label.innerHTML = `${type.replace(/[\-\_]/g, " ")}`;
     }
 
-    build(){
+    build() {
         const type = this.prop.name;
         const value = this.prop.value_string;
 
-        this.element.innerHTML =""
+        this.element.innerHTML = ""
         this.element.appendChild(this.label)
         let pp = getPropertyParser(type, undefined, props, ui_productions);
         this._value = pp.buildInput(1, whind(value));
 
-        if(this._value){
+        if (this._value) {
             this._value.parent = this;
             this._value.mount(this.element);
         }
-
-       // this.ver = this.prop.ver;
     }
 
     mount(element) {
@@ -81,7 +98,7 @@ class UIProp {
             this.element.parentElement.removeChild(this.element);
     }
 
-    get value(){
+    get value() {
         return this._value.toString();
     }
 
@@ -92,19 +109,17 @@ class UIProp {
         //this.parent.update(this.type, );
     }
 
-    updatedCSSStyleProperty(prop = this.prop){
-        
-        if(prop == this.prop && this.ver == prop.ver)
+    updatedCSSStyleProperty(prop = this.prop) {
+
+        if (prop == this.prop && this.ver == prop.ver)
             return;
 
-       // this.ver = prop.ver;
+        // this.ver = prop.ver;
 
-        if(!this.UPDATE_LOOP_GAURD)
+        if (!this.UPDATE_LOOP_GAURD)
             this._value.setValue(prop.value_string);
         this.UPDATE_LOOP_GAURD = false;
     }
 }
 
-UIProp = createCache(UIProp);
-
-export default UIProp
+export default cached_factory(UIProp);

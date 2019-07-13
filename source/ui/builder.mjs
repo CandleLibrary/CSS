@@ -1,16 +1,25 @@
 import whind from "@candlefw/whind";
+import cached_factory from "@candlefw/cached_factory"
+
 import ui_stylerule from "./ui_stylerule.mjs";
 
-export default class UIMaster {
+class UIMaster {
     constructor(css) {
 
-
-        this.css = css;
-        this.rule_sets = [];
+        this.css = null;
+        
+        this.rule_map = null;
 
         this.element = document.createElement("div");
+        
         this.element.classList.add("cfw_css");
+
         this.update_mod = 0;
+    }
+
+    initializer(css){
+
+        this.css = css;
 
         this.rule_map = new Map();
 
@@ -18,6 +27,21 @@ export default class UIMaster {
             css.addObserver(this);
             this.build();
         }
+    }
+
+    destructor(){
+        this.unmount();
+        
+        for(const rule of this.rule_map.values())
+            rule.destroy();
+
+        this.rule_map = null;
+
+        this.update_mod = 0;
+    }
+
+    destroy(){
+        cached_factory.collect(this);
     }
 
     // Builds out the UI elements from collection of rule bodies and associated selector groups. 
@@ -41,19 +65,11 @@ export default class UIMaster {
         }
 
         this.css = css;
-        this.rule_sets = [];
     }
 
     updatedCSS(css) {
         if (this.UPDATE_MATCHED) return void(this.UPDATE_MATCHED = false);
-        //this.element.innerHTML = "";
         this.build(css);
-        //this.render();
-    }
-
-    render() {
-        for (let i = 0; i < this.rule_sets.length; i++)
-            this.rule_sets.render(this.element);
     }
 
     mount(element) {
@@ -71,3 +87,5 @@ export default class UIMaster {
         this.css.updated();
     }
 }
+
+export default cached_factory(UIMaster);

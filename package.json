@@ -34,6 +34,7 @@
     "@candlefw/whind": "latest"
   },
   "devDependencies": {
+    "@candlefw/cached_factory": "^1.1.0",
     "chai": "latest",
     "esm": "^3.2.25",
     "mocha": "latest",

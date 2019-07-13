@@ -57,10 +57,10 @@ export class ValueTerm extends terms.ValueTerm {
 
         if (val) {
             this.default(seg, APPEND, val)
-            return true;
+            return {segment:seg, bool:true};
         }
 
-        return val;
+        return {segment:seg, bool:false};
     }
 
     list(ele, slot) {
@@ -120,7 +120,7 @@ export class BlankTerm extends terms.LiteralTerm {
 
     parseInput(seg, APPEND = false) {
         this.default(seg, APPEND)
-        return false;
+        return {segment:seg, bool:false};
     }
 }
 
@@ -156,10 +156,10 @@ export class LiteralTerm extends terms.LiteralTerm {
         if (l.tx == this.value) {
             l.next();
             this.default(seg, APPEND)
-            return true;
+            return {segment:seg, bool:true};
         }
 
-        return false;
+        return {segment:seg, bool:false};
     }
 }
 
@@ -175,9 +175,9 @@ export class SymbolTerm extends LiteralTerm {
             let sub = seg.getSub();
             sub.value = this.value + "";
             seg.addSub(sub);
-            return true;
+            return {segment:seg, bool:true};
         }
 
-        return false;
+        return {segment:seg, bool:false};
     }
 }

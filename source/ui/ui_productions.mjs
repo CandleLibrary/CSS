@@ -1,7 +1,7 @@
 import whind from "@candlefw/whind";
 import * as prod from "../properties/productions.mjs";
 import { Segment } from "./ui_segment.mjs"
-import { ValueTerm, LiteralTerm, SymbolTerm,  BlankTerm } from "./ui_terms.mjs";
+import { ValueTerm, LiteralTerm, SymbolTerm, BlankTerm } from "./ui_terms.mjs";
 
 /**
  * wick internals.
@@ -20,7 +20,7 @@ class JUX extends prod.JUX {
         return segment
     }
 
-    insertBlank(seg){
+    insertBlank(seg) {
         let blank = new BlankTerm;
         blank.parseInput(seg);
     }
@@ -40,7 +40,7 @@ class JUX extends prod.JUX {
         }
         let count = 0;
         //Build List
-        for (let i = 0, l = this.terms.length; i < l; i++) 
+        for (let i = 0, l = this.terms.length; i < l; i++)
             count += this.terms[i].list(list, slot);
 
         return count > 1;
@@ -53,20 +53,22 @@ class JUX extends prod.JUX {
         if (typeof(lx) == "string")
             lx = whind(lx);
 
-        const out = this.pi(lx, segment, list);
+        let bool = false;
+
+        ({segment, bool} = this.pi(lx, segment, list));
 
         segment.finalize();
 
-        return out;
+        return {segment, bool};
     }
 
     default (segment, EXTENDED = true) {
-        
+
         const sub_segment = this.createSegment(segment.getSub(this));
 
         segment.addSub(sub_segment);
 
-        for (let i = 0, l = this.terms.length; i < l; i++) 
+        for (let i = 0, l = this.terms.length; i < l; i++)
             this.terms[i].default(sub_segment, l > 1);
 
         sub_segment.setList();
@@ -75,8 +77,8 @@ class JUX extends prod.JUX {
     }
 
     pi(lx, master_segment, lister = this, start = this.start, end = this.end) {
-        
-        const segment = this.createSegment(master_segment.getSub(this));
+
+        let segment = this.createSegment(master_segment.getSub(this));
 
         let bool = false,
             j = 0,
@@ -85,19 +87,19 @@ class JUX extends prod.JUX {
 
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
-                const REPEAT = j > 0;
-
-                let copy = lx.copy();
-
-                let seg = (REPEAT) ? segment.getSub(this) : segment;
+                const
+                    copy = lx.copy(),
+                    seg = segment.getSub(this, j);
 
                 seg.prod = this;
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
 
-                    let term = this.terms[i];
+                    let term = this.terms[i], local_bool = false;
 
-                    if (!term.parseInput(copy, seg, l > 1)) {
+                    ({bool:local_bool, segment:segment} = term.parseInput(lx, segment))
+
+                    if (!local_bool) {
                         if (!term.OPTIONAL) {
                             break repeat;
                         }
@@ -111,31 +113,31 @@ class JUX extends prod.JUX {
                 if (!this.checkForComma(lx))
                     break;
 
-                if (REPEAT)
-                    segment.addRepeat(seg);
+                if (j > 0)
+                    segment = segment.addRepeat(seg);
             }
 
-            this.capParse(segment, master_segment, bool)
-            
-            return bool;
+        this.capParse(segment, master_segment, bool)
+
+        return {bool: true, segment:master_segment};
     }
 
-    capParse(sub_segment, master_segment, bool){
+    capParse(sub_segment, master_segment, bool) {
         if (bool) {
             sub_segment.repeat();
             if (master_segment)
                 master_segment.addSub(sub_segment);
             this.last_sub_segment = sub_segment;
             sub_segment.finalize();
-        }else {
+        } else {
             sub_segment.destroy();
-            if(this.OPTIONAL){
-                if(master_segment){
+            if (this.OPTIONAL) {
+                if (master_segment) {
                     let sub_segment = this.createSegment(master_segment.getSub(this));
                     let blank = new BlankTerm();
                     blank.parseInput(sub_segment);
                     sub_segment.prod = this;
-                    
+
                     sub_segment.repeat();
                     master_segment.addSub(sub_segment)
                 }
@@ -146,7 +148,7 @@ class JUX extends prod.JUX {
 
     buildInput(repeat = 1, lex, segment = new Segment(null, this)) {
         this.last_segment = segment;
-        
+
         segment.reset();
         segment.start = this.start;
         segment.end = this.end;
@@ -157,8 +159,8 @@ class JUX extends prod.JUX {
         return this.last_segment;
     }
 
-    list(){
-        
+    list() {
+
     }
 }
 
@@ -166,7 +168,7 @@ class AND extends JUX {
 
     default (segment, EXTENDED = false) {
 
-        for (let i = 0, l = this.terms.length; i < l; i++) 
+        for (let i = 0, l = this.terms.length; i < l; i++)
             this.terms[i].default(segment, i > 1);
     }
 
@@ -179,7 +181,7 @@ class AND extends JUX {
         ele.appendChild(element)
 
         element.addEventListener("click", e => {
-            
+
             slot.innerHTML = this.value;
             if (slot) {
                 slot.clearSegments();
@@ -198,13 +200,16 @@ class AND extends JUX {
     pi(lx, segment, lister = this, start = 1, end = 1) {
 
         outer: for (let j = 0; j < end && !lx.END; j++) {
-            for (let i = 0, l = this.terms.length; i < l; i++)
-                if (!this.terms[i].parseInput(lx, segment)) return (start === 0) ? true : false
+            for (let i = 0, l = this.terms.length; i < l; i++){
+                let bool = false;
+                ({bool:bool, segment:segment} = this.terms[i].parseInput(lx, segment))
+                if (!bool) return {bool: (start === 0) ? true : false, segment}
+            }
         }
 
         segment.repeat();
 
-        return true;
+        return {bool: true, segment};
     }
 }
 Object.assign(AND.prototype, prod.AND.prototype);
@@ -233,7 +238,7 @@ class OR extends JUX {
         ele.appendChild(element)
 
         element.addEventListener("click", e => {
-            
+
             slot.innerHTML = this.value;
             if (slot) {
                 slot.clearSegments();
@@ -250,7 +255,7 @@ class OR extends JUX {
     }
 
     pi(lx, master_segment, lister = this, start = this.start, end = this.end) {
-        
+
         let bool = false;
 
         let j = 0;
@@ -258,29 +263,29 @@ class OR extends JUX {
         let OVERALL_BOOL = false;
 
         for (let j = 0; j < end && !lx.END; j++) {
-            const 
-                REPEAT = j > 0,
-                sub_segment = (REPEAT) ? master_segment.getSub(this) : master_segment;
+
+            let sub_segment = master_segment.getSub(this, j);
 
             bool = false;
 
-            this.count = (this.count) ? this.count:this.count = 0;
-            
-            outer:
-            //User "factorial" expression to isolate used results in a continous match. 
-            while(true){
-                for (let i = 0, l = this.terms.length; i < l; i++) {
-                    //if(this.terms[i].count == this.count) continue
+            this.count = (this.count) ? this.count : this.count = 0;
 
-                    if (this.terms[i].parseInput(lx, sub_segment, true)) {
-                        this.terms[i].count = this.count;
-                        OVERALL_BOOL = true;
-                        bool = true;
-                        continue outer;
+            outer:
+                //User "factorial" expression to isolate used results in a continous match. 
+                while (true) {
+                    for (let i = 0, l = this.terms.length; i < l; i++) {
+
+                        ({bool:bool, segment:sub_segment} = this.terms[i].parseInput(lx, sub_segment, true))
+
+                        if (bool) {
+                            this.terms[i].count = this.count;
+                            OVERALL_BOOL = true;
+                            bool = true;
+                            continue outer;
+                        }
                     }
+                    break;
                 }
-                break;
-            }
 
             {
                 //Go through unmatched and make placeholders.
@@ -295,8 +300,8 @@ class OR extends JUX {
             } else if (start === 0)
                 bool = true;
 
-            if (REPEAT)
-                master_segment.addRepeat(sub_segment);
+            if (j > 0)
+                master_segment = master_segment.addRepeat(sub_segment);
         }
 
         if (OVERALL_BOOL) {
@@ -305,8 +310,7 @@ class OR extends JUX {
             this.last_segment = master_segment;
         }
 
-
-        return (!bool && start === 0) ? true : bool;
+        return { bool: (!bool && start === 0) ? true : bool, segment: master_segment };
     }
 }
 
@@ -348,7 +352,7 @@ class ONE_OF extends JUX {
 
     pi(lx, master_segment, lister = this, start = this.start, end = this.end) {
         //List
-        let segment = master_segment.getSub(this);
+        let segment = master_segment//.getSub(this);
 
         //Add new
         let bool = false;
@@ -357,19 +361,17 @@ class ONE_OF extends JUX {
 
         //Parse Input
         for (; j < end && !lx.END; j++) {
-            const REPEAT = j > 0
 
-            let seg = segment;
-            
-            if(REPEAT){
-                seg = segment.getSub(this);
-                seg.production = this;
-            }
+            let seg = segment.getSub(this, j);
+
+            seg.production = this;
 
             bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                bool = this.terms[i].parseInput(lx, seg);
+
+                ({ bool: bool, segment: seg } = this.terms[i].parseInput(lx, seg));
+
                 if (bool) break;
             }
 
@@ -379,14 +381,15 @@ class ONE_OF extends JUX {
                     break;
                 }
             }
-            if (REPEAT)
-                segment.addRepeat(seg);
+
+            if (j > 0)
+                segment = segment.addRepeat(seg);
 
         }
 
-        this.capParse(segment, master_segment, bool)
+        //this.capParse(segment, master_segment, bool)
 
-        return  bool;
+        return { bool, segment };
     }
 }
 

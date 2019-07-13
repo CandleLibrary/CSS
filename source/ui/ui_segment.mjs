@@ -1,13 +1,22 @@
 import whind from "@candlefw/whind";
+import cached_factory from "@candlefw/cached_factory"
 
-export class Segment {
+//A Class for a CSS UI element that represents, using HTML Elements, a value, or value potential, of a CSS property. 
+class SegmentDefault {
+
     constructor(parent, production) {   
-        if(!production)
-            debugger;
-        this.production = production;
+        this.css_val = "";
+        
+        this.production = null;
         this.parent = null;
 
-        this.css_val = "";
+        this.value_list = null;
+        this.subs = null;
+        this.old_subs = null;
+        this.sib = null;
+        this.HAS_VALUE = false;
+        this.DEMOTED = false;
+        this.sub_count = 0;
 
         this.val = document.createElement("span");
         this.val.classList.add("prop_value");
@@ -34,44 +43,47 @@ export class Segment {
         this.element.appendChild(this.menu_icon);
         this.element.appendChild(this.val);
         this.element.appendChild(this.ext);
+    }
 
+    initializer(parent, production){
+        this.production = parent;
+        this.parent = production;
         this.value_list = [];
         this.subs = [];
         this.old_subs = [];
         this.sib = null;
-        this.value_set;
         this.HAS_VALUE = false;
         this.DEMOTED = false;
 
         this.sub_count = 0;
-
-        this.element.addEventListener("mouseover", e => {
-            //this.setList();
-        })
     }
 
-    destroy() {
+    destructor(){
         this.parent = null;
-        this.element = null;
-        this.val = null;
-        this.list = null;
-        this.ext = null;
+
+        if(this.element.parentElement)
+            this.element.parentElement.removeChild(this.element);
+
+        this.val.innerHTML = "";
+
         this.menu_icon = null;
         this.subs.forEach(e => e.destroy())
         this.subs = null;
     }
 
+    destroy() {
+        cached_factory.collect(this);
+    }
+
     reset() {
-        //this.list.innerHTML = "";
-        //this.val.innerHTML = "";
         this.sub_count = 0;
-        //this.subs.length = 0;
-        //this.subs.forEach(e => e.destroy);
-        //this.setElement = null;
-        //this.changeEvent = null;
     }
 
     finalize(){
+        //Remove sub-segments that are no longer used.
+        for(let i = this.sub_count; i < this.subs.length; i++)
+            this.subs[i].destroy();
+
         this.subs.length = this.sub_count;
     }
 
@@ -116,56 +128,28 @@ export class Segment {
 
     }
 
-    demote() {
-        this.reset();
+    getSub(production = this.production, REPEATING = -1){
 
-        const seg = this.getSub();
+        var sub, index = this.sub_count;
 
-        seg.reset()
-        seg.production = this.production;
-        seg.prod = this.prod;
-        seg.css_val = this.css_val;
+        if(REPEATING >= 0){
+            // the sub will be added after the current sub due as demoting will be called
+            // before the sub is added to the current segment
+            if(REPEATING == 0 && this.subs.length == 0)
+                return this;
 
-        if (this.change_event_function) {
-            seg.changeEvent = this.changeEvent;
-            seg.setElement = this.setElement;
-            seg.setElement.onchange = seg.change.bind(seg);
+            sub = (REPEATING < this.subs.length) 
+                ? this.subs[REPEATING] 
+                : new Segment(null, production); 
+
+            this.sub_count = REPEATING;
+        }else{
+           sub = (index < this.subs.length) 
+                ? this.subs[index] 
+                : new Segment(null, production); 
         }
-
-        let subs = this.subs;
-
-        if (subs.length > 1) {
-            for (let i = 1; i < this.subs.length; i++) 
-                seg.addSub(this.subs[i]);
-        } else {
-            let children = this.val.childNodes;
-
-            if (children.length > 0) {
-                for (let i = 0, l = children.length; i < l; i++) {
-                    seg.val.appendChild(children[0]);
-                }
-            } else {
-                seg.val.innerHTML = this.val.innerHTML
-            }
-        }
-
-        this.menu_icon.innerHTML = ""
-        this.menu_icon.style.display = "none";
-        this.menu_icon.setAttribute("superset", false)
-        this.list.innerHTML = "";
-
-        this.reset();
-
-        this.addSub(seg);
-
-        seg.setList();
-        
-        this.DEMOTED = true;
-    }
-
-    getSub(production = this.production){
-        const sub =  this.subs[this.sub_count] || new Segment(null, production);
-        sub.production =  production;
+                
+        sub.production = production;
         sub.reset();
         return sub;
     }
@@ -195,6 +179,20 @@ export class Segment {
     }
 
 
+    demote() {
+        const seg = new Segment(this.parent, true);
+
+        seg.reset()
+        seg.production = this.production;
+        seg.prod = this.prod;
+        seg.DEMOTED = true;
+        seg.addSub(this);
+
+        seg.setList();
+
+        return seg;
+    }
+
     getRepeat(){
         if(this.parent){
             if(this.parent.subs[this.id+1])
@@ -205,11 +203,18 @@ export class Segment {
     }
 
     addRepeat(seg) {
+
+        let out = this;
+        
         if (!this.DEMOTED)
             //Turn self into own sub seg
-            this.demote();
-        this.addSub(seg);
+            out = this.demote();
+        
+        out.addSub(seg);
+        
         seg.setList();
+
+        return out;
     }
 
     repeat(prod = this.prod) {
@@ -286,24 +291,11 @@ export class Segment {
                 window.addEventListener("pointerup", up)
             }
 
-            /*
-            this.ext.onclick = e => {
-                if (this.subs.length == 0)
-                    //Turn self into own sub seg
-                    this.demote()
-
-                prod.default(this, true);
-
-                if (this.value_count >= this.end)
-                    this.ext.style.display = "none";
-            }
-            */
         } else {
             this.ext.style.display = "none";
         }
+
         this.setList();
-        
-        //this.update();
     }
 
     get width() {
@@ -357,7 +349,7 @@ export class Segment {
     getValue() {
         let val = ""
 
-        if (this.subs.length > 0)
+        if (this.subs && this.subs.length > 0)
             for (let i = 0; i < this.subs.length; i++)
                 val += " " + this.subs[i].getValue();
         else
@@ -369,3 +361,6 @@ export class Segment {
         return this.getValue();
     }
 }
+
+
+export const Segment = cached_factory(SegmentDefault);
