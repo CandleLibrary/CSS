@@ -1,12 +1,5 @@
 import whind from "@candlefw/whind";
-import * as ui_productions from "./ui_productions.mjs";
-import {
-    property_definitions,
-    media_feature_definitions,
-    types
-} from "../properties/property_and_type_definitions.mjs";
-//import { CSSRule as R, CSSSelector as S } from "../nodes.mjs";
-import { getPropertyParser } from "../properties/parser.mjs";
+import cached_factory from "@candlefw/cached_factory";
 
 function dragstart(e){
     event.dataTransfer.setData('text/plain',null)
@@ -79,16 +72,30 @@ function drop(e){
     return false;
 }
 
-export default class UISelector {
+class UISelector {
     constructor(selector) {
+        this.selector = null;
+        this.parts = null;        
+        this.text = "";
+    }
+
+    initializer(selector){
         this.selector = selector;
         this.parts = [];
-        
+        this.text = selector + "";
+
         selector.vals.forEach((e, i) => {
             this.parts.push(new UISelectorPart(e, i))
         })
-        
-        this.text = selector + "";
+    }
+
+    destructor(){
+        this.selector = null;
+        this.text = "";
+    }
+
+    destroy(){
+        cached_factory.collect(this);
     }
 
     update() {
@@ -137,3 +144,6 @@ export default class UISelector {
         this.mount(this.parent);
     }
 }
+
+
+export default cached_factory(UISelector);

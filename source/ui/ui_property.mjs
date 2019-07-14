@@ -1,17 +1,12 @@
 import whind from "@candlefw/whind";
 import cached_factory from "@candlefw/cached_factory"
-
-import UISelector from "./ui_selectors.mjs";
 import * as ui_productions from "./ui_productions.mjs";
-import createCache from "./create_cache.mjs";
 import {
     property_definitions,
     media_feature_definitions,
     types
 } from "../properties/property_and_type_definitions.mjs";
-//import { CSSRule as R, CSSSelector as S } from "../nodes.mjs";
 import { getPropertyParser } from "../properties/parser.mjs";
-
 const props = Object.assign({}, property_definitions);
 
 var dragee = null;
@@ -21,7 +16,7 @@ function dragstart(e) {
     UIProp.dragee = this;
 }
 
-class UIProp {
+class UI_property {
     constructor(prop, parent) {
         // Predefine all members of this object.
         this.type = "";
@@ -46,7 +41,7 @@ class UIProp {
 
     destructor() {
 
-        this._value && this.value.destroy();
+        this._value && this._value.destroy();
         this.prop && this.prop.removeObserver(this);
 
         this.hash = 0;
@@ -99,7 +94,8 @@ class UIProp {
     }
 
     get value() {
-        return this._value.toString();
+        return this._value.toString();p
+p
     }
 
     update(value) {
@@ -122,4 +118,4 @@ class UIProp {
     }
 }
 
-export default cached_factory(UIProp);
+export default cached_factory(UI_property);

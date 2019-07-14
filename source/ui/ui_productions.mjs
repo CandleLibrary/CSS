@@ -78,7 +78,7 @@ class JUX extends prod.JUX {
 
     pi(lx, master_segment, lister = this, start = this.start, end = this.end) {
 
-        let segment = this.createSegment(master_segment.getSub(this));
+        let segment = master_segment //this.createSegment(master_segment.getSub(this));
 
         let bool = false,
             j = 0,
@@ -92,6 +92,7 @@ class JUX extends prod.JUX {
                     seg = segment.getSub(this, j);
 
                 seg.prod = this;
+                seg.production = this;
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
 
@@ -117,9 +118,10 @@ class JUX extends prod.JUX {
                     segment = segment.addRepeat(seg);
             }
 
-        this.capParse(segment, master_segment, bool)
+        if(segment !== master_segment)
+            this.capParse(segment, master_segment, bool)
 
-        return {bool: true, segment:master_segment};
+        return {bool: true, segment};
     }
 
     capParse(sub_segment, master_segment, bool) {
@@ -127,7 +129,6 @@ class JUX extends prod.JUX {
             sub_segment.repeat();
             if (master_segment)
                 master_segment.addSub(sub_segment);
-            this.last_sub_segment = sub_segment;
             sub_segment.finalize();
         } else {
             sub_segment.destroy();
@@ -152,6 +153,7 @@ class JUX extends prod.JUX {
         segment.reset();
         segment.start = this.start;
         segment.end = this.end;
+        segment.production = this;
         segment.prod = this;
         this.parseInput(lex, segment, this);
         segment.finalize();

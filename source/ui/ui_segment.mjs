@@ -9,11 +9,9 @@ class SegmentDefault {
         
         this.production = null;
         this.parent = null;
-
-        this.value_list = null;
+        
         this.subs = null;
         this.old_subs = null;
-        this.sib = null;
         this.HAS_VALUE = false;
         this.DEMOTED = false;
         this.sub_count = 0;
@@ -46,12 +44,10 @@ class SegmentDefault {
     }
 
     initializer(parent, production){
-        this.production = parent;
-        this.parent = production;
-        this.value_list = [];
+        this.parent = parent;
+        this.production = production;
         this.subs = [];
         this.old_subs = [];
-        this.sib = null;
         this.HAS_VALUE = false;
         this.DEMOTED = false;
 
@@ -65,8 +61,8 @@ class SegmentDefault {
             this.element.parentElement.removeChild(this.element);
 
         this.val.innerHTML = "";
+        this.css_val = "";
 
-        this.menu_icon = null;
         this.subs.forEach(e => e.destroy())
         this.subs = null;
     }
@@ -347,7 +343,7 @@ class SegmentDefault {
     }
 
     getValue() {
-        let val = ""
+        let val = this.css_val;
 
         if (this.subs && this.subs.length > 0)
             for (let i = 0; i < this.subs.length; i++)

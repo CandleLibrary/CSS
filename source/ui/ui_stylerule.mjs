@@ -1,16 +1,7 @@
-
 import whind from "@candlefw/whind";
-import UISelector from "./ui_selectors.mjs";
+import UI_selector from "./ui_selectors.mjs";
+import ui_prop from "./ui_property.mjs";
 import * as ui_productions from "./ui_productions.mjs";
-import UIProp from "./ui_properties.mjs";
-import {
-    property_definitions,
-    media_feature_definitions,
-    types
-} from "../properties/property_and_type_definitions.mjs";
-import { getPropertyParser } from "../properties/parser.mjs";
-
-const props = Object.assign({}, property_definitions);
 
 export default class ui_stylerule {
     
@@ -31,7 +22,7 @@ export default class ui_stylerule {
         this.element.addEventListener("dragover", dragover)
         this.element.addEventListener("drop", (e)=>{
             
-            let prop = UIProp.dragee;
+            let prop = ui_prop.dragee;
             let parent = prop.parent;
             let value = prop.value;
             let type = prop.type;
@@ -65,7 +56,7 @@ export default class ui_stylerule {
         for(const prop of this.props)
             prop.destroy();
 
-        for(const selector of this.selector)
+        for(const selector of this.selectors)
             selector.destroy();
 
         this.props = null;
@@ -74,7 +65,7 @@ export default class ui_stylerule {
 
     addSelector(selector){
         
-        const ui_selector = new UISelector(selector);
+        const ui_selector = new UI_selector(selector);
 
         this.selectors.push(ui_selector);
 
@@ -104,7 +95,7 @@ export default class ui_stylerule {
             if(++i < this.props.length){
                 own_prop = this.props[i];
             }else{
-                own_prop = new UIProp(prop,  this);
+                own_prop = new ui_prop(prop,  this);
                 this.props.push(own_prop);
             }
             own_prop.build();

@@ -3,7 +3,8 @@ import cached_factory from "@candlefw/cached_factory"
 
 import ui_stylerule from "./ui_stylerule.mjs";
 
-class UIMaster {
+class UI_stylesheet {
+
     constructor(css) {
 
         this.css = null;
@@ -30,12 +31,17 @@ class UIMaster {
     }
 
     destructor(){
+
         this.unmount();
+
+        this.css && this.css.removeObserver(this);
         
         for(const rule of this.rule_map.values())
             rule.destroy();
 
         this.rule_map = null;
+
+        this.css = null;
 
         this.update_mod = 0;
     }
@@ -88,4 +94,4 @@ class UIMaster {
     }
 }
 
-export default cached_factory(UIMaster);
+export default cached_factory(UI_stylesheet);
