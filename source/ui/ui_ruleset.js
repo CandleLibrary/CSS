@@ -1,7 +1,7 @@
 import cached_factory from "@candlefw/cached_factory"
 
-import UISelector from "./ui_selectors.mjs";
-import UIProp from "./ui_properties.mjs";
+import UISelector from "./ui_selectors.js";
+import UIProp from "./ui_properties.js";
 
 class ui_stylerule {
 

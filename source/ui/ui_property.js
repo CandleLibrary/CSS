@@ -1,12 +1,12 @@
 import whind from "@candlefw/whind";
 import cached_factory from "@candlefw/cached_factory"
-import * as ui_productions from "./ui_productions.mjs";
+import * as ui_productions from "./ui_productions.js";
 import {
     property_definitions,
     media_feature_definitions,
     types
-} from "../properties/property_and_type_definitions.mjs";
-import { getPropertyParser } from "../properties/parser.mjs";
+} from "../properties/property_and_type_definitions.js";
+import { getPropertyParser } from "../properties/parser.js";
 const props = Object.assign({}, property_definitions);
 
 var dragee = null;

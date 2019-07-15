@@ -1,4 +1,4 @@
-import CSS_String from "./string.mjs";
+import CSS_String from "./string.js";
 
 export default  class CSS_FontName extends String {
 	static parse(l) {

@@ -1,4 +1,4 @@
-import CSS_Length from "./length.mjs";
+import CSS_Length from "./length.js";
 
 const $medh = (prefix) => ({
     parse: (l, r, a, n = 0) => (n = CSS_Length.parse(l, r, a), (prefix > 0) ? ((prefix > 1) ? (win) => win.innerHeight <= n : (win) => win.innerHeight >= n) : (win) => win.screen.height == n)

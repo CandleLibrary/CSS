@@ -1,7 +1,7 @@
 import whind from "@candlefw/whind";
-import UI_selector from "./ui_selectors.mjs";
-import ui_prop from "./ui_property.mjs";
-import * as ui_productions from "./ui_productions.mjs";
+import UI_selector from "./ui_selectors.js";
+import ui_prop from "./ui_property.js";
+import * as ui_productions from "./ui_productions.js";
 
 export default class ui_stylerule {
     

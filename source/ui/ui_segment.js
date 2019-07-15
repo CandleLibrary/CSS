@@ -13,7 +13,7 @@ class SegmentDefault {
         this.subs = null;
         this.old_subs = null;
         this.HAS_VALUE = false;
-        this.DEMOTED = false;
+        this.PROMOTED = false;
         this.sub_count = 0;
 
         this.val = document.createElement("span");
@@ -49,7 +49,7 @@ class SegmentDefault {
         this.subs = [];
         this.old_subs = [];
         this.HAS_VALUE = false;
-        this.DEMOTED = false;
+        this.PROMOTED = false;
 
         this.sub_count = 0;
     }
@@ -108,9 +108,9 @@ class SegmentDefault {
         element.appendChild(this.element);
     }
     setList() {
-        //if(this.DEMOTED) debugger
+        //if(this.PROMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
-            if (this.DEMOTED || !this.prod.buildList(this.list, this))
+            if (this.PROMOTED || !this.prod.buildList(this.list, this))
                 this.menu_icon.style.display = "none";
             else
                 this.menu_icon.style.display = "inline-block";
@@ -138,7 +138,8 @@ class SegmentDefault {
                 ? this.subs[REPEATING] 
                 : new Segment(null, production); 
 
-            this.sub_count = REPEATING;
+            if(this.PROMOTED)
+                this.sub_count = REPEATING;
         }else{
            sub = (index < this.subs.length) 
                 ? this.subs[index] 
@@ -151,6 +152,7 @@ class SegmentDefault {
     }
 
     addSub(seg) {
+
         this.menu_icon.setAttribute("superset", true)
         seg.parent = this;
         seg.id = this.sub_count;
@@ -174,14 +176,13 @@ class SegmentDefault {
         return seg;
     }
 
-
     demote() {
         const seg = new Segment(this.parent, true);
 
         seg.reset()
         seg.production = this.production;
         seg.prod = this.prod;
-        seg.DEMOTED = true;
+        seg.PROMOTED = true;
         seg.addSub(this);
 
         seg.setList();
@@ -189,20 +190,14 @@ class SegmentDefault {
         return seg;
     }
 
-    getRepeat(){
-        if(this.parent){
-            if(this.parent.subs[this.id+1])
-                return this.parent.subs[this.id+1]
-        }
-
-        return new Segment();
-    }
-
-    addRepeat(seg) {
-
+    addRepeat(seg, REPEATING_INDEX = -1) {
+    
+        if(seg == this)
+            return this;
+        
         let out = this;
         
-        if (!this.DEMOTED)
+        if (!this.PROMOTED)
             //Turn self into own sub seg
             out = this.demote();
         
@@ -240,7 +235,7 @@ class SegmentDefault {
                 if (diff > 15 && EXTENDABLE) {
                     let bb = this.element
 
-                    if (!this.DEMOTED) {
+                    if (!this.PROMOTED) {
                         //Turn self into own sub seg
                         this.demote()
                     }

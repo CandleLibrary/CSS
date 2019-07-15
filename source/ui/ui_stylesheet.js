@@ -1,7 +1,7 @@
 import whind from "@candlefw/whind";
 import cached_factory from "@candlefw/cached_factory"
 
-import ui_stylerule from "./ui_stylerule.mjs";
+import ui_stylerule from "./ui_stylerule.js";
 
 class UI_stylesheet {
 

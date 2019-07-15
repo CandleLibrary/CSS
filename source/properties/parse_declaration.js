@@ -5,7 +5,7 @@ import {
 } from "./property_and_type_definitions";
 import { types } from "./property_and_type_definitions";
 import { getPropertyParser } from "./parser";
-import styleprop from "../styleprop.mjs";
+import styleprop from "../styleprop.js";
 
 export default function parseDeclaration(sym) {
     if(sym.length == 0)

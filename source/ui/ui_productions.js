@@ -1,7 +1,7 @@
 import whind from "@candlefw/whind";
-import * as prod from "../properties/productions.mjs";
-import { Segment } from "./ui_segment.mjs"
-import { ValueTerm, LiteralTerm, SymbolTerm, BlankTerm } from "./ui_terms.mjs";
+import * as prod from "../properties/productions.js";
+import { Segment } from "./ui_segment.js"
+import { ValueTerm, LiteralTerm, SymbolTerm, BlankTerm } from "./ui_terms.js";
 
 /**
  * wick internals.
@@ -88,7 +88,8 @@ class JUX extends prod.JUX {
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
                 const
-                    copy = lx.copy(),
+                    copy = lx.copy();
+                let
                     seg = segment.getSub(this, j);
 
                 seg.prod = this;
@@ -98,7 +99,11 @@ class JUX extends prod.JUX {
 
                     let term = this.terms[i], local_bool = false;
 
-                    ({bool:local_bool, segment:segment} = term.parseInput(lx, segment))
+                    if(seg == segment){
+                        ({bool:local_bool, segment:segment} = term.parseInput(lx, segment))
+                        seg = segment;
+                    } else
+                        ({bool:local_bool, segment:seg} = term.parseInput(lx, seg))
 
                     if (!local_bool) {
                         if (!term.OPTIONAL) {
@@ -114,37 +119,35 @@ class JUX extends prod.JUX {
                 if (!this.checkForComma(lx))
                     break;
 
-                if (j > 0)
-                    segment = segment.addRepeat(seg);
+                segment = segment.addRepeat(seg, j);
             }
 
-        if(segment !== master_segment)
-            this.capParse(segment, master_segment, bool)
+        //if(segment !== master_segment)
+        segment = this.capParse(segment, bool)
 
-        return {bool: true, segment};
+        return {bool:true, segment};
     }
 
-    capParse(sub_segment, master_segment, bool) {
+    capParse(segment, bool) {
         if (bool) {
-            sub_segment.repeat();
-            if (master_segment)
-                master_segment.addSub(sub_segment);
-            sub_segment.finalize();
+            segment.repeat();
+            //if (master_segment)
+            //    master_segment.addSub(sub_segment);
+            segment.finalize();
         } else {
-            sub_segment.destroy();
+            //sub_segment.destroy();
             if (this.OPTIONAL) {
-                if (master_segment) {
-                    let sub_segment = this.createSegment(master_segment.getSub(this));
+                //if (master_segment) {
+                    //let sub_segment = this.createSegment(segment.getSub(this));
                     let blank = new BlankTerm();
-                    blank.parseInput(sub_segment);
-                    sub_segment.prod = this;
-
-                    sub_segment.repeat();
-                    master_segment.addSub(sub_segment)
-                }
+                    blank.parseInput(segment);
+                    segment.prod = this;
+                    segment.repeat();
+                    //segment.addSub(sub_segment)
+                //}
             }
         }
-
+        return segment
     }
 
     buildInput(repeat = 1, lex, segment = new Segment(null, this)) {
@@ -155,10 +158,10 @@ class JUX extends prod.JUX {
         segment.end = this.end;
         segment.production = this;
         segment.prod = this;
-        this.parseInput(lex, segment, this);
+        ({segment} = this.parseInput(lex, segment, this));
         segment.finalize();
 
-        return this.last_segment;
+        return segment//this.last_segment;
     }
 
     list() {
@@ -301,9 +304,8 @@ class OR extends JUX {
                 bool = false;
             } else if (start === 0)
                 bool = true;
-
-            if (j > 0)
-                master_segment = master_segment.addRepeat(sub_segment);
+            
+            master_segment = master_segment.addRepeat(sub_segment, j);
         }
 
         if (OVERALL_BOOL) {
@@ -384,9 +386,7 @@ class ONE_OF extends JUX {
                 }
             }
 
-            if (j > 0)
-                segment = segment.addRepeat(seg);
-
+            segment = segment.addRepeat(seg, j);
         }
 
         //this.capParse(segment, master_segment, bool)

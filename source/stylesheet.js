@@ -1,7 +1,7 @@
 import observer from "@candlefw/observer";
 
-import stylerule from "./stylerule.mjs";
-import css_parser from "./Parser/css.mjs";
+import stylerule from "./stylerule.js";
+import css_parser from "./Parser/css.js";
 
 export default class stylesheet {
 

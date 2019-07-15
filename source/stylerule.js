@@ -1,4 +1,4 @@
-import parseDeclaration from "./properties/parse_declaration.mjs";
+import parseDeclaration from "./properties/parse_declaration.js";
 import observer from "@candlefw/observer";
 
 function setParent(array, parent) {

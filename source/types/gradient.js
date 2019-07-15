@@ -1,14 +1,14 @@
 import 
     CSS_Color 
- from "./color.mjs";
+ from "./color.js";
 
 import 
     CSS_Percentage
- from "./percentage.mjs";
+ from "./percentage.js";
 
 import 
     CSS_Length
- from "./length.mjs";
+ from "./length.js";
 
 class Stop{
     constructor(color, percentage){

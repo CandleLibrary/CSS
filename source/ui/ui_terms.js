@@ -1,5 +1,5 @@
-import * as terms from "../properties/terms.mjs";
-import { Segment } from "./ui_segment.mjs"
+import * as terms from "../properties/terms.js";
+import { Segment } from "./ui_segment.js"
 
 export class ValueTerm extends terms.ValueTerm {
 

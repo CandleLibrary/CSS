@@ -1,4 +1,4 @@
-import stylerule from "./stylerule.mjs";
+import stylerule from "./stylerule.js";
 
 export default class ruleset {
 	constructor(ats, rules){
