@@ -1,4 +1,7 @@
 import * as css from "../source/css.mjs";
+import html from "@candlefw/html"
+
+html.polyfill();
 
 const chai = require("chai");
 
@@ -9,80 +12,24 @@ const fs = require("fs");
 
 if (typeof(Location) == "undefined") global.Location = class {};
 
+console.log(">= START ==============================================")
+
 describe('CandleFW CSS tests', function() {
 
-        before(function() {
+        describe.only("UI Test", function(){
 
-            /**
-             * Global `fetch` polyfill - basic support
-             */
-             /*
-            global.fetch = (url, data) =>
-                new Promise((res, rej) => {
-                    let p = path.resolve(process.cwd(), (url[0] == ".") ? url + "" : "." + url);
-                    fs.readFile(p, "utf8", (err, data) => {
-                        if (err) {
-                            rej(err);
-                        } else {
-                            res({
-                                status: 200,
-                                text: () => {
-                                    return {
-                                        then: (f) => f(data)
-                                    }
-                                }
-                            });
-                        }
-                    })
-                });
+            it.only("handles upstream updates", async function(){
+                const ss = await css.parse(`div{border-radius:5px 20px }`);
+                const ui = css.ui(ss);
 
-*/
-            /* 
-                Forcefully delete the node.js "require" cache. 
-                This is a lazy way to ensure all source files will load correctly when changed.
-            */
-            return
+                //get ui property
+                const e = [...ui.rule_map.values()][0].props[0];
 
-            delete require.cache;
-
-            let JSDOM = require("jsdom").JSDOM;
-
-            /** Poly Fills **/
-
-            let DOM = new JSDOM(`
-            <!DOCTPE html>
-            
-            <head test="123">
-            
-            </head>
-            
-            <body version="v3.14">
-                <app>
-                </app>
-            </body>
-
-            <script>
-            </script>
-        `);
-
-            let window = DOM.window;
-
-            //window.screen = {height:2000}
-            //window.screen.height = 20000;
-
-            global.window = window;
-
-            global.document = window.document;
-
-            global.HTMLElement = window.HTMLElement;
-
-            let performance = {
-                now() {
-                    return Date.now();
-                }
-            };
-            return;
-        });
+                console.log(e._value.subs);
+                //The following should not throw
+                e.update("5px").should.not.throw;
+            })
+        })
 
             const test_data =
         `.panel-success > .panel-heading + .panel-collapse > .panel-body {
