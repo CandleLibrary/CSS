@@ -19,7 +19,7 @@ function dragstart(e) {
 class UI_property {
     constructor(prop, parent) {
         // Predefine all members of this object.
-        this.type = "";
+        this.name = "";
 
         this.prop = null;
         this.parent = null;
@@ -31,10 +31,10 @@ class UI_property {
 
     initializer(prop, parent) {
         this.prop = prop;
-        this.type = prop.name;
+        this.name = prop.name;
         this.parent = parent;
 
-        this.setupElement(this.type);
+        this.setupElement(this.name);
         this.prop.addObserver(this);
         this.build();
     }
@@ -46,10 +46,10 @@ class UI_property {
 
         this.hash = 0;
         this.ver = 0;
-        this.type = "";
+        this.name = "";
 
         this._value = null;
-        this.type = null;
+        this.name = null;
         this.parent = null;
         this.unmount();
     }
@@ -94,15 +94,14 @@ class UI_property {
     }
 
     get value() {
-        return this._value.toString();p
-p
+        return this._value.toString();
     }
 
     update(value) {
         this.UPDATE_LOOP_GAURD = true;
         this.prop.setValueFromString(value.toString());
         this.UPDATE_LOOP_GAURD = false;
-        //this.parent.update(this.type, );
+        //this.parent.update(this.name, );
     }
 
     updatedCSSStyleProperty(prop = this.prop) {
@@ -110,10 +109,18 @@ p
         if (prop == this.prop && this.ver == prop.ver)
             return;
 
+        this.prop = prop;
+
         // this.ver = prop.ver;
 
-        if (!this.UPDATE_LOOP_GAURD)
-            this._value.setValue(prop.value_string);
+        if (!this.UPDATE_LOOP_GAURD){
+            const val = this._value.setValue(prop.value_string);
+
+            if(val !== this._value){
+                this._value = val;
+                this._value.mount(this.element);
+            }
+        }
         this.UPDATE_LOOP_GAURD = false;
     }
 }

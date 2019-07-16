@@ -15,6 +15,7 @@ class SegmentDefault {
         this.HAS_VALUE = false;
         this.PROMOTED = false;
         this.sub_count = 0;
+        this.vh = null;
 
         this.val = document.createElement("span");
         this.val.classList.add("prop_value");
@@ -65,6 +66,7 @@ class SegmentDefault {
 
         this.subs.forEach(e => e.destroy())
         this.subs = null;
+        this.vh = null;
     }
 
     destroy() {
@@ -107,6 +109,7 @@ class SegmentDefault {
     mount(element) {
         element.appendChild(this.element);
     }
+
     setList() {
         //if(this.PROMOTED) debugger
         if (this.prod && this.list.innerHTML == "") {
@@ -116,10 +119,12 @@ class SegmentDefault {
                 this.menu_icon.style.display = "inline-block";
         }
     }
+
     change(e) {
         if (this.changeEvent)
             this.changeEvent(this.setElement, this, e);
     }
+
     promote() {
 
     }
@@ -159,7 +164,7 @@ class SegmentDefault {
 
         if(this.subs[this.sub_count++] !== seg){
             this.subs[this.sub_count-1] = seg;
-            this.val.appendChild(seg.element)
+            this.val.appendChild(seg.element);
         }
     }
 
@@ -319,9 +324,9 @@ class SegmentDefault {
     }
 
     set value(v) {
-        this.val.innerHTML = v;
+        //this.val.innerHTML = v;
         this.css_val = v;
-        this.HAS_VALUE = true;
+        this.HAS_VALUE = !!v;
         this.setList();
     }
 
@@ -334,7 +339,7 @@ class SegmentDefault {
 
     setValue(value){
         //debugger
-        this.production.buildInput(0, whind(value.toString()), this);
+        return this.production.buildInput(0, whind(value.toString()), this);
     }
 
     getValue() {

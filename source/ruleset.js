@@ -1,7 +1,7 @@
 import stylerule from "./stylerule.js";
 
 export default class ruleset {
-	constructor(ats, rules){
+	constructor(asts, rules = []){
 		this.rules = rules;
 
         rules.forEach(r=>r.parent = this);

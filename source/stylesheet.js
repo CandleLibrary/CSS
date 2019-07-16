@@ -1,6 +1,7 @@
 import observer from "@candlefw/observer";
 
 import stylerule from "./stylerule.js";
+import ruleset from "./ruleset.js";
 import css_parser from "./Parser/css.js";
 
 export default class stylesheet {
@@ -10,8 +11,10 @@ export default class stylesheet {
 
         if (sym) {
             this.ruleset = sym[0];
-            this.ruleset.parent = this;
+        }else {
+            this.ruleset = new ruleset();
         }
+        this.ruleset.parent = this;
 
         this.parent = null;
 

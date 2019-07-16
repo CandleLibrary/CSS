@@ -14,8 +14,6 @@ class UI_stylesheet {
         this.element = document.createElement("div");
         
         this.element.classList.add("cfw_css");
-
-        this.update_mod = 0;
     }
 
     initializer(css){
@@ -54,8 +52,6 @@ class UI_stylesheet {
     // css - A CandleFW_CSS object. 
     // meta - internal 
     build(css = this.css) {
-        if (this.update_mod++ % 3 !== 0) return;
-
         //Extract rule bodies and set as keys for the rule_map. 
         //Any existing mapped body that does not have a matching rule should be removed. 
 

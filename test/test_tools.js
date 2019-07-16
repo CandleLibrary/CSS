@@ -1,4 +1,4 @@
-import * as css from "../source/css.mjs";
+import * as css from "../source/css.js";
 import chai from "chai";
 chai.should();
 import whind from "@candlefw/whind";

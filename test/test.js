@@ -1,4 +1,4 @@
-import * as css from "../source/css.mjs";
+import * as css from "../source/css.js";
 import html from "@candlefw/html"
 
 html.polyfill();
@@ -25,9 +25,15 @@ describe('CandleFW CSS tests', function() {
                 //get ui property
                 const e = [...ui.rule_map.values()][0].props[0];
 
-                console.log(e._value.subs);
-                //The following should not throw
-                e.update("5px").should.not.throw;
+                e.update("5px");
+                
+                e.update("5px 20px 10px");
+
+                e.update("3px 20px 1px 5px")
+
+                e.update("3px 20px 1px 5px");
+
+                console.log(e._value.val.innerHTML);
             })
         })
 

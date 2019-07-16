@@ -2,10 +2,10 @@
   "name": "@candlefw/css",
   "version": "0.0.8",
   "description": "CSS Parser",
-  "main": "source/css.mjs",
+  "main": "source/css.js",
   "scripts": {
     "test": "mocha test/test.js -r esm",
-    "test.watch": "mocha test/test.js -r esm --watch",
+    "test.watch": "mocha test/test.js -r esm --watch --inspect",
     "build": "rollup --config ./build/config/config.js",
     "build.watch": "rollup --config  ./build/config/config.js --watch",
     "build.ui.watch": "rollup --config  ./build/config/ui.config.js --watch",

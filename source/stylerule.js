@@ -16,8 +16,6 @@ export default class stylerule {
         this.properties = new Map;
 
         this.addProp(props);
-        //Reference Counting
-        this.refs = 0;
 
         //Versioning
         this.ver = 0;
@@ -50,9 +48,12 @@ export default class stylerule {
 
     /* sends an update signal up the hiearchy to allow style sheets to alert observers of new changes. */
     update() {
+        this.ver++;
+
         //if(this.UPDATE_LOOP_GAURD) return;
         if (this.parent)
             this.parent.update();
+
         this.updateObservers();
     }
 
@@ -127,18 +128,6 @@ export default class stylerule {
     * iterateProps() {
         for (const prop of this.properties.values())
             yield prop;
-    }
-
-    incrementRef() {
-        this.refs++;
-    }
-
-    decrementRef() {
-        this.refs--;
-        if (this.refs <= 0) {
-            //TODO: remove from rules entries.
-            debugger
-        }
     }
 
     toString(off = 0, rule = "") {
