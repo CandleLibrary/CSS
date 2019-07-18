@@ -18,6 +18,10 @@ export default class styleprop {
         this.rule = null;
         observer.destroy(this);
     }
+    
+    get css_type(){
+        return "styleprop"
+    }
 
     updated() {
         this.updateObservers();

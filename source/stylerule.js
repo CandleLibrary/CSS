@@ -30,6 +30,10 @@ export default class stylerule {
         this.addProps = this.addProp;
         this.UPDATE_LOOP_GAURD = false;
     }
+    
+    get css_type(){
+        return "stylerule"
+    }
 
     destroy(){
         

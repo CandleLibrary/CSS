@@ -68,10 +68,10 @@ export const property_definitions = {
 
 	/* https://www.w3.org/TR/css-position-3 */ 
 		position: "static|relative|absolute|sticky|fixed",
-		top: `<length>|<percentage>|auto`,
-		left: `<length>|<percentage>|auto`,
-		bottom: `<length>|<percentage>|auto`,
-		right: `<length>|<percentage>|auto`,
+		top: `<length>|<number>|<percentage>|auto`,
+		left: `<length>|<number>|<percentage>|auto`,
+		bottom: `<length>|<number>|<percentage>|auto`,
+		right: `<length>|<number>|<percentage>|auto`,
 		offset_before: `<length>|<percentage>|auto`,
 		offset_after: `<length>|<percentage>|auto`,
 		offset_start: `<length>|<percentage>|auto`,

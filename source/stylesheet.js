@@ -30,6 +30,10 @@ export default class stylesheet {
         observer.destroy(this);
     }
 
+    get css_type(){
+        return "stylesheet"
+    }
+
     /**
      * Creates a new instance of the object with same properties as the original.
      * @return     {CSSRootNode}  Copy of this object.

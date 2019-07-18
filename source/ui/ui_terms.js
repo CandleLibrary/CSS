@@ -3,6 +3,10 @@ import { Segment } from "./ui_segment.js"
 
 export class ValueTerm extends terms.ValueTerm {
 
+    valueHandler(ele, value, funct){
+        return this.value.valueHandler(ele, value, funct);
+    }
+
     default (seg, APPEND = false, value = null) {
         if (!APPEND) {
             if (seg.vh !== this.value) {
