@@ -82,13 +82,7 @@ class JUX { /* Juxtaposition */
                 case 0:
                     return false;
             }
-
             bool = this.parseLVL2(lx, out_val, this.start, this.end);
-
-            //if (!lx.END)
-            //    return false;
-            //else
-                //this.sp(r.v, rule);
         } else
             bool = this.parseLVL2(lx, out_val, this.start, this.end);
 
@@ -110,23 +104,23 @@ class JUX { /* Juxtaposition */
 
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
+
                 const copy = lx.copy();
-                //let temp_r = { v: null }
+
+                const temp = [];
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
 
-                    let term = this.terms[i];
-                    const temp = [];
+                    const term = this.terms[i];
+                    
                     if (!term.parseLVL1(copy, temp, false)) {
                         if (!term.OPTIONAL) {
                             break repeat;
                         }
-                    }else
-                        out_val.push(...temp);
+                    }
                 }
 
-                //if (temp_r.v)
-                //    this.mergeValues(r, temp_r)
+                out_val.push(...temp);
 
                 lx.sync(copy);
 
@@ -136,9 +130,7 @@ class JUX { /* Juxtaposition */
                     break;
             }
 
-        if (bool)
-            //console.log("JUX", s, bool)
-            return bool;
+        return bool;
     }
 
     get start() {
@@ -298,10 +290,7 @@ class ONE_OF extends JUX {
             if (!bool)
                 break;
 
-            lx.sync(copy)
-            
-            //if (temp_r.v)
-            //    this.mergeValues(r, temp_r)
+            lx.sync(copy);
 
             BOOL = true;
 

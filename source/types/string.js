@@ -1,27 +1,25 @@
-export default  class CSS_String extends String {
-    
-    static list(){}
+import whind from "@candlefw/whind";
 
-    static setValue(ele, value){
-        ele.value = value || "";
+export default class CSS_String extends String {
+
+    static list() {}
+
+    static setValue(ui_segment, value) {
+        ui_segment.setElement.innerHTML = (value) ? value + "" : "";
     }
 
-    static valueHandler(existing_value){
-        let ele = document.createElement("input");
-        ele.type = "text"
-        ele.value = existing_value || "";
-        return ele;
-    }
+    static valueHandler(ui_segment, value, update_function) {
+        const ele = document.createElement("div");
 
-    static setInput(input, value){
-        input.type = "text";
-        input.value = value;
-    }
-
-    static buildInput(){
-        let ele = document.createElement("input")
         ele.type = "text";
-        return ele;
+        
+        ele.createTextNode(whind(value+""), 0, 50)
+
+        //ele.addEventListener("change", (e) => { ele.css_value = ele.value; })
+
+        ui_segment.setValueHandler(ele, update_function);
+
+        CSS_String.setValue(ui_segment, value);
     }
 
     static parse(l) {
@@ -33,9 +31,9 @@ export default  class CSS_String extends String {
         return null;
     }
 
-    constructor(string){
-        if(string[0] == "\"" || string[0] == "\'" || string[0] == "\'")
-            string = string.slice(1,-1);
+    constructor(string) {
+        //if(string[0] == "\"" || string[0] == "\'" || string[0] == "\'")
+        //    string = string.slice(1,-1);
         super(string)
     }
 }

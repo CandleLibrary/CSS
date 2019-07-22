@@ -19,21 +19,17 @@ describe('CandleFW CSS tests', function() {
         describe.only("UI Test", function(){
 
             it.only("handles upstream updates", async function(){
-                const ss = await css.parse(`div{border-radius:5px 20px }`);
+                const ss = await css.parse(`div{font-family:arial, \"Times New Roman\"}`);
+                //const ss = await css.parse(`div{font-family:arial, }`);
                 const ui = css.ui(ss);
-
                 //get ui property
                 const e = [...ui.rule_map.values()][0].props[0];
+                console.log(e._value.val.toString() );
+                console.log("------------------")
 
-                e.update("5px");
-                
-                e.update("5px 20px 10px");
+                ss.ruleset.rules[0].props["font_family"].setValueFromString("arial");
+                console.log(e._value.val.toString() );
 
-                e.update("3px 20px 1px 5px")
-
-                e.update("3px 20px 1px 5px");
-
-                console.log(e._value.val.innerHTML);
             })
         })
 
@@ -42,7 +38,7 @@ describe('CandleFW CSS tests', function() {
   border-top-color: #d6e9c6;
 }
 a {
-  border-top-color: green;
+  border-top-color: green; 
 }`
         it("Parses well formed CSS and returns an object graph of CSS rules", function(done) {
             css.parse(test_data).then((og) => {

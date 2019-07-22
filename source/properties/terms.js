@@ -138,6 +138,7 @@ class SymbolTerm extends LiteralTerm {
 
         if (l.tx == this.value) {
             l.next();
+            rule.push(this.value);
             return true;
         }
 

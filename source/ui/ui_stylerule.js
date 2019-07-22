@@ -118,11 +118,10 @@ class ui_stylerule {
 
         for (const prop of properties.values()) 
             if (!present_rules.has(prop)) {
-                let own_prop = new ui_prop(prop, this);
 
+                const own_prop = new ui_prop(prop, this);
                 //Reuse Existing Rule Bodies
                 this.props.push(own_prop);
-                own_prop.build();
                 own_prop.mount(this.rule_space)
             }
 

@@ -26,7 +26,7 @@ class UI_property {
         this._value = null;
 
         this.hash = 0;
-        this.ver = 0;
+        this.ver = -1;
     }
 
     initializer(prop, parent) {
@@ -63,24 +63,10 @@ class UI_property {
         this.element.setAttribute("draggable", "true")
         this.element.classList.add("prop");
         this.element.addEventListener("dragstart", dragstart.bind(this));
+
         this.label = document.createElement("span")
         this.label.classList.add("prop_label")
         this.label.innerHTML = `${type.replace(/[\-\_]/g, " ")}`;
-    }
-
-    build() {
-        const type = this.prop.name;
-        const value = this.prop.value_string;
-
-        this.element.innerHTML = ""
-        this.element.appendChild(this.label)
-        let pp = getPropertyParser(type, undefined, props, ui_productions);
-        this._value = pp.buildInput(1, whind(value));
-
-        if (this._value) {
-            this._value.parent = this;
-            this._value.mount(this.element);
-        }
     }
 
     mount(element) {
@@ -98,30 +84,63 @@ class UI_property {
     }
 
     update(value) {
+
         this.UPDATE_LOOP_GAURD = true;
+
         this.prop.setValueFromString(value.toString());
+
         this.UPDATE_LOOP_GAURD = false;
-        //this.parent.update(this.name, );
     }
 
-    updatedCSSStyleProperty(prop = this.prop) {
 
-        if (prop == this.prop && this.ver == prop.ver)
+    build() {
+
+        if (this.ver == this.prop.ver)
             return;
 
-        this.prop = prop;
+        if (this._value)
+            this._value.destroy();
 
-        // this.ver = prop.ver;
+        const type = this.prop.name;
+        const value = this.prop.value_string;
 
-        if (!this.UPDATE_LOOP_GAURD){
-            const val = this._value.setValue(prop.value_string);
+        this.element.innerHTML = "";
+        this.element.appendChild(this.label)
 
-            if(val !== this._value){
-                this._value = val;
-                this._value.mount(this.element);
-            }
+        let pp = getPropertyParser(type, undefined, props, ui_productions);
+        this._value = pp.buildInput(1, whind(value));
+
+        if (this._value) {
+            this._value.parent = this;
+            this._value.mount(this.element);
         }
-        this.UPDATE_LOOP_GAURD = false;
+
+        this.ver = this.prop.ver;
+    }
+    updatedCSSStyleProperty(prop = this.prop) {
+
+        if (this.ver == prop.ver)
+            return;
+
+        if (prop !== this.prop) {
+            this.prop = prop;
+            return this.build()
+        } else {
+
+            // this.ver = prop.ver;
+
+            //if (!this.UPDATE_LOOP_GAURD) {
+
+                const val = this._value.setValue(prop.value_string);
+
+                if (val !== this._value) {
+                    this._value = val;
+                    this._value.mount(this.element);
+                }
+            // /}
+
+            this.ver = this.prop.ver;
+        }
     }
 }
 

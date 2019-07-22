@@ -3,8 +3,20 @@ import { Segment } from "./ui_segment.js"
 
 export class ValueTerm extends terms.ValueTerm {
 
-    valueHandler(ele, value, funct){
-        return this.value.valueHandler(ele, value, funct);
+    parse(val){
+        return super.parse(val)[0];
+    }
+
+    valueHandler(seg, value, funct){
+        return this.value.valueHandler(seg, value, funct);
+    }
+
+    setValue(segment, value, func){
+        return this.value.setValue(segment, value, func);   
+    }
+
+    buildList(){
+
     }
 
     default (seg, APPEND = false, value = null) {
@@ -61,10 +73,10 @@ export class ValueTerm extends terms.ValueTerm {
 
         if (val) {
             this.default(seg, APPEND, val)
-            return {segment:seg, bool:true};
+            return true;
         }
 
-        return {segment:seg, bool:false};
+        return false;
     }
 
     list(ele, slot) {
@@ -124,7 +136,7 @@ export class BlankTerm extends terms.LiteralTerm {
 
     parseInput(seg, APPEND = false) {
         this.default(seg, APPEND)
-        return {segment:seg, bool:false};
+        return false;
     }
 }
 
@@ -160,10 +172,10 @@ export class LiteralTerm extends terms.LiteralTerm {
         if (l.tx == this.value) {
             l.next();
             this.default(seg, APPEND)
-            return {segment:seg, bool:true};
+            return true;
         }
 
-        return {segment:seg, bool:false};
+        return false;
     }
 }
 
@@ -176,12 +188,18 @@ export class SymbolTerm extends LiteralTerm {
 
         if (l.tx == this.value) {
             l.next();
-            let sub = seg.getSub();
-            sub.value = this.value + "";
-            seg.addSub(sub);
-            return {segment:seg, bool:true};
+            //let sub = seg.getSub();
+            seg.element.innerHTML = " " +this.value + ""
+            seg.value = this.value + "";
+            //seg.addSub(sub);
+            return true;
         }
 
-        return {segment:seg, bool:false};
+        return false;
     }
+
+    buildList(){
+        
+    }
+
 }

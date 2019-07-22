@@ -1,0 +1,492 @@
+
+{
+  "header": {
+    "event": "Allocation failed - JavaScript heap out of memory",
+    "trigger": "FatalError",
+    "filename": "report.20190718.190253.9780.0.001.json",
+    "dumpEventTime": "2019-07-18T19:02:53Z",
+    "dumpEventTimeStamp": "1563498173529",
+    "processId": 9780,
+    "cwd": "/home/anthony/work/active/apps/cfw/css",
+    "commandLine": [
+      "/home/anthony/.nvm/versions/node/v12.2.0/bin/node",
+      "--inspect",
+      "/home/anthony/work/active/apps/cfw/css/node_modules/mocha/bin/_mocha",
+      "test/test.js",
+      "--require",
+      "esm",
+      "--watch",
+      "--timeout",
+      "2000",
+      "--no-config",
+      "--no-package",
+      "--no-opts",
+      "--diff",
+      "--extension",
+      "js",
+      "--reporter",
+      "spec",
+      "--slow",
+      "75",
+      "--ui",
+      "bdd"
+    ],
+    "nodejsVersion": "v12.2.0",
+    "glibcVersionRuntime": "2.27",
+    "glibcVersionCompiler": "2.17",
+    "wordSize": 64,
+    "arch": "x64",
+    "platform": "linux",
+    "componentVersions": {
+      "node": "12.2.0",
+      "v8": "7.4.288.21-node.17",
+      "uv": "1.28.0",
+      "zlib": "1.2.11",
+      "brotli": "1.0.7",
+      "ares": "1.15.0",
+      "modules": "72",
+      "nghttp2": "1.38.0",
+      "napi": "4",
+      "llhttp": "1.1.3",
+      "http_parser": "2.8.0",
+      "openssl": "1.1.1b",
+      "cldr": "35.1",
+      "icu": "64.2",
+      "tz": "2019a",
+      "unicode": "12.1"
+    },
+    "release": {
+      "name": "node",
+      "headersUrl": "https://nodejs.org/download/release/v12.2.0/node-v12.2.0-headers.tar.gz",
+      "sourceUrl": "https://nodejs.org/download/release/v12.2.0/node-v12.2.0.tar.gz"
+    },
+    "osName": "Linux",
+    "osRelease": "4.15.0-20-generic",
+    "osVersion": "#21-Ubuntu SMP Tue Apr 24 06:16:15 UTC 2018",
+    "osMachine": "x86_64",
+    "host": "hydrocarbon"
+  },
+  "javascriptStack": {
+    "message": "No stack.",
+    "stack": [
+      "Unavailable."
+    ]
+  },
+  "nativeStack": [
+    {
+      "pc": "0x0000000000aa94ed",
+      "symbol": "report::TriggerNodeReport(v8::Isolate*, node::Environment*, char const*, char const*, std::string const&, v8::Local<v8::String>) [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    },
+    {
+      "pc": "0x000000000098d653",
+      "symbol": "node::OnFatalError(char const*, char const*) [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    },
+    {
+      "pc": "0x0000000000b077ce",
+      "symbol": "v8::Utils::ReportOOMFailure(v8::internal::Isolate*, char const*, bool) [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    },
+    {
+      "pc": "0x0000000000b07b49",
+      "symbol": "v8::internal::V8::FatalProcessOutOfMemory(v8::internal::Isolate*, char const*, bool) [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    },
+    {
+      "pc": "0x0000000000f12c05",
+      "symbol": " [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    },
+    {
+      "pc": "0x0000000000f1d56b",
+      "symbol": "v8::internal::Heap::PerformGarbageCollection(v8::internal::GarbageCollector, v8::GCCallbackFlags) [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    },
+    {
+      "pc": "0x0000000000f1e287",
+      "symbol": "v8::internal::Heap::CollectGarbage(v8::internal::AllocationSpace, v8::internal::GarbageCollectionReason, v8::GCCallbackFlags) [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    },
+    {
+      "pc": "0x0000000000f20d25",
+      "symbol": "v8::internal::Heap::AllocateRawWithRetryOrFail(int, v8::internal::AllocationType, v8::internal::AllocationAlignment) [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    },
+    {
+      "pc": "0x0000000000eebd50",
+      "symbol": "v8::internal::Factory::NewFillerObject(int, bool, v8::internal::AllocationSpace) [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    },
+    {
+      "pc": "0x00000000011bdb5e",
+      "symbol": "v8::internal::Runtime_AllocateInNewSpace(int, unsigned long*, v8::internal::Isolate*) [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    },
+    {
+      "pc": "0x0000000001a86142",
+      "symbol": " [/home/anthony/.nvm/versions/node/v12.2.0/bin/node]"
+    }
+  ],
+  "javascriptHeap": {
+    "totalMemory": 2151223296,
+    "totalCommittedMemory": 2148588480,
+    "usedMemory": 2144063856,
+    "availableMemory": 50616136,
+    "memoryLimit": 2197815296,
+    "heapSpaces": {
+      "read_only_space": {
+        "memorySize": 524288,
+        "committedMemory": 32024,
+        "capacity": 523976,
+        "used": 31712,
+        "available": 492264
+      },
+      "new_space": {
+        "memorySize": 2097152,
+        "committedMemory": 1396600,
+        "capacity": 1047952,
+        "used": 347560,
+        "available": 700392
+      },
+      "old_space": {
+        "memorySize": 2141839360,
+        "committedMemory": 2140897528,
+        "capacity": 2140148208,
+        "used": 2138364680,
+        "available": 1783528
+      },
+      "code_space": {
+        "memorySize": 688128,
+        "committedMemory": 632768,
+        "capacity": 521184,
+        "used": 521184,
+        "available": 0
+      },
+      "map_space": {
+        "memorySize": 2101248,
+        "committedMemory": 1656440,
+        "capacity": 882560,
+        "used": 882560,
+        "available": 0
+      },
+      "large_object_space": {
+        "memorySize": 3923968,
+        "committedMemory": 3923968,
+        "capacity": 3912704,
+        "used": 3912704,
+        "available": 0
+      },
+      "code_large_object_space": {
+        "memorySize": 49152,
+        "committedMemory": 49152,
+        "capacity": 3456,
+        "used": 3456,
+        "available": 0
+      },
+      "new_large_object_space": {
+        "memorySize": 0,
+        "committedMemory": 0,
+        "capacity": 1047952,
+        "used": 0,
+        "available": 1047952
+      }
+    }
+  },
+  "resourceUsage": {
+    "userCpuSeconds": 48.589,
+    "kernelCpuSeconds": 1.33837,
+    "cpuConsumptionPercent": 293.69,
+    "maxRss": 2232619008,
+    "pageFaults": {
+      "IORequired": 0,
+      "IONotRequired": 632104
+    },
+    "fsActivity": {
+      "reads": 0,
+      "writes": 0
+    }
+  },
+  "uvthreadResourceUsage": {
+    "userCpuSeconds": 12.9261,
+    "kernelCpuSeconds": 0.541093,
+    "cpuConsumptionPercent": 79.2189,
+    "fsActivity": {
+      "reads": 0,
+      "writes": 0
+    }
+  },
+  "libuv": [
+  ],
+  "environmentVariables": {
+    "PROFILEHOME": "/home/anthony/work/active/apps/cfw/",
+    "GJS_DEBUG_TOPICS": "JS ERROR;JS LOG",
+    "LESSOPEN": "| /usr/bin/lesspipe %s",
+    "npm_package_scripts_build_ui_watch": "rollup --config  ./build/config/ui.config.js --watch",
+    "npm_package_devDependencies_rollup": "latest",
+    "npm_config_cache_lock_stale": "60000",
+    "npm_config_ham_it_up": "",
+    "npm_config_legacy_bundling": "",
+    "npm_config_sign_git_tag": "",
+    "USER": "anthony",
+    "LANGUAGE": "en_US",
+    "npm_config_user_agent": "npm/6.9.0 node/v12.2.0 linux x64",
+    "npm_config_always_auth": "",
+    "XDG_SEAT": "seat0",
+    "npm_package_bugs_url": "https://github.com/candlefw/css/issues",
+    "npm_config_bin_links": "true",
+    "npm_config_key": "",
+    "SSH_AGENT_PID": "29930",
+    "XDG_SESSION_TYPE": "x11",
+    "npm_config_allow_same_version": "",
+    "npm_config_description": "true",
+    "npm_config_fetch_retries": "2",
+    "npm_config_heading": "npm",
+    "npm_config_if_present": "",
+    "npm_config_init_version": "1.0.0",
+    "npm_config_user": "1000",
+    "npm_node_execpath": "/home/anthony/.nvm/versions/node/v12.2.0/bin/node",
+    "SHLVL": "1",
+    "npm_package_dependencies__candlefw_observer": "^1.0.0",
+    "npm_config_prefer_online": "",
+    "npm_config_noproxy": "",
+    "OLDPWD": "/home/anthony/work/active/apps/cfw/wick",
+    "HOME": "/home/anthony",
+    "npm_package_scripts_compile_mount": "hydrocarbon compile -d -m ./source/grammar/css.hcg",
+    "npm_package_devDependencies_esm": "^3.2.25",
+    "npm_package_devDependencies_mocha": "latest",
+    "npm_config_force": "",
+    "DESKTOP_SESSION": "cinnamon",
+    "NVM_BIN": "/home/anthony/.nvm/versions/node/v12.2.0/bin",
+    "npm_config_only": "",
+    "npm_config_read_only": "",
+    "npm_package_devDependencies_chai": "latest",
+    "npm_config_cache_min": "10",
+    "npm_config_init_license": "ISC",
+    "SHELL_SESSION_ID": "8d4a73911b224f2890d60dfcf2d32e3c",
+    "GTK_MODULES": "gail:atk-bridge",
+    "XDG_SEAT_PATH": "/org/freedesktop/DisplayManager/Seat0",
+    "npm_config_editor": "vi",
+    "npm_config_rollback": "true",
+    "npm_config_tag_version_prefix": "v",
+    "KONSOLE_DBUS_SESSION": "/Sessions/1",
+    "npm_config_cache_max": "Infinity",
+    "npm_config_timing": "",
+    "npm_config_userconfig": "/home/anthony/.npmrc",
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+    "CINNAMON_VERSION": "3.8.9",
+    "npm_package_scripts_compile": "hydrocarbon compile -u -o ./source/Parser -t mjs ./source/grammar/css.hcg",
+    "npm_package_keywords_0": "CSS",
+    "npm_config_engine_strict": "",
+    "npm_config_init_author_name": "",
+    "npm_config_init_author_url": "",
+    "npm_config_preid": "",
+    "npm_config_tmp": "/tmp",
+    "COLORTERM": "truecolor",
+    "KONSOLE_DBUS_WINDOW": "/Windows/1",
+    "npm_package_description": "CSS Parser",
+    "npm_package_keywords_1": "Parser",
+    "npm_config_depth": "Infinity",
+    "npm_config_package_lock_only": "",
+    "npm_config_save_dev": "",
+    "npm_config_usage": "",
+    "NVM_DIR": "/home/anthony/.nvm",
+    "npm_package_homepage": "https://github.com/candlefw/css#readme",
+    "npm_package_readmeFilename": "README.md",
+    "npm_config_metrics_registry": "https://registry.npmjs.org/",
+    "npm_config_cafile": "",
+    "npm_config_otp": "",
+    "npm_config_package_lock": "true",
+    "npm_config_progress": "true",
+    "npm_config_https_proxy": "",
+    "npm_config_save_prod": "",
+    "MANDATORY_PATH": "/usr/share/gconf/cinnamon.mandatory.path",
+    "QT_QPA_PLATFORMTHEME": "qt5ct",
+    "npm_package_devDependencies_rollup_plugin_resolve": "latest",
+    "npm_package_jshintConfig_unused": "true",
+    "npm_config_audit": "true",
+    "npm_config_cidr": "",
+    "npm_config_onload_script": "",
+    "npm_config_sso_type": "oauth",
+    "LOGNAME": "anthony",
+    "npm_config_rebuild_bundle": "true",
+    "npm_config_save_bundle": "",
+    "npm_config_shell": "/bin/bash",
+    "WINDOWID": "102760454",
+    "_": "/home/anthony/.nvm/versions/node/v12.2.0/bin/npm",
+    "npm_config_dry_run": "",
+    "npm_config_prefix": "/home/anthony/.nvm/versions/node/v12.2.0",
+    "DEFAULTS_PATH": "/usr/share/gconf/cinnamon.default.path",
+    "KONSOLE_PROFILE_NAME": "Primary",
+    "COLORFGBG": "15;0",
+    "npm_package_devDependencies__candlefw_cached_factory": "^1.1.0",
+    "npm_config_scope": "",
+    "npm_config_browser": "",
+    "npm_config_cache_lock_wait": "10000",
+    "npm_config_ignore_prepublish": "",
+    "npm_config_registry": "https://registry.npmjs.org/",
+    "npm_config_save_optional": "",
+    "npm_config_searchopts": "",
+    "npm_config_versions": "",
+    "GTK_OVERLAY_SCROLLING": "1",
+    "XDG_SESSION_ID": "c19",
+    "TERM": "xterm-256color",
+    "npm_package_dependencies__candlefw_url": "latest",
+    "npm_config_cache": "/home/anthony/.npm",
+    "npm_config_proxy": "",
+    "npm_config_send_metrics": "",
+    "GNOME_DESKTOP_SESSION_ID": "this-is-deprecated",
+    "npm_config_global_style": "",
+    "npm_config_ignore_scripts": "",
+    "npm_config_version": "",
+    "npm_config_local_address": "",
+    "npm_config_viewer": "man",
+    "npm_config_node_gyp": "/home/anthony/.nvm/versions/node/v12.2.0/lib/node_modules/npm/node_modules/node-gyp/bin/node-gyp.js",
+    "PATH": "/home/anthony/.nvm/versions/node/v12.2.0/lib/node_modules/npm/node_modules/npm-lifecycle/node-gyp-bin:/home/anthony/work/active/apps/cfw/css/node_modules/.bin:/home/anthony/.nvm/versions/node/v12.2.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/home/anthony/work/active/apps/cfw_tools",
+    "GDM_LANG": "en_US",
+    "SESSION_MANAGER": "local/hydrocarbon:@/tmp/.ICE-unix/29864,unix/hydrocarbon:/tmp/.ICE-unix/29864",
+    "npm_package_name": "@candlefw/css",
+    "npm_package_repository_type": "git",
+    "npm_config_audit_level": "low",
+    "npm_config_prefer_offline": "",
+    "NODE": "/home/anthony/.nvm/versions/node/v12.2.0/bin/node",
+    "XDG_RUNTIME_DIR": "/run/user/1000",
+    "XDG_SESSION_PATH": "/org/freedesktop/DisplayManager/Session8",
+    "npm_package_dependencies__candlefw_whind": "latest",
+    "npm_config_color": "true",
+    "npm_config_sign_git_commit": "",
+    "DISPLAY": ":0",
+    "npm_config_fetch_retry_mintimeout": "10000",
+    "npm_config_maxsockets": "50",
+    "npm_config_offline": "",
+    "npm_config_sso_poll_frequency": "500",
+    "LANG": "en_US.UTF-8",
+    "XDG_CURRENT_DESKTOP": "X-Cinnamon",
+    "npm_package_devDependencies_rollup_plugin_node_resolve": "latest",
+    "npm_config_umask": "0002",
+    "LS_COLORS": "rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:mi=00:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arc=01;31:*.arj=01;31:*.taz=01;31:*.lha=01;31:*.lz4=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.tzo=01;31:*.t7z=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lrz=01;31:*.lz=01;31:*.lzo=01;31:*.xz=01;31:*.zst=01;31:*.tzst=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.alz=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.cab=01;31:*.wim=01;31:*.swm=01;31:*.dwm=01;31:*.esd=01;31:*.jpg=01;35:*.jpeg=01;35:*.mjpg=01;35:*.mjpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.m4a=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.oga=00;36:*.opus=00;36:*.spx=00;36:*.xspf=00;36:",
+    "CFW_WD": "/home/anthony/work/active/apps/cfw",
+    "XDG_SESSION_DESKTOP": "cinnamon",
+    "XAUTHORITY": "/home/anthony/.Xauthority",
+    "npm_package_main": "source/css.js",
+    "npm_package_gitHead": "d8937a42d5919f8d3afb1d9488bd6d846fb26dae",
+    "npm_config_fetch_retry_maxtimeout": "60000",
+    "npm_config_loglevel": "notice",
+    "npm_config_logs_max": "10",
+    "npm_config_message": "%s",
+    "npm_lifecycle_script": "mocha test/test.js -r esm --watch --inspect",
+    "SSH_AUTH_SOCK": "/run/user/1000/keyring/ssh",
+    "XDG_GREETER_DATA_DIR": "/var/lib/lightdm-data/anthony",
+    "npm_package_scripts_test": "mocha test/test.js -r esm",
+    "npm_config_ca": "",
+    "npm_config_cert": "",
+    "npm_config_global": "",
+    "npm_config_link": "",
+    "SHELL": "/bin/bash",
+    "npm_package_version": "0.0.8",
+    "npm_package_repository_url": "git+https://github.com/candlefw/css.git",
+    "npm_package_dependencies__candlefw_color": "latest",
+    "npm_package_dependencies__candlefw_math": "latest",
+    "npm_config_access": "",
+    "npm_config_also": "",
+    "npm_config_save": "true",
+    "npm_config_unicode": "true",
+    "npm_lifecycle_event": "test.watch",
+    "QT_ACCESSIBILITY": "1",
+    "GDMSESSION": "cinnamon",
+    "npm_package_scripts_build": "rollup --config ./build/config/config.js",
+    "npm_config_argv": "{\"remain\":[],\"cooked\":[\"run\",\"test.watch\"],\"original\":[\"run\",\"test.watch\"]}",
+    "npm_config_before": "",
+    "npm_config_long": "",
+    "npm_config_production": "",
+    "npm_config_searchlimit": "20",
+    "npm_config_unsafe_perm": "true",
+    "npm_config_update_notifier": "true",
+    "LESSCLOSE": "/usr/bin/lesspipe %s %s",
+    "npm_config_auth_type": "legacy",
+    "npm_config_node_version": "12.2.0",
+    "npm_config_tag": "latest",
+    "KONSOLE_DBUS_SERVICE": ":1.73",
+    "npm_config_git_tag_version": "true",
+    "npm_config_commit_hooks": "true",
+    "npm_config_script_shell": "",
+    "npm_config_shrinkwrap": "true",
+    "GJS_DEBUG_OUTPUT": "stderr",
+    "GPG_AGENT_INFO": "/run/user/1000/gnupg/S.gpg-agent:0:1",
+    "npm_package_license": "MIT",
+    "npm_config_fetch_retry_factor": "10",
+    "npm_config_save_exact": "",
+    "npm_config_strict_ssl": "true",
+    "XDG_VTNR": "7",
+    "npm_package_scripts_test_watch": "mocha test/test.js -r esm --watch --inspect",
+    "npm_package_jshintConfig_esversion": "6",
+    "npm_config_dev": "",
+    "npm_config_globalconfig": "/home/anthony/.nvm/versions/node/v12.2.0/etc/npmrc",
+    "npm_config_init_module": "/home/anthony/.npm-init.js",
+    "npm_config_parseable": "",
+    "PWD": "/home/anthony/work/active/apps/cfw/css",
+    "npm_config_globalignorefile": "/home/anthony/.nvm/versions/node/v12.2.0/etc/npmignore",
+    "npm_execpath": "/home/anthony/.nvm/versions/node/v12.2.0/lib/node_modules/npm/bin/npm-cli.js",
+    "NVM_CD_FLAGS": "",
+    "XDG_DATA_DIRS": "/usr/share/cinnamon:/usr/share/gnome:/home/anthony/.local/share/flatpak/exports/share:/var/lib/flatpak/exports/share:/usr/local/share:/usr/share",
+    "XDG_CONFIG_DIRS": "/etc/xdg/xdg-cinnamon:/etc/xdg",
+    "npm_package_scripts_build_watch": "rollup --config  ./build/config/config.js --watch",
+    "npm_package_author_name": "Anthony Weathersby",
+    "npm_config_cache_lock_retries": "10",
+    "npm_config_searchstaleness": "900",
+    "npm_config_node_options": "",
+    "npm_config_save_prefix": "^",
+    "npm_config_scripts_prepend_node_path": "warn-only",
+    "npm_config_group": "1000",
+    "npm_config_init_author_email": "",
+    "npm_config_searchexclude": "",
+    "npm_config_git": "git",
+    "npm_config_optional": "true",
+    "npm_package_devDependencies_rollup_plugin_commonjs": "latest",
+    "npm_config_json": "",
+    "INIT_CWD": "/home/anthony/work/active/apps/cfw/css"
+  },
+  "userLimits": {
+    "core_file_size_blocks": {
+      "soft": 0,
+      "hard": "unlimited"
+    },
+    "data_seg_size_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "file_size_blocks": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "max_locked_memory_bytes": {
+      "soft": 16777216,
+      "hard": 16777216
+    },
+    "max_memory_size_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "open_files": {
+      "soft": 1048576,
+      "hard": 1048576
+    },
+    "stack_size_bytes": {
+      "soft": 8388608,
+      "hard": "unlimited"
+    },
+    "cpu_time_seconds": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    },
+    "max_user_processes": {
+      "soft": 127507,
+      "hard": 127507
+    },
+    "virtual_memory_kbytes": {
+      "soft": "unlimited",
+      "hard": "unlimited"
+    }
+  },
+  "sharedObjects": [
+    "linux-vdso.so.1",
+    "/lib/x86_64-linux-gnu/libdl.so.2",
+    "/lib/x86_64-linux-gnu/librt.so.1",
+    "/usr/lib/x86_64-linux-gnu/libstdc++.so.6",
+    "/lib/x86_64-linux-gnu/libm.so.6",
+    "/lib/x86_64-linux-gnu/libgcc_s.so.1",
+    "/lib/x86_64-linux-gnu/libpthread.so.0",
+    "/lib/x86_64-linux-gnu/libc.so.6",
+    "/lib64/ld-linux-x86-64.so.2"
+  ]
+}
