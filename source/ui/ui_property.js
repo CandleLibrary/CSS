@@ -30,13 +30,12 @@ class UI_property {
     }
 
     initializer(prop, parent) {
-        this.prop = prop;
         this.name = prop.name;
         this.parent = parent;
-
         this.setupElement(this.name);
-        this.prop.addObserver(this);
-        this.build();
+
+        if(prop)
+            this.build(prop);
     }
 
     destructor() {
@@ -45,10 +44,11 @@ class UI_property {
         this.prop && this.prop.removeObserver(this);
 
         this.hash = 0;
-        this.ver = 0;
+        this.ver = -1;
         this.name = "";
 
         this._value = null;
+        this.prop = null;
         this.name = null;
         this.parent = null;
         this.unmount();
@@ -62,9 +62,10 @@ class UI_property {
         this.element = document.createElement("div");
         this.element.setAttribute("draggable", "true")
         this.element.classList.add("prop");
-        this.element.addEventListener("dragstart", dragstart.bind(this));
+        this.element.prop = this;
+        //this.element.addEventListener("dragstart", dragstart.bind(this));
 
-        this.label = document.createElement("span")
+        this.label = document.createElement("div")
         this.label.classList.add("prop_label")
         this.label.innerHTML = `${type.replace(/[\-\_]/g, " ")}`;
     }
@@ -93,10 +94,31 @@ class UI_property {
     }
 
 
-    build() {
+    build(prop = this.prop) {
+
+        if(prop !== this.prop){
+            
+            if(this.prop)
+                this.prop.removeObserver(this);
+
+            if(!prop)
+                return;
+
+            this.UPDATE_LOOP_GAURD = true;
+            
+            prop.addObserver(this)
+            
+            this.UPDATE_LOOP_GAURD = false;
+
+            this.prop = prop;
+
+            this.ver = -1;
+        }
 
         if (this.ver == this.prop.ver)
             return;
+        
+        console.log(this.name)
 
         if (this._value)
             this._value.destroy();
@@ -122,22 +144,19 @@ class UI_property {
         if (this.ver == prop.ver)
             return;
 
+
         if (prop !== this.prop) {
             this.prop = prop;
-            return this.build()
+            return this.build(prop)
         } else {
+        console.log(this.name)
 
-            // this.ver = prop.ver;
+            const val = this._value.setValue(prop.value_string);
 
-            //if (!this.UPDATE_LOOP_GAURD) {
-
-                const val = this._value.setValue(prop.value_string);
-
-                if (val !== this._value) {
-                    this._value = val;
-                    this._value.mount(this.element);
-                }
-            // /}
+            if (val !== this._value) {
+                this._value = val;
+                this._value.mount(this.element);
+            }
 
             this.ver = this.prop.ver;
         }

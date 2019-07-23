@@ -70,7 +70,9 @@ class UI_stylesheet {
     }
 
     updatedCSS(css) {
-        if (this.UPDATE_MATCHED) return void(this.UPDATE_MATCHED = false);
+        
+        if (this.UPDATE_MATCHED) return;
+        
         this.build(css);
     }
 
@@ -87,6 +89,7 @@ class UI_stylesheet {
     update() {
         this.UPDATE_MATCHED = true;
         this.css.updated();
+        this.UPDATE_MATCHED = false;
     }
 }
 

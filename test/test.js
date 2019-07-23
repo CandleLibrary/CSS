@@ -15,25 +15,7 @@ if (typeof(Location) == "undefined") global.Location = class {};
 console.log(">= START ==============================================")
 
 describe('CandleFW CSS tests', function() {
-
-        describe.only("UI Test", function(){
-
-            it.only("handles upstream updates", async function(){
-                const ss = await css.parse(`div{font-family:arial, \"Times New Roman\"}`);
-                //const ss = await css.parse(`div{font-family:arial, }`);
-                const ui = css.ui(ss);
-                //get ui property
-                const e = [...ui.rule_map.values()][0].props[0];
-                console.log(e._value.val.toString() );
-                console.log("------------------")
-
-                ss.ruleset.rules[0].props["font_family"].setValueFromString("arial");
-                console.log(e._value.val.toString() );
-
-            })
-        })
-
-            const test_data =
+    const test_data =
         `.panel-success > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #d6e9c6;
 }

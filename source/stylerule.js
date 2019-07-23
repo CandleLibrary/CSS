@@ -55,6 +55,7 @@ export default class stylerule {
         this.ver++;
 
         //if(this.UPDATE_LOOP_GAURD) return;
+
         if (this.parent)
             this.parent.update();
 

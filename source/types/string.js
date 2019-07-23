@@ -13,9 +13,7 @@ export default class CSS_String extends String {
 
         ele.type = "text";
         
-        ele.createTextNode(whind(value+""), 0, 50)
-
-        //ele.addEventListener("change", (e) => { ele.css_value = ele.value; })
+        ele.innerHTML = value.toString()
 
         ui_segment.setValueHandler(ele, update_function);
 

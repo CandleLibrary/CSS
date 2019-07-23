@@ -124,25 +124,19 @@ class ui_stylerule {
                 this.props.push(own_prop);
                 own_prop.mount(this.rule_space)
             }
-
-        for (const selector of stylerule.selectors)
-            this.addSelector(selector);
     }
 
     rebuild(stylerule) {
         if (this.ver !== stylerule.ver) {
-            this.rule_space.innerHTML = "";
             this.build(stylerule);
+            this.ver = stylerule.ver;
         }
     }
 
     updatedCSSStyleRule(stylerule) {
-        //this.rebuild(stylerule)
         if (!this.GUARD_UPDATE_LOOP)
             for (const prop of this.props)
-                prop.updatedCSSStyleProperty()
-
-        
+                prop.updatedCSSStyleProperty();
     }
 
     update(type, value) {
@@ -171,7 +165,6 @@ class ui_stylerule {
         if (rule.props[type]) {
 
             rule.properties.delete(type);
-            //delete rule.props[type];
 
             //Increment the version of the stylerule
             this.stylerule.ver++;
