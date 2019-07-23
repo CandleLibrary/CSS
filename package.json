@@ -29,7 +29,7 @@
   "dependencies": {
     "@candlefw/color": "latest",
     "@candlefw/math": "latest",
-    "@candlefw/observer": "^1.0.0",
+    "@candlefw/observer": "latest",
     "@candlefw/url": "latest",
     "@candlefw/whind": "latest"
   },

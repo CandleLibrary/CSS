@@ -41,10 +41,6 @@ const env = {
 }
 
 const parse = function (string_data) { return css_parser(whind(string_data), env) }
-const ui = function(css_obj) { 
-    if (css_obj.css_type == "stylesheet") return new ui_stylesheet(css_obj);  
-    if (css_obj.css_type == "styleprop") return new ui_styleprop(css_obj);  
-}
 
 export {
     css_parser,
