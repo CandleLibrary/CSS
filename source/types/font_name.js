@@ -26,5 +26,3 @@ export default  class CSS_FontName extends String {
         return null;
     }
 }
-CSS_FontName.valueHandler = CSS_String.valueHandler;
-CSS_FontName.setValue = CSS_String.setValue;

@@ -11,40 +11,6 @@ import Color from "@candlefw/color";
     EM { color: rgb(100%, 0%, 0%) } // float range 0.0% - 100.0% //
 */
 export default class CSS_Color extends Color {
-
-    /** UI FUNCTIONS **/
-
-    static list(){}
-
-    static setValue(ui_segment, value){
-        ui_segment.setElement.value = (value) ? value + "" : "#000000";
-    }
-
-    static valueHandler(ui_segment, value, update_function){
-        const ele = document.createElement("input");
-
-        ele.type = "color";
-
-        ele.addEventListener("change", (e)=>{
-            ele.css_value = ele.value;
-        })
-
-        ui_segment.setValueHandler(ele, update_function);
-
-        CSS_Color.setValue(ui_segment, value);
-    }
-
-    static setInput(input, value){
-        input.type = "color";
-        input.value = value;
-    }
-
-    static buildInput(){
-        let ele = document.createElement("input")
-        ele.type = "color";
-        return ele;
-    }
-
     static parse(l) {
 
         let c = CSS_Color._fs_(l);
