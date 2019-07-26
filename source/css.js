@@ -17,7 +17,7 @@ import classSelector from "./selectors/class.js"
 import attribSelector from "./selectors/attribute.js"
 import pseudoClassSelector from "./selectors/pseudo_class.js"
 import pseudoElementSelector from "./selectors/pseudo_element.js"
-import parseDeclaration from "./properties/parse_declaration.js"
+import parseDeclaration from "./properties/style_prop_parse_declaration.js"
 import CSS_Length from "./types/length.js";
 import CSS_URL from "./types/url.js";
 
