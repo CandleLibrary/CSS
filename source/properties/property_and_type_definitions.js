@@ -166,7 +166,7 @@ export const property_definitions = {
 
 	/* https://www.w3.org/TR/css-fonts-4 */
 		font_display: "auto|block|swap|fallback|optional",
-		font_family: `[[<generic_family>|<family_name>],]*[<generic_family>|<family_name>]`,
+		font_family: `[<generic_family>|<family_name>]#`,
 		font_language_override:"normal|<string>",
 		font: `[[<font_style>||<font_variant>||<font_weight>]?<font_size>[/<line_height>]?<font_family>]|caption|icon|menu|message-box|small-caption|status-bar`,
 		font_max_size: `<absolute_size>|<relative_size>|<length>|<percentage>|infinity`,
@@ -337,7 +337,7 @@ export const virtual_property_definitions = {
         korean_counter_style:`korean-hangul-formal|korean-hanja-informal|and korean-hanja-formal`,
         chinese_counter_style:`simp-chinese-informal|simp-chinese-formal|trad-chinese-informal|and trad-chinese-formal`,
 
-	/* https://drafts.csswg.org/css-content-3/ */
+	/* https://drafts.csswg.org/css-conte-3/ */
 		content_list:"[<string>|contents|<image>|<quote>|<target>|<leader()>]+",
 		content_replacement:"<image>",
 
@@ -357,14 +357,15 @@ export const virtual_property_definitions = {
 	absolute_size: `xx-small|x-small|small|medium|large|x-large|xx-large`,
 	relative_size: `larger|smaller`,
 
-	/*https://www.w3.org/TR/css-backgrounds-3/*/
+	/*https://www.w3.org/TR/css-backgrounds-3/#property-index*/
 
 	bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
 	final_bg_layer: `<background_color>||<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
 	bg_image: `<url>|<gradient>|none`,
 	repeat_style: `repeat-x|repeat-y|[repeat|space|round|no-repeat]{1,2}`,
 	background_attachment: `<attachment>#`,
-	bg_size: `<length_percentage>|auto]{1,2}|cover|contain`,
+	bg_size: `[<length_percentage>|auto]{1,2}|cover
+	|contain`,
 	bg_position: `[[left|center|right|top|bottom|<length_percentage>]|[left|center|right|<length_percentage>][top|center|bottom|<length_percentage>]|[center|[left|right]<length_percentage>?]&&[center|[top|bottom]<length_percentage>?]]`,
 	attachment: `scroll|fixed|local`,
 	line_style: `none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset`,
@@ -380,7 +381,7 @@ export const virtual_property_definitions = {
 
 	identifier: `<id>`,
 	custom_ident: `<id>`,
-
+	
 	/* https://drafts.csswg.org/css-timing-1/#typedef-timing-function */
 
 	timing_function: `linear|<cubic_bezier_timing_function>|<step_timing_function>|<frames_timing_function>`,

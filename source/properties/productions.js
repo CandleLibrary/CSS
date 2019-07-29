@@ -57,7 +57,7 @@ class JUX { /* Juxtaposition */
         return !(isNaN(this.r[0]) && isNaN(this.r[1]));
     }
 
-    parse(data){
+    parse(data) {
         const prop_data = [];
 
         this.parseLVL1(data instanceof whind.constructor ? data : whind(data + ""), prop_data)
@@ -68,7 +68,7 @@ class JUX { /* Juxtaposition */
 
 
     parseLVL1(lx, out_val = [], ROOT = true) {
-            
+
         if (typeof(lx) == "string")
             lx = whind(lx);
 
@@ -89,30 +89,42 @@ class JUX { /* Juxtaposition */
         return bool;
     }
 
-    checkForComma(lx) {
+    checkForComma(lx, out_val, temp_val = [], j = 0) {
         if (this.REQUIRE_COMMA) {
-            if (lx.ch == ",")
-                lx.next();
-            else return false;
-        }
+            if (out_val) {
+                if (j > 0)
+                    out_val.push(",", ...temp_val);
+                else
+                    out_val.push(...temp_val);
+            }
+
+            if (lx.ch !== ",")
+                return false;
+
+            lx.next();
+        } else if(out_val)
+            out_val.push(...temp_val);
+
         return true;
     }
 
     parseLVL2(lx, out_val, start, end) {
 
-        let bool = false;
+        let bool = false,
+            copy = lx.copy(),
+            temp_val = [];
 
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
 
-                const copy = lx.copy();
+                //const copy = lx.copy();
 
                 const temp = [];
 
                 for (let i = 0, l = this.terms.length; i < l; i++) {
 
                     const term = this.terms[i];
-                    
+
                     if (!term.parseLVL1(copy, temp, false)) {
                         if (!term.OPTIONAL) {
                             break repeat;
@@ -120,13 +132,13 @@ class JUX { /* Juxtaposition */
                     }
                 }
 
-                out_val.push(...temp);
+                temp_val.push(...temp);
 
                 lx.sync(copy);
 
                 bool = true;
 
-                if (!this.checkForComma(lx))
+                if (!this.checkForComma(copy, out_val, temp_val, j))
                     break;
             }
 
@@ -154,18 +166,19 @@ class AND extends JUX {
             PROTO = new Array(this.terms.length),
             l = this.terms.length;
 
-        let bool = false;
+        let bool = false,
+            temp_val = [],
+            copy = lx.copy();
 
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
 
                 const
-                    HIT = PROTO.fill(0),
-                    copy = lx.copy();
-                    //temp_r = [];
+                    HIT = PROTO.fill(0);
+                //temp_r = [];
 
                 and:
-                    while (true) {
+                    while (!copy.END) {
                         let FAILED = false;
 
 
@@ -182,7 +195,7 @@ class AND extends JUX {
                                 if (term.OPTIONAL)
                                     HIT[i] = 1;
                             } else {
-                                out_val.push(...temp);
+                                temp_val.push(...temp);
                                 HIT[i] = 2;
                                 continue and;
                             }
@@ -194,16 +207,11 @@ class AND extends JUX {
                         break
                     }
 
-
-
                 lx.sync(copy);
-
-                // if (temp_r.length > 0)
-                //     r.push(...temp);
 
                 bool = true;
 
-                if (!this.checkForComma(lx))
+                if (!this.checkForComma(copy, out_val, temp_val, j))
                     break;
             }
 
@@ -220,17 +228,18 @@ class OR extends JUX {
 
         let
             bool = false,
-            NO_HIT = true;
+            NO_HIT = true,
+            copy = lx.copy(),
+            temp_val = [];
 
         repeat:
             for (let j = 0; j < end && !lx.END; j++) {
 
                 const HIT = PROTO.fill(0);
-                let copy = lx.copy();
                 let temp_r = { v: null }
 
                 or:
-                    while (true) {
+                    while (!copy.END) {
                         let FAILED = false;
                         for (let i = 0; i < l; i++) {
 
@@ -238,7 +247,7 @@ class OR extends JUX {
 
                             let term = this.terms[i];
 
-                            if (term.parseLVL1(copy, out_val, false)) {
+                            if (term.parseLVL1(copy, temp_val, false)) {
                                 NO_HIT = false;
                                 HIT[i] = 2;
                                 continue or;
@@ -257,7 +266,7 @@ class OR extends JUX {
 
                 bool = true;
 
-                if (!this.checkForComma(lx))
+                if (!this.checkForComma(copy, out_val, temp_val, j))
                     break;
             }
 
@@ -271,17 +280,19 @@ class ONE_OF extends JUX {
     parseLVL2(lx, out_val, start, end) {
 
         let BOOL = false;
+        const
+            copy = lx.copy(), 
+            temp_val = [];
 
         for (let j = 0; j < end && !lx.END; j++) {
 
-            const 
-                copy = lx.copy(),
+            const
                 temp_r = [];
-            
+
             let bool = false;
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
-                if (this.terms[i].parseLVL1(copy, out_val, false)) {
+                if (this.terms[i].parseLVL1(copy, temp_val, false)) {
                     bool = true;
                     break;
                 }
@@ -294,7 +305,7 @@ class ONE_OF extends JUX {
 
             BOOL = true;
 
-            if (!this.checkForComma(lx))
+            if (!this.checkForComma(copy, out_val, temp_val, j))
                 break;
         }
 

@@ -218,6 +218,8 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
 }
 
 function checkExtensions(l, term, productions) {
+    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
+
     outer: while (true) {
 
         switch (l.ch) {
@@ -261,8 +263,12 @@ function checkExtensions(l, term, productions) {
                 l.next();
                 break;
             case "#":
-                term = foldIntoProduction(productions, term);
-                term.terms.push(new SymbolTerm(","));
+
+                let nr = new productions.JUX();
+                //nr.terms.push(new SymbolTerm(","));
+                nr.terms.push(term);
+                term = nr;
+                //term = foldIntoProduction(productions, term);
                 term.r[0] = 1;
                 term.r[1] = Infinity;
                 term.REQUIRE_COMMA = true;

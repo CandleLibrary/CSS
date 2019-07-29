@@ -10,7 +10,6 @@ export default class styleprop {
         this.rule = null;
         this.ver = 0;
     }
-
     destroy() {
         this.val = null;
         this.name = "";

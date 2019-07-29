@@ -161,7 +161,7 @@
 		│ declaration_list (declaration)(+;) ;?	 							↦r { sym[0].push(...sym[1]), sym[0] }
 		
 
-	<> declaration → identifier \: declaration_values ( \! τimportant )?			↦r ^parseDeclaration
+RQW	<> declaration → identifier \: declaration_values ( \! τimportant )?			↦r ^parseDeclaration
 
 	<> declaration_values → ( θws │ θany │ θid)(+")
 		│\( declaration_values \)	 										↦r { sym.join("") }
