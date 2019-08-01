@@ -1,6 +1,6 @@
 {
   "name": "@candlefw/css",
-  "version": "0.1.2-2",
+  "version": "0.1.2",
   "description": "CSS Parser",
   "main": "source/css.js",
   "scripts": {
