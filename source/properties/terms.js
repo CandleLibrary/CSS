@@ -7,6 +7,10 @@ import { types } from "./property_and_type_definitions";
 
 class LiteralTerm{
 
+    get type (){
+        return "term";
+    }
+
     constructor(value, type) {
         
         if(type == whind.types.string)

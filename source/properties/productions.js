@@ -18,6 +18,10 @@ export function checkDefaults(lx) {
 
 class JUX { /* Juxtaposition */
 
+    get type(){
+        return "jux";
+    }
+
     constructor() {
         this.id = JUX.step++;
         this.r = [NaN, NaN];
@@ -160,6 +164,10 @@ class JUX { /* Juxtaposition */
 }
 JUX.step = 0;
 class AND extends JUX {
+
+    get type(){
+        return "and";
+    }
     parseLVL2(lx, out_val, start, end) {
 
         const
@@ -220,6 +228,9 @@ class AND extends JUX {
 }
 
 class OR extends JUX {
+    get type(){
+        return "or";
+    }
     parseLVL2(lx, out_val, start, end) {
 
         const
@@ -277,6 +288,9 @@ class OR extends JUX {
 OR.step = 0;
 
 class ONE_OF extends JUX {
+    get type(){
+        return "one_of";
+    }
     parseLVL2(lx, out_val, start, end) {
 
         let BOOL = false;
