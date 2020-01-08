@@ -45,5 +45,5 @@ export default function parseDeclaration(sym) {
         //Need to know what properties have not been defined
         console.warn(`Unable to get parser for CSS property ${rule_name}`);
 
-    return {rule_name, body_string, prop, important};
+    return {name:rule_name, body_string, prop, important};
 }

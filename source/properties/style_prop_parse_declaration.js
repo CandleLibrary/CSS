@@ -10,7 +10,7 @@ export default function (...v){
 
 	if(result)
 		return new styleprop(
-			result.rule_name,
+			result.name,
 			result.body_string,
 			result.prop
 		)

@@ -11,7 +11,7 @@ const output = [{
     }];
 
 export default {
-    input: "./source/css.mjs",
+    input: "./source/css.js",
     treeshake: false,
     output,
     plugins: [resolve({jail:"",modulesOnly: true})]

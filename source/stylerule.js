@@ -1,4 +1,4 @@
-import parseDeclaration from "./properties/parse_declaration.js";
+import parseDeclaration from "./properties/style_prop_parse_declaration.js";
 import observer from "@candlefw/observer";
 
 function setParent(array, parent) {
@@ -91,7 +91,6 @@ export default class stylerule {
         else
         if (!Array.isArray(props))
             props = [props];
-
 
        // this.UPDATE_LOOP_GAURD = true;
         for (const prop of props)
