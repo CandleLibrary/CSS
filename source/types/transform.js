@@ -7,6 +7,12 @@ function getValue(lex, attribute) {
     if (v == "-")
         v = lex.n.tx, mult = -1;
 
+    if (lex.pk.tx == ".")
+        lex.next(), (v += lex.tx);
+
+    if(lex.pk.ty == lex.types.number)
+        lex.next(), (v += lex.tx);
+
     let n = parseFloat(v) * mult;
 
     lex.next();
