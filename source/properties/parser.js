@@ -1,7 +1,7 @@
 import whind from "@candlefw/whind";
-import { JUX, AND, OR, ONE_OF } from "./productions";
-import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms";
-import { virtual_property_definitions } from "./property_and_type_definitions";
+import { JUX, AND, OR, ONE_OF } from "./productions.js";
+import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms.js";
+import { virtual_property_definitions } from "./property_and_type_definitions.js";
 //import util from "util"
 const standard_productions = {
     JUX,

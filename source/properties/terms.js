@@ -1,8 +1,8 @@
 import whind from "@candlefw/whind";
 
-import { JUX, checkDefaults } from "./productions";
+import { JUX, checkDefaults } from "./productions.js";
 
-import { types } from "./property_and_type_definitions";
+import { types } from "./property_and_type_definitions.js";
 
 
 class LiteralTerm{

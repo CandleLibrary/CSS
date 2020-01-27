@@ -1,6 +1,6 @@
-import CSS_Percentage from "./percentage";
-
 import whind from "@candlefw/whind";
+
+import CSS_Percentage from "./percentage.js";
 
 export default class CSS_Length extends Number {
 

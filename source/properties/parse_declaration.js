@@ -2,9 +2,9 @@ import whind from "@candlefw/whind";
 import {
     property_definitions,
     media_feature_definitions
-} from "./property_and_type_definitions";
-import { types } from "./property_and_type_definitions";
-import { getPropertyParser } from "./parser";
+} from "./property_and_type_definitions.js";
+import { types } from "./property_and_type_definitions.js";
+import { getPropertyParser } from "./parser.js";
 
 /* 
     Parses a string value of a css property. Returns result of parse or null.
