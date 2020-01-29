@@ -13,6 +13,15 @@ function getValue(lex, attribute) {
     if(lex.pk.ty == lex.types.number)
         lex.next(), (v += lex.tx);
 
+    if(lex.pk.tx == "e")
+        lex.next(), (v += lex.tx);
+
+    if(lex.pk.tx == "-")
+        lex.next(), (v += lex.tx);
+
+    if(lex.pk.ty == lex.types.number)
+        lex.next(), (v += lex.tx);
+
     let n = parseFloat(v) * mult;
 
     lex.next();
