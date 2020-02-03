@@ -1,6 +1,6 @@
 {
   "name": "@candlefw/css",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "description": "CSS Parser",
   "main": "source/css.js",
