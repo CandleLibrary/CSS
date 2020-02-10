@@ -22,10 +22,10 @@
   resolved "https://registry.yarnpkg.com/@candlefw/observer/-/observer-1.0.2.tgz#db498b0686a203b5698ab6a0e7b24bc3dd379c40"
   integrity sha512-pYZratBwbneLZV48OQZmBFOynXGZRonjEg1aOuazpKxU3OQI/rwdid1NVsVuKWjRb2yTFRPCJzniRQTn209fCg==
 
-"@candlefw/url@latest":
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/@candlefw/url/-/url-0.0.11.tgz#628f1cae7afb62ab7872017bed79851a2fd2740b"
-  integrity sha512-4TVjswHtoFMze4llOr5JgtNJOdLE+JutHW6S24u3NU+WNPZarQFjQke4SSl7r6yThZHdtNTWQ4MFFYQC04te6A==
+"@candlefw/url@0.0.13":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@candlefw/url/-/url-0.0.13.tgz#5abf5b7420eb44ba996f288e7297b2f933d2b476"
+  integrity sha512-FFJ1usgjtK2Spre8vfxla2TsImjLEh9X5x1JfXhOEDwKxex3WTWcRvN2VRug+yS50Xm888VcyeSJ24FunYR48A==
   dependencies:
     "@candlefw/whind" latest
 
@@ -676,9 +676,9 @@ require-main-filename@^2.0.0:
   integrity sha512-NKN5kMDylKuldxYLSUfrbo5Tuzh4hd+2E8NPPX02mZtn1VuREQToYe/ZdlJy+J3uCpfaiGF05e7B8W0iXbQHmg==
 
 resolve@^1.11.0, resolve@^1.11.1:
-  version "1.15.0"
-  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.15.0.tgz#1b7ca96073ebb52e741ffd799f6b39ea462c67f5"
-  integrity sha512-+hTmAldEGE80U2wJJDC1lebb5jWqvTYAfm3YZ1ckk1gBr0MnCqUKlwK1e+anaFljIl+F5tR5IoZcm4ZDA1zMQw==
+  version "1.15.1"
+  resolved "https://registry.yarnpkg.com/resolve/-/resolve-1.15.1.tgz#27bdcdeffeaf2d6244b95bb0f9f4b4653451f3e8"
+  integrity sha512-84oo6ZTtoTUpjgNEr5SJyzQhzL72gaRodsSfyxC/AXRvwu0Yse9H8eF9IpGo7b8YetZhlI6v7ZQ6bKBFV/6S7w==
   dependencies:
     path-parse "^1.0.6"
 

@@ -31,7 +31,7 @@
     "@candlefw/color": "latest",
     "@candlefw/math": "latest",
     "@candlefw/observer": "1.0.2",
-    "@candlefw/url": "latest",
+    "@candlefw/url": "0.0.13",
     "@candlefw/whind": "latest"
   },
   "devDependencies": {
