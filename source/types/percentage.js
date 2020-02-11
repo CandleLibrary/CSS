@@ -1,3 +1,5 @@
+import whind from "@candlefw/whind";
+
 export default class CSS_Percentage extends Number {    
     static parse(l, rule, r) {
         let tx = l.tx,

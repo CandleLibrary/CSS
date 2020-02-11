@@ -1,3 +1,4 @@
+import whind from "@candlefw/whind";
 /**
  * @brief Path Info
  * @details Path syntax information for reference
