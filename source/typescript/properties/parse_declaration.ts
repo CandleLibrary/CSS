@@ -1,4 +1,4 @@
-import whind from "@candlefw/whind";
+import whind from "@candlefw/wind";
 import {
     property_definitions,
     media_feature_definitions
@@ -25,9 +25,9 @@ import { getPropertyParser } from "./parser.js";
 
 
 export default function parseDeclaration(sym) {
-    if(sym.length == 0)
+    if (sym.length == 0)
         return null;
-    
+
     let prop = null;
 
     const
@@ -37,13 +37,13 @@ export default function parseDeclaration(sym) {
         IS_VIRTUAL = { is: false },
         parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
 
-    if (parser && !IS_VIRTUAL.is) 
+    if (parser && !IS_VIRTUAL.is)
 
-        prop = parser.parse(whind(body_string).useExtendedId());
+        prop = parser.parse(whind(body_string));
 
     else
         //Need to know what properties have not been defined
         console.warn(`Unable to get parser for CSS property ${rule_name}`);
 
-    return {name:rule_name, body_string, prop, important};
+    return { name: rule_name, body_string, prop, important };
 }

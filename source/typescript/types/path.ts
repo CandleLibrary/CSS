@@ -1,4 +1,4 @@
-import whind from "@candlefw/whind";
+import wind from "@candlefw/wind";
 /**
  * @brief Path Info
  * @details Path syntax information for reference
@@ -34,7 +34,7 @@ const PathSym = {
     Z: 18,
     z: 19,
     pairs: 20
-}
+};
 
 function getSignedNumber(lex) {
     let mult = 1,
@@ -55,8 +55,8 @@ function getNumberPair(lex, array) {
 }
 
 function parseNumberPairs(lex, array) {
-    while ((lex.ty == lex.types.num || lex.ch == "-") && !lex.END) {    	
-    	array.push(PathSym.pairs);
+    while ((lex.ty == lex.types.num || lex.ch == "-") && !lex.END) {
+        array.push(PathSym.pairs);
         getNumberPair(lex, array);
     }
 }
@@ -65,7 +65,7 @@ function parseNumberPairs(lex, array) {
  */
 export default class CSS_Path extends Array {
     static FromString(string, array) {
-        let lex = whind(string);
+        let lex = wind(string);
         while (!lex.END) {
             let relative = false,
                 x = 0,
@@ -80,7 +80,7 @@ export default class CSS_Path extends Array {
                     getNumberPair(lex, array);
                     parseNumberPairs(lex, array);
                     continue;
-                    //Line to
+                //Line to
                 case "h":
                     relative = true;
                 case "H":
@@ -103,7 +103,7 @@ export default class CSS_Path extends Array {
                     getNumberPair(lex, array);
                     parseNumberPairs(lex, array);
                     continue;
-                    //Cubic Curve
+                //Cubic Curve
                 case "c":
                     relative = true;
                 case "C":
@@ -121,7 +121,7 @@ export default class CSS_Path extends Array {
                     getNumberPair(lex, array);
                     parseNumberPairs(lex, array);
                     continue;
-                    //Quadratic Curve0
+                //Quadratic Curve0
                 case "q":
                     relative = true;
                 case "Q":
@@ -137,8 +137,8 @@ export default class CSS_Path extends Array {
                     getNumberPair(lex, array);
                     parseNumberPairs(lex, array);
                     continue;
-                    //Elliptical Arc
-                    //Close path:
+                //Elliptical Arc
+                //Close path:
                 case "z":
                     relative = true;
                 case "Z":
@@ -149,99 +149,99 @@ export default class CSS_Path extends Array {
     }
 
     static ToString(array) {
-    	let string = [], l = array.length, i = 0;
-    	while(i < l){
-    		switch(array[i++]){
-    			case PathSym.M:
-    				string.push("M", array[i++], array[i++]);
-    				break;
-			    case PathSym.m:
-			    	string.push("m", array[i++], array[i++]);
-			    	break;
-			    case PathSym.L:
-			    	string.push("L", array[i++], array[i++]);
-			    	break;
-			    case PathSym.l:
-			    	string.push("l", array[i++], array[i++]);
-			    	break;
-			    case PathSym.h:
-			    	string.push("h", array[i++]);
-			    	break;
-			    case PathSym.H:
-			    	string.push("H", array[i++]);
-			    	break;
-			    case PathSym.V:
-			    	string.push("V", array[i++]);
-			    	break;
-			    case PathSym.v:
-			    	string.push("v", array[i++]);
-			    	break;
-			    case PathSym.C:
-			    	string.push("C", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.c:
-			    	string.push("c", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.S:
-			    	string.push("S", array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.s:
-			    	string.push("s", array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.Q:
-			    	string.push("Q", array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.q:
-			    	string.push("q", array[i++], array[i++], array[i++], array[i++]);
-			    	break;
-			    case PathSym.T:
-			    	string.push("T", array[i++], array[i++]);
-			    	break;
-			    case PathSym.t:
-			    	string.push("t", array[i++], array[i++]);
-			    	break;
-			    case PathSym.Z:
-			    	string.push("Z");
-			    	break;
-			    case PathSym.z:
-			    	string.push("z");
-			    	break;
-			    case PathSym.pairs:
-			    	string.push(array[i++], array[i++]);
-			    	break;
-			 	case PathSym.A:
-			    case PathSym.a:
-			    default:
-			    	i++;
-    		}
-    	}
+        let string = [], l = array.length, i = 0;
+        while (i < l) {
+            switch (array[i++]) {
+                case PathSym.M:
+                    string.push("M", array[i++], array[i++]);
+                    break;
+                case PathSym.m:
+                    string.push("m", array[i++], array[i++]);
+                    break;
+                case PathSym.L:
+                    string.push("L", array[i++], array[i++]);
+                    break;
+                case PathSym.l:
+                    string.push("l", array[i++], array[i++]);
+                    break;
+                case PathSym.h:
+                    string.push("h", array[i++]);
+                    break;
+                case PathSym.H:
+                    string.push("H", array[i++]);
+                    break;
+                case PathSym.V:
+                    string.push("V", array[i++]);
+                    break;
+                case PathSym.v:
+                    string.push("v", array[i++]);
+                    break;
+                case PathSym.C:
+                    string.push("C", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
+                    break;
+                case PathSym.c:
+                    string.push("c", array[i++], array[i++], array[i++], array[i++], array[i++], array[i++]);
+                    break;
+                case PathSym.S:
+                    string.push("S", array[i++], array[i++], array[i++], array[i++]);
+                    break;
+                case PathSym.s:
+                    string.push("s", array[i++], array[i++], array[i++], array[i++]);
+                    break;
+                case PathSym.Q:
+                    string.push("Q", array[i++], array[i++], array[i++], array[i++]);
+                    break;
+                case PathSym.q:
+                    string.push("q", array[i++], array[i++], array[i++], array[i++]);
+                    break;
+                case PathSym.T:
+                    string.push("T", array[i++], array[i++]);
+                    break;
+                case PathSym.t:
+                    string.push("t", array[i++], array[i++]);
+                    break;
+                case PathSym.Z:
+                    string.push("Z");
+                    break;
+                case PathSym.z:
+                    string.push("z");
+                    break;
+                case PathSym.pairs:
+                    string.push(array[i++], array[i++]);
+                    break;
+                case PathSym.A:
+                case PathSym.a:
+                default:
+                    i++;
+            }
+        }
 
-    	return string.join(" ");
+        return string.join(" ");
     }
 
-    
+
     constructor(data) {
-        super()	
+        super();
 
-    	if(typeof(data) == "string"){
-    		Path.FromString(data, this)
-    	}else if(Array.isArray(data)){
-    		for(let i = 0; i < data.length;i++){
-    			this.push(parseFloat(data[i]));
-    		}
-    	}
+        if (typeof (data) == "string") {
+            Path.FromString(data, this);
+        } else if (Array.isArray(data)) {
+            for (let i = 0; i < data.length; i++) {
+                this.push(parseFloat(data[i]));
+            }
+        }
     }
 
-    toString(){
-    	return Path.ToString(this);
+    toString() {
+        return Path.ToString(this);
     }
 
-    lerp(to, t, array = new Path){
-    	let l = Math.min(this.length, to.length);
+    lerp(to, t, array = new Path) {
+        let l = Math.min(this.length, to.length);
 
-    	for(let i = 0; i < l; i++)
-    		array[i] = this[i] + (to[i] - this[i]) * t;
+        for (let i = 0; i < l; i++)
+            array[i] = this[i] + (to[i] - this[i]) * t;
 
-    	return array;
-    }	
+        return array;
+    }
 }

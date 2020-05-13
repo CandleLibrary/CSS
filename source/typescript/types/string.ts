@@ -1,4 +1,4 @@
-import whind from "@candlefw/whind";
+import whind from "@candlefw/wind";
 
 export default class CSS_String extends String {
 
@@ -14,6 +14,6 @@ export default class CSS_String extends String {
     constructor(string) {
         //if(string[0] == "\"" || string[0] == "\'" || string[0] == "\'")
         //    string = string.slice(1,-1);
-        super(string)
+        super(string);
     }
 }

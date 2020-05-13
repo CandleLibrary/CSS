@@ -1,6 +1,6 @@
-import whind from "@candlefw/whind";
+import whind from "@candlefw/wind";
 
-export default class CSS_Percentage extends Number {    
+export default class CSS_Percentage extends Number {
     static parse(l, rule, r) {
         let tx = l.tx,
             pky = l.pk.ty;
@@ -23,20 +23,20 @@ export default class CSS_Percentage extends Number {
     }
 
     static _verify_(l) {
-        if(typeof(l) == "string" &&  !isNaN(parseInt(l)) && l.includes("%"))
+        if (typeof (l) == "string" && !isNaN(parseInt(l)) && l.includes("%"))
             return true;
         return false;
     }
-    
+
     constructor(v) {
 
-        if (typeof(v) == "string") {
+        if (typeof (v) == "string") {
             let lex = whind(v);
             let val = CSS_Percentage.parse(lex);
-            if (val) 
+            if (val)
                 return val;
         }
-        
+
         super(v);
     }
 
@@ -56,11 +56,11 @@ export default class CSS_Percentage extends Number {
         return new CSS_Percentage(this + (to - this) * t);
     }
 
-    copy(other){
+    copy(other) {
         return new CSS_Percentage(other);
     }
 
-    get type(){
+    get type() {
         return "%";
     }
 }

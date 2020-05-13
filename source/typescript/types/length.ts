@@ -1,4 +1,4 @@
-import whind from "@candlefw/whind";
+import whind from "@candlefw/wind";
 
 import CSS_Percentage from "./percentage.js";
 
@@ -24,20 +24,20 @@ export default class CSS_Length extends Number {
     }
 
     static _verify_(l) {
-        if (typeof(l) == "string" && !isNaN(parseInt(l)) && !l.includes("%")) return true;
+        if (typeof (l) == "string" && !isNaN(parseInt(l)) && !l.includes("%")) return true;
         return false;
     }
 
     constructor(v, u = "") {
-        
-        if (typeof(v) == "string") {
+
+        if (typeof (v) == "string") {
             let lex = whind(v);
             let val = CSS_Length.parse(lex);
             if (val) return val;
         }
 
-        if(u){
-            switch(u){
+        if (u) {
+            switch (u) {
                 //Absolute
                 case "px": return new PXLength(v);
                 case "mm": return new MMLength(v);
@@ -45,7 +45,7 @@ export default class CSS_Length extends Number {
                 case "in": return new INLength(v);
                 case "pc": return new PCLength(v);
                 case "pt": return new PTLength(v);
-                
+
                 //Relative
                 case "ch": return new CHLength(v);
                 case "em": return new EMLength(v);
@@ -61,7 +61,7 @@ export default class CSS_Length extends Number {
                 //Deg
                 case "deg": return new DEGLength(v);
 
-                case "%" : return new CSS_Percentage(v);
+                case "%": return new CSS_Percentage(v);
             }
         }
 
@@ -96,52 +96,52 @@ export default class CSS_Length extends Number {
         return new CSS_Length(other, this.unit);
     }
 
-    set unit(t){}
-    get unit(){return "";}
+    set unit(t) { }
+    get unit() { return ""; }
 }
 
 export class PXLength extends CSS_Length {
-    get unit(){return "px";}
+    get unit() { return "px"; }
 }
 export class MMLength extends CSS_Length {
-    get unit(){return "mm";}
+    get unit() { return "mm"; }
 }
 export class CMLength extends CSS_Length {
-    get unit(){return "cm";}
+    get unit() { return "cm"; }
 }
 export class INLength extends CSS_Length {
-    get unit(){return "in";}
+    get unit() { return "in"; }
 }
 export class PTLength extends CSS_Length {
-    get unit(){return "pt";}
+    get unit() { return "pt"; }
 }
 export class PCLength extends CSS_Length {
-    get unit(){return "pc";}
+    get unit() { return "pc"; }
 }
 export class CHLength extends CSS_Length {
-    get unit(){return "ch";}
+    get unit() { return "ch"; }
 }
 export class EMLength extends CSS_Length {
-    get unit(){return "em";}
+    get unit() { return "em"; }
 }
 export class EXLength extends CSS_Length {
-    get unit(){return "ex";}
+    get unit() { return "ex"; }
 }
 export class REMLength extends CSS_Length {
-    get unit(){return "rem";}
+    get unit() { return "rem"; }
 }
 export class VHLength extends CSS_Length {
-    get unit(){return "vh";}
+    get unit() { return "vh"; }
 }
 export class VWLength extends CSS_Length {
-    get unit(){return "vw";}
+    get unit() { return "vw"; }
 }
 export class VMINLength extends CSS_Length {
-    get unit(){return "vmin";}
+    get unit() { return "vmin"; }
 }
 export class VMAXLength extends CSS_Length {
-    get unit(){return "vmax";}
+    get unit() { return "vmax"; }
 }
 export class DEGLength extends CSS_Length {
-    get unit(){return "deg";}
+    get unit() { return "deg"; }
 }

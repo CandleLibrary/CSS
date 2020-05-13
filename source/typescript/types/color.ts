@@ -1,4 +1,4 @@
-import whind from "@candlefw/whind";
+import whind from "@candlefw/wind";
 import Color from "@candlefw/color";
 
 /*
@@ -38,7 +38,7 @@ export default class CSS_Color extends Color {
     static _fs_(l, v = false) {
         let c;
 
-        if (typeof(l) == "string")
+        if (typeof (l) == "string")
             l = whind(l);
 
         let out = { r: 0, g: 0, b: 0, a: 1 };
@@ -48,11 +48,11 @@ export default class CSS_Color extends Color {
                 l.next();
                 let pk = l.copy();
 
-                let type = l.types
+                let type = l.types;
                 pk.IWS = false;
 
 
-                while(!(pk.ty & (type.newline | type.ws)) && !pk.END && pk.ch !== ";"){
+                while (!(pk.ty & (type.newline | type.ws)) && !pk.END && pk.ch !== ";") {
                     pk.next();
                 }
 
@@ -60,12 +60,12 @@ export default class CSS_Color extends Color {
                 l.sync(pk);
                 l.tl = 0;
                 l.next();
-                
-                let num = parseInt(value,16);
 
-                if(value.length == 3 || value.length == 4){
-                    
-                    if(value.length == 4){
+                let num = parseInt(value, 16);
+
+                if (value.length == 3 || value.length == 4) {
+
+                    if (value.length == 4) {
                         const a = (num >> 8) & 0xF;
                         out.a = a | a << 4;
                         num >>= 4;
@@ -73,21 +73,21 @@ export default class CSS_Color extends Color {
 
                     const r = (num >> 8) & 0xF;
                     out.r = r | r << 4;
-                    
+
                     const g = (num >> 4) & 0xF;
                     out.g = g | g << 4;
-                    
+
                     const b = (num) & 0xF;
                     out.b = b | b << 4;
 
-                }else{
+                } else {
 
-                    if(value.length == 8){
+                    if (value.length == 8) {
                         out.a = num & 0xFF;
                         num >>= 8;
                     }
 
-                    out.r = (num >> 16) & 0xFF;       
+                    out.r = (num >> 16) & 0xFF;
                     out.g = (num >> 8) & 0xFF;
                     out.b = (num) & 0xFF;
                 }
@@ -96,43 +96,43 @@ export default class CSS_Color extends Color {
             case "r":
                 let tx = l.tx;
 
-                const RGB_TYPE = tx === "rgba"  ? 1 : tx === "rgb" ? 2 : 0;
-                
-                if(RGB_TYPE > 0){
+                const RGB_TYPE = tx === "rgba" ? 1 : tx === "rgb" ? 2 : 0;
+
+                if (RGB_TYPE > 0) {
 
                     l.next(); // (
-                    
+
                     out.r = parseInt(l.next().tx);
-                    
+
                     l.next(); // , or  %
 
-                    if(l.ch == "%"){
+                    if (l.ch == "%") {
                         l.next(); out.r = out.r * 255 / 100;
                     }
-                    
-                    
+
+
                     out.g = parseInt(l.next().tx);
-                    
+
                     l.next(); // , or  %
-                   
-                    if(l.ch == "%"){
+
+                    if (l.ch == "%") {
                         l.next(); out.g = out.g * 255 / 100;
                     }
-                    
-                    
+
+
                     out.b = parseInt(l.next().tx);
-                    
+
                     l.next(); // , or ) or %
-                    
-                    if(l.ch == "%")
+
+                    if (l.ch == "%")
                         l.next(), out.b = out.b * 255 / 100;
 
-                    if(RGB_TYPE < 2){
+                    if (RGB_TYPE < 2) {
                         out.a = parseFloat(l.next().tx);
 
-                        l.next()
-                        
-                        if(l.ch == "%")
+                        l.next();
+
+                        if (l.ch == "%")
                             l.next(), out.a = out.a * 255 / 100;
                     }
 
@@ -145,13 +145,13 @@ export default class CSS_Color extends Color {
 
                 let string = l.tx;
 
-                if (l.ty == l.types.str){
+                if (l.ty == l.types.str) {
                     string = string.slice(1, -1);
                 }
 
                 out = CSS_Color.colors[string.toLowerCase()];
 
-                if(out)
+                if (out)
                     l.next();
         }
 
@@ -161,18 +161,18 @@ export default class CSS_Color extends Color {
     constructor(r, g, b, a) {
         super(r, g, b, a);
 
-        if (typeof(r) == "string")
-            this.set(CSS_Color._fs_(r) || {r:255,g:255,b:255,a:0});
+        if (typeof (r) == "string")
+            this.set(CSS_Color._fs_(r) || { r: 255, g: 255, b: 255, a: 0 });
 
     }
 
-    toString(){
-        if(this.a !== 1)
+    toString() {
+        if (this.a !== 1)
             return this.toRGBString();
-        return `#${("0"+this.r.toString(16)).slice(-2)}${("0"+this.g.toString(16)).slice(-2)}${("0"+this.b.toString(16)).slice(-2)}`
+        return `#${("0" + this.r.toString(16)).slice(-2)}${("0" + this.g.toString(16)).slice(-2)}${("0" + this.b.toString(16)).slice(-2)}`;
     }
-    toRGBString(){
-        return `rgba(${this.r.toString()},${this.g.toString()},${this.b.toString()},${this.a.toString()})`   
+    toRGBString() {
+        return `rgba(${this.r.toString()},${this.g.toString()},${this.b.toString()},${this.a.toString()})`;
     }
 } {
 

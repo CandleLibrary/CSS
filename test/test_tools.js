@@ -1,21 +1,21 @@
 import * as css from "../source/css.js";
 import chai from "chai";
 chai.should();
-import whind from "@candlefw/whind";
+import whind from "@candlefw/wind";
 
 function checkF(f) {
-    if (typeof(f) == "string")
+    if (typeof (f) == "string")
         return checkText(f);
     else
-    if (Array.isArray(f))
-        return checkArray(...f)
-    else
-    if (typeof(f) == "object" && f.unit)
-        return checkLength(f);
-    else
-    if (!isNaN(f))
-        return checkNumber(f);
-    return f
+        if (Array.isArray(f))
+            return checkArray(...f);
+        else
+            if (typeof (f) == "object" && f.unit)
+                return checkLength(f);
+            else
+                if (!isNaN(f))
+                    return checkNumber(f);
+    return f;
 }
 
 export function message(string) {
@@ -23,56 +23,56 @@ export function message(string) {
 }
 
 export function checkURL(url) {
-    const URL = new css.CSS_URL(url)
-    return function(prop) {
+    const URL = new css.CSS_URL(url);
+    return function (prop) {
         prop.should.have.property("host", URL.host);
         prop.should.have.property("port", URL.port);
-    }
+    };
 }
 
 export function checkColor(r = 0, g = 0, b = 0, a = 1) {
-    return function(prop) {
-        prop.should.have.property("r", r)
-        prop.should.have.property("g", g)
-        prop.should.have.property("b", b)
-        prop.should.have.property("a", a)
-    }
+    return function (prop) {
+        prop.should.have.property("r", r);
+        prop.should.have.property("g", g);
+        prop.should.have.property("b", b);
+        prop.should.have.property("a", a);
+    };
 }
 
 export function checkNumber(val) {
-    return function(prop) {
+    return function (prop) {
         prop.should.equal(val);
-    }
+    };
 }
 
 export function checkLength(val, type) {
-    return function(prop) {
-        if (typeof(val) == "object" && val.unit) {
+    return function (prop) {
+        if (typeof (val) == "object" && val.unit) {
             type = val.unit;
         }
         prop.should.equal(parseFloat(val));
-        typeof(prop.unit).should.not.equal("undefined")
+        typeof (prop.unit).should.not.equal("undefined");
         prop.unit.should.equal(type);
-    }
+    };
 }
 
 export function checkPercentage(val) {
-    return function(prop) {
+    return function (prop) {
         prop.should.equal(val);
         prop.toString().should.equal(val + "%");
-    }
+    };
 }
 
 export function checkText(val) {
-    return function(prop) {
+    return function (prop) {
         prop.should.equal(val);
-    }
+    };
 }
 
 export function checkArray(...rest) {
-    return function(prop) {
+    return function (prop) {
         if (!prop)
-            throw new Error("Property note created")
+            throw new Error("Property note created");
 
         const array = prop;
 
@@ -80,14 +80,14 @@ export function checkArray(...rest) {
 
         for (let i = 0; i < rest.length; i++) {
             let func = rest[i];
-            
-            func = checkF(func)
+
+            func = checkF(func);
 
             let prop = array[i];
 
             func(prop);
         }
-    }
+    };
 }
 
 export function textSpread(name, ...rest) {
@@ -96,7 +96,7 @@ export function textSpread(name, ...rest) {
     let prop_name = name.replace(/\-/g, "_");
     for (let i = 0; i < rest.length; i++) {
         let text = rest[i];
-        test.value = `${name}:${text}`
+        test.value = `${name}:${text}`;
         test.ONLY = ONLY;
         test.check = checkText(text);
     }
@@ -107,9 +107,9 @@ let itOnly = null;
 export const test = {
     v: "",
     prop_name: "",
-    ONLY : false,
-    only: function (){
-        if(!itOnly)
+    ONLY: false,
+    only: function () {
+        if (!itOnly)
             itOnly = it.only.bind(it);
         this.ONLY = true;
     },
@@ -120,7 +120,7 @@ export const test = {
     },
     set check(f) {
         if (!this.v)
-            throw new Error("Please provide css.CSS property value before defining a check funcition.")
+            throw new Error("Please provide css.CSS property value before defining a check funcition.");
         const v = this.v;
         const prop_name = this.prop_name;
 
@@ -137,16 +137,16 @@ export const test = {
             }
             */
 
-            sheet.ruleset.rules[0].props[prop_name].should.not.be.undefined
-            sheet.ruleset.rules[0].props[prop_name].should.not.be.null
+            sheet.ruleset.rules[0].props[prop_name].should.not.be.undefined;
+            sheet.ruleset.rules[0].props[prop_name].should.not.be.null;
             const prop = sheet.ruleset.rules[0].props[prop_name];
 
             f(prop.value);
         });
-        this.prop_name = ""
+        this.prop_name = "";
         this.v = "";
     }
-}
+};
 
 export function px(n) {
     return checkLength(new css.CSS_Length(n, "px"));
@@ -195,4 +195,4 @@ export function deg(n) {
     return checkLength(new css.CSS_Length(n, "deg"));
 }
 
-export const inherit = ["inherit", "unset", "revert"]
+export const inherit = ["inherit", "unset", "revert"];

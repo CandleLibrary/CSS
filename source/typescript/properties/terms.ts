@@ -1,52 +1,52 @@
-import whind from "@candlefw/whind";
+import whind from "@candlefw/wind";
 
 import { JUX, checkDefaults } from "./productions.js";
 
 import { types } from "./property_and_type_definitions.js";
 
 
-class LiteralTerm{
+class LiteralTerm {
 
-    get type (){
+    get type() {
         return "term";
     }
 
     constructor(value, type) {
-        
-        if(type == whind.types.string)
-            value = value.slice(1,-1);
+
+        if (type == whind.types.string)
+            value = value.slice(1, -1);
 
         this.value = value;
         this.HAS_PROP = false;
     }
 
-    seal(){}
+    seal() { }
 
-    parse(data){
+    parse(data) {
         const prop_data = [];
 
-        this.parseLVL1(data instanceof whind.constructor ? data : whind(data + ""), prop_data)
+        this.parseLVL1(data instanceof whind.constructor ? data : whind(data + ""), prop_data);
 
         return prop_data;
     }
 
     parseLVL1(l, r, root = true) {
 
-        if (typeof(l) == "string")
+        if (typeof (l) == "string")
             l = whind(l);
 
         if (root) {
-            switch(checkDefaults(l)){
+            switch (checkDefaults(l)) {
                 case 1:
-                rule.push(l.tx);
-                return true;
+                    rule.push(l.tx);
+                    return true;
                 case 0:
-                return false;
+                    return false;
             }
         }
 
         let v = l.tx;
-        
+
         if (v == this.value) {
             l.next();
             r.push(v);
@@ -58,25 +58,25 @@ class LiteralTerm{
         return false;
     }
 
-    get OPTIONAL (){ return false }
-    set OPTIONAL (a){}
+    get OPTIONAL() { return false; }
+    set OPTIONAL(a) { }
 }
 
-class ValueTerm extends LiteralTerm{
+class ValueTerm extends LiteralTerm {
 
     constructor(value, getPropertyParser, definitions, productions) {
-        
-        super(value)
 
-        if(value instanceof JUX)
+        super(value);
+
+        if (value instanceof JUX)
             return value;
 
         this.value = null;
 
         const IS_VIRTUAL = { is: false };
-        
-        if(typeof(value) == "string")
-            var u_value = value.replace(/\-/g,"_")
+
+        if (typeof (value) == "string")
+            var u_value = value.replace(/\-/g, "_");
 
         if (!(this.value = types[u_value]))
             this.value = getPropertyParser(u_value, IS_VIRTUAL, definitions, productions);
@@ -84,7 +84,7 @@ class ValueTerm extends LiteralTerm{
         if (!this.value)
             return new LiteralTerm(value);
 
-        if(this.value instanceof JUX){
+        if (this.value instanceof JUX) {
 
             if (IS_VIRTUAL.is)
                 this.value.virtual = true;
@@ -94,16 +94,16 @@ class ValueTerm extends LiteralTerm{
     }
 
     parseLVL1(l, r, ROOT = true) {
-        if (typeof(l) == "string")
+        if (typeof (l) == "string")
             l = whind(l);
 
         if (ROOT) {
-            switch(checkDefaults(l)){
+            switch (checkDefaults(l)) {
                 case 1:
-                r.push(l.tx);
-                return true;
+                    r.push(l.tx);
+                    return true;
                 case 0:
-                return false;
+                    return false;
             }
         }
 
@@ -137,7 +137,7 @@ class ValueTerm extends LiteralTerm{
 
 class SymbolTerm extends LiteralTerm {
     parseLVL1(l, rule, r) {
-        if (typeof(l) == "string")
+        if (typeof (l) == "string")
             l = whind(l);
 
         if (l.tx == this.value) {
@@ -150,4 +150,4 @@ class SymbolTerm extends LiteralTerm {
     }
 };
 
-export { LiteralTerm, ValueTerm, SymbolTerm }
+export { LiteralTerm, ValueTerm, SymbolTerm };

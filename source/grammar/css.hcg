@@ -1,4 +1,4 @@
-@SYMBOL || ^= $= *= <= >=
+@SYMBOL || ^= $= *= <= >= . #
 
 @IGNORE θnl θws
 
@@ -10,9 +10,9 @@
 
 	<> CSS → STYLE_SHEET															↦c ^stylesheet
 
-	<> STYLE_SHEET → (import)(*) ( STYLE_RULE │ AT_RULE )(*)						↦r {new fn.ruleset($$sym1, $$sym2)}
+	<> STYLE_SHEET → (import)(*) ( STYLE_RULE │ AT_RULE )(*)						↦r {new env.fn.ruleset($$sym1, $$sym2)}
 
-	<> STYLE_RULE → COMPLEX_SELECTOR(*,) { declaration_list ;? } 					↦r {new fn.stylerule($$sym1, $$sym3)}
+	<> STYLE_RULE → COMPLEX_SELECTOR(*,) { declaration_list ;? } 					↦r {new env.fn.stylerule($$sym1, $$sym3)}
 
 	<> GROUP_RULE_BODY → STYLE_RULE(*)
 
@@ -37,7 +37,7 @@
 
 	<> keyframes_names → τid │ string
 
-	<> keyframes_blocks → keyframe_selector(+,) { declaration_list ;? }			↦c { this.selectors = $sym1; this.props = sym[2].props; }
+	<> keyframes_blocks → keyframe_selector(+,) { declaration_list ;? }			↦c { this.selectors = $sym1; this.props = $$sym2.props; }
 
 	<> keyframe_selector → τfrom │ τto │ percentage
 
@@ -117,14 +117,14 @@
 	<> COMBINATOR →  >  				
 		│ + 								
 		│ ~ 								
-		│ || 								
+		│ \|| 								
 
-	<> TYPE_SELECTOR →  WQ_NAME 											↦c ^typeselector
-		│ NS_PREFIX? *														↦r {new fn.type_selector([$sym1, $$sym2])}
+	<> TYPE_SELECTOR →  WQ_NAME 													↦c ^typeselector
+		│ NS_PREFIX? \*																↦r {new fn.type_selector([$$sym1, $$sym2])}
 	
-	<> NS_PREFIX →  (identifier │ \* )? | 
+	<> NS_PREFIX →  (identifier │ \* )? \| 
 
-	<> WQ_NAME →  NS_PREFIX? identifier 									↦r {[$sym1, $$sym2]}
+	<> WQ_NAME →  NS_PREFIX? identifier 											↦r {[$sym1, $$sym2]}
 
 	<> SUBCLASS_SELECTOR →  ID_SELECTOR 
 		│ CLASS_SELECTOR 
@@ -133,9 +133,9 @@
 
 	<> ID_SELECTOR →  \# identifier  												↦c ^idSelector
 
-	<> CLASS_SELECTOR →  . identifier 												↦c ^classSelector
+	<> CLASS_SELECTOR →  \. identifier 												↦c ^classSelector
 
-	<> ATTRIBUTE_SELECTOR →  \[ WQ_NAME \] 									↦c ^attribSelector
+	<> ATTRIBUTE_SELECTOR →  \[ WQ_NAME \] 											↦c ^attribSelector
 		│ \[ WQ_NAME ATTR_MATCHER ( identifier │ θstr ) ATTR_MODIFIER? \]			↦c ^attribSelector
 
 	<> ATTR_MATCHER → ~=												
@@ -147,24 +147,24 @@
 	<> ATTR_MODIFIER →  τi 
 		│ τs
 
-	<> PSEUDO_CLASS_SELECTOR →  : identifier ( \( COMPLEX_SELECTOR \) )?   		↦c ^pseudoClassSelector
+	<> PSEUDO_CLASS_SELECTOR →  \: identifier ( \( COMPLEX_SELECTOR \) )?   		↦c ^pseudoClassSelector
 
-	<> PSEUDO_ELEMENT_SELECTOR →  : PSEUDO_CLASS_SELECTOR 					↦c ^pseudoElementSelector
+	<> PSEUDO_ELEMENT_SELECTOR →  \: PSEUDO_CLASS_SELECTOR 							↦c ^pseudoElementSelector
 
 ##############################################################################################
 #### Body
 ##############################################################################################
 
-	<> declaration_list → (declaration)(+\;) \;?							↦r { $sym1 }
-		│ AT_RULE 															↦r { $sym1 }
-		│ declaration_list AT_RULE 											↦r { sym[0].push(sym[1]), sym[0] }
-		│ declaration_list (declaration)(+;) ;?	 							↦r { sym[0].push(...sym[1]), sym[0] }
+	<> declaration_list → (declaration)(+\;) \;?									↦r { $$sym1 }
+		│ AT_RULE 																	↦r { $$sym1 }
+		│ declaration_list AT_RULE 													↦r { $$sym1.push($$sym2), $$sym1 }
+		│ declaration_list (declaration)(+;) ;?	 									↦r { $$sym1.push(...$$sym2), $$sym1 }
 		
 
-	<> declaration → identifier \: declaration_values ( \! τimportant )?	↦r ^parseDeclaration
+	<> declaration → identifier \: declaration_values ( \! τimportant )?			↦r ^parseDeclaration
 
 	<> declaration_values → ( θws │ θany │ θid)(+")
-		│\( declaration_values \)	 										↦r { sym.join("") }
-		│ declaration_values declaration_values 							↦r { sym.join("") }
+		│\( declaration_values \)	 												↦r { $$sym2 }
+		│ declaration_values declaration_values 									↦r { $$sym1 + $$sym2 }
 
-	<> identifier → (θid) ( θid │ \- │ \_ )(*") (θws │ θnl)?  ↦ r { $sym1 + $sym2 } 
+	<> identifier → (RED θws) (RED θnl) (θid) ( θid │ \- │ \_ )(*")   				↦r { $sym1 + $sym2 } 

@@ -1,4 +1,9 @@
 export default class selector {
+
+    vals: string[];
+
+    parent: selector;
+
     constructor(sym, env) {
         if (sym.length > 1)
             this.vals = [sym, ...sym[1]];

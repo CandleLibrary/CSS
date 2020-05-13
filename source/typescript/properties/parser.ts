@@ -1,4 +1,4 @@
-import whind from "@candlefw/whind";
+import whind from "@candlefw/wind";
 import { JUX, AND, OR, ONE_OF } from "./productions.js";
 import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms.js";
 import { virtual_property_definitions } from "./property_and_type_definitions.js";
@@ -11,14 +11,14 @@ const standard_productions = {
     LiteralTerm,
     ValueTerm,
     SymbolTerm
-}
+};
 
 function getExtendedIdentifier(l) {
     let pk = l.pk;
 
-    let id = ""
+    let id = "";
 
-    while (!pk.END && (pk.ty & (whind.types.id | whind.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next() }
+    while (!pk.END && (pk.ty & (whind.types.id | whind.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next(); }
 
     id = pk.slice(l);
 
@@ -35,7 +35,7 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 
     if (parser_val) {
 
-        if (typeof(parser_val) == "string") {
+        if (typeof (parser_val) == "string") {
             parser_val = definitions[property_name] = CreatePropertyParser(parser_val, property_name, definitions, productions);
         }
         parser_val.name = property_name;
@@ -51,7 +51,7 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 
         IS_VIRTUAL.is = true;
 
-        if (typeof(parser_val) == "string") {
+        if (typeof (parser_val) == "string") {
             parser_val = definitions.__virtual[property_name] = CreatePropertyParser(parser_val, "", definitions, productions);
             parser_val.virtual = true;
             parser_val.name = property_name;
@@ -68,7 +68,7 @@ function CreatePropertyParser(notation, name, definitions, productions) {
 
     const l = whind(notation);
     l.useExtendedId();
-    
+
     const important = { is: false };
 
     let n = d(l, definitions, productions);
@@ -116,16 +116,16 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                 break;
 
             case "<":
-                let id = getExtendedIdentifier(l.next())
+                let id = getExtendedIdentifier(l.next());
 
                 v = new ValueTerm(id, getPropertyParser, definitions, productions);
 
-                l.next().assert(">")
+                l.next().assert(">");
 
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX /*&& term.isRepeating()*/ ) term = foldIntoProduction(productions, new JUX, term);
+                    if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
@@ -203,10 +203,10 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
 
                 v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
                 l.next();
-                v = checkExtensions(l, v, productions)
+                v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/ ) term = foldIntoProduction(productions, new JUX, term);
+                    if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;

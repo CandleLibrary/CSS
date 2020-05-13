@@ -1,4 +1,4 @@
-import whind from "@candlefw/whind";
+import whind from "@candlefw/wind";
 var step = 0;
 
 export function checkDefaults(lx) {
@@ -18,7 +18,7 @@ export function checkDefaults(lx) {
 
 class JUX { /* Juxtaposition */
 
-    get type(){
+    get type() {
         return "jux";
     }
 
@@ -64,7 +64,7 @@ class JUX { /* Juxtaposition */
     parse(data) {
         const prop_data = [];
 
-        this.parseLVL1(data instanceof whind.constructor ? data : whind(data + ""), prop_data)
+        this.parseLVL1(data instanceof whind.constructor ? data : whind(data + ""), prop_data);
 
         return prop_data;
     }
@@ -73,7 +73,7 @@ class JUX { /* Juxtaposition */
 
     parseLVL1(lx, out_val = [], ROOT = true) {
 
-        if (typeof(lx) == "string")
+        if (typeof (lx) == "string")
             lx = whind(lx);
 
         let bool = false;
@@ -106,7 +106,7 @@ class JUX { /* Juxtaposition */
                 return false;
 
             lx.next();
-        } else if(out_val)
+        } else if (out_val)
             out_val.push(...temp_val);
 
         return true;
@@ -119,32 +119,32 @@ class JUX { /* Juxtaposition */
             temp_val = [];
 
         repeat:
-            for (let j = 0; j < end && !lx.END; j++) {
+        for (let j = 0; j < end && !lx.END; j++) {
 
-                //const copy = lx.copy();
+            //const copy = lx.copy();
 
-                const temp = [];
+            const temp = [];
 
-                for (let i = 0, l = this.terms.length; i < l; i++) {
+            for (let i = 0, l = this.terms.length; i < l; i++) {
 
-                    const term = this.terms[i];
+                const term = this.terms[i];
 
-                    if (!term.parseLVL1(copy, temp, false)) {
-                        if (!term.OPTIONAL) {
-                            break repeat;
-                        }
+                if (!term.parseLVL1(copy, temp, false)) {
+                    if (!term.OPTIONAL) {
+                        break repeat;
                     }
                 }
-
-                temp_val.push(...temp);
-
-                lx.sync(copy);
-
-                bool = true;
-
-                if (!this.checkForComma(copy, out_val, temp_val, j))
-                    break;
             }
+
+            temp_val.push(...temp);
+
+            lx.sync(copy);
+
+            bool = true;
+
+            if (!this.checkForComma(copy, out_val, temp_val, j))
+                break;
+        }
 
         return bool;
     }
@@ -152,20 +152,20 @@ class JUX { /* Juxtaposition */
     get start() {
         return isNaN(this.r[0]) ? 1 : this.r[0];
     }
-    set start(e) {}
+    set start(e) { }
 
     get end() {
         return isNaN(this.r[1]) ? 1 : this.r[1];
     }
-    set end(e) {}
+    set end(e) { }
 
-    get OPTIONAL() { return this.r[0] === 0 }
-    set OPTIONAL(a) {}
+    get OPTIONAL() { return this.r[0] === 0; }
+    set OPTIONAL(a) { }
 }
 JUX.step = 0;
 class AND extends JUX {
 
-    get type(){
+    get type() {
         return "and";
     }
     parseLVL2(lx, out_val, start, end) {
@@ -179,56 +179,56 @@ class AND extends JUX {
             copy = lx.copy();
 
         repeat:
-            for (let j = 0; j < end && !lx.END; j++) {
+        for (let j = 0; j < end && !lx.END; j++) {
 
-                const
-                    HIT = PROTO.fill(0);
-                //temp_r = [];
+            const
+                HIT = PROTO.fill(0);
+            //temp_r = [];
 
-                and:
-                    while (!copy.END) {
-                        let FAILED = false;
+            and:
+            while (!copy.END) {
+                let FAILED = false;
 
 
 
-                        for (let i = 0; i < l; i++) {
+                for (let i = 0; i < l; i++) {
 
-                            if (HIT[i] === 2) continue;
+                    if (HIT[i] === 2) continue;
 
-                            let term = this.terms[i];
+                    let term = this.terms[i];
 
-                            const temp = [];
+                    const temp = [];
 
-                            if (!term.parseLVL1(copy, temp, false)) {
-                                if (term.OPTIONAL)
-                                    HIT[i] = 1;
-                            } else {
-                                temp_val.push(...temp);
-                                HIT[i] = 2;
-                                continue and;
-                            }
-                        }
-
-                        if (HIT.reduce((a, v) => a * v, 1) === 0)
-                            break repeat;
-
-                        break
+                    if (!term.parseLVL1(copy, temp, false)) {
+                        if (term.OPTIONAL)
+                            HIT[i] = 1;
+                    } else {
+                        temp_val.push(...temp);
+                        HIT[i] = 2;
+                        continue and;
                     }
+                }
 
-                lx.sync(copy);
+                if (HIT.reduce((a, v) => a * v, 1) === 0)
+                    break repeat;
 
-                bool = true;
-
-                if (!this.checkForComma(copy, out_val, temp_val, j))
-                    break;
+                break;
             }
+
+            lx.sync(copy);
+
+            bool = true;
+
+            if (!this.checkForComma(copy, out_val, temp_val, j))
+                break;
+        }
 
         return bool;
     }
 }
 
 class OR extends JUX {
-    get type(){
+    get type() {
         return "or";
     }
     parseLVL2(lx, out_val, start, end) {
@@ -244,42 +244,42 @@ class OR extends JUX {
             temp_val = [];
 
         repeat:
-            for (let j = 0; j < end && !lx.END; j++) {
+        for (let j = 0; j < end && !lx.END; j++) {
 
-                const HIT = PROTO.fill(0);
-                let temp_r = { v: null }
+            const HIT = PROTO.fill(0);
+            let temp_r = { v: null };
 
-                or:
-                    while (!copy.END) {
-                        let FAILED = false;
-                        for (let i = 0; i < l; i++) {
+            or:
+            while (!copy.END) {
+                let FAILED = false;
+                for (let i = 0; i < l; i++) {
 
-                            if (HIT[i] === 2) continue;
+                    if (HIT[i] === 2) continue;
 
-                            let term = this.terms[i];
+                    let term = this.terms[i];
 
-                            if (term.parseLVL1(copy, temp_val, false)) {
-                                NO_HIT = false;
-                                HIT[i] = 2;
-                                continue or;
-                            }
-                        }
-
-                        if (NO_HIT) break repeat;
-
-                        break;
+                    if (term.parseLVL1(copy, temp_val, false)) {
+                        NO_HIT = false;
+                        HIT[i] = 2;
+                        continue or;
                     }
+                }
 
-                lx.sync(copy)
+                if (NO_HIT) break repeat;
 
-                //if (temp_r.v)
-                //    this.mergeValues(r, temp_r)
-
-                bool = true;
-
-                if (!this.checkForComma(copy, out_val, temp_val, j))
-                    break;
+                break;
             }
+
+            lx.sync(copy);
+
+            //if (temp_r.v)
+            //    this.mergeValues(r, temp_r)
+
+            bool = true;
+
+            if (!this.checkForComma(copy, out_val, temp_val, j))
+                break;
+        }
 
         return bool;
     }
@@ -288,14 +288,14 @@ class OR extends JUX {
 OR.step = 0;
 
 class ONE_OF extends JUX {
-    get type(){
+    get type() {
         return "one_of";
     }
     parseLVL2(lx, out_val, start, end) {
 
         let BOOL = false;
         const
-            copy = lx.copy(), 
+            copy = lx.copy(),
             temp_val = [];
 
         for (let j = 0; j < end && !lx.END; j++) {

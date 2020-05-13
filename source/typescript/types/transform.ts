@@ -1,4 +1,4 @@
-import whind from "@candlefw/whind";
+import whind from "@candlefw/wind";
 
 function getValue(lex, attribute) {
     let v = lex.tx,
@@ -10,16 +10,16 @@ function getValue(lex, attribute) {
     if (lex.pk.tx == ".")
         lex.next(), (v += lex.tx);
 
-    if(lex.pk.ty == lex.types.number)
+    if (lex.pk.ty == lex.types.number)
         lex.next(), (v += lex.tx);
 
-    if(lex.pk.tx == "e")
+    if (lex.pk.tx == "e")
         lex.next(), (v += lex.tx);
 
-    if(lex.pk.tx == "-")
+    if (lex.pk.tx == "-")
         lex.next(), (v += lex.tx);
 
-    if(lex.pk.ty == lex.types.number)
+    if (lex.pk.ty == lex.types.number)
         lex.next(), (v += lex.tx);
 
     let n = parseFloat(v) * mult;
@@ -55,9 +55,9 @@ function ParseString(string, transform) {
     let lex = null;
     lex = string;
 
-    if(typeof(string) == "string")
+    if (typeof (string) == "string")
         lex = whind(string);
-    
+
     while (!lex.END) {
         let tx = lex.tx;
         lex.next();
@@ -73,13 +73,13 @@ function ParseString(string, transform) {
                     sx2 = (b / -Math.sin(r)) || 0,
                     sy1 = (c / Math.sin(r)) || 0,
                     sy2 = (d / Math.cos(r)) || 0;
-                
-                if(sx2 !== 0)
+
+                if (sx2 !== 0)
                     transform.sx = (sx1 + sx2) * 0.5;
                 else
                     transform.sx = sx1;
 
-                if(sy1 !== 0)
+                if (sy1 !== 0)
                     transform.sy = (sy1 + sy2) * 0.5;
                 else
                     transform.sy = sy2;
@@ -107,7 +107,7 @@ function ParseString(string, transform) {
                 continue;
             case "scale":
                 transform.sx = getValue(lex.a("("), "left");
-                if(lex.ch ==","){
+                if (lex.ch == ",") {
                     lex.a(",");
                     transform.sy = getValue(lex, "left");
                 }
@@ -164,8 +164,8 @@ export default class CSS_Transform2D extends Float64Array {
             sy = scl[1];
             r = rot;
         }
-        
-        if(r !== 0){
+
+        if (r !== 0) {
             cos = Math.cos(r);
             sin = Math.sin(r);
         }
@@ -185,7 +185,7 @@ export default class CSS_Transform2D extends Float64Array {
                 this[2] = px[2];
                 this[3] = px[3];
                 this[4] = px[4];
-            } else if (typeof(px) == "string") ParseString(px, this);
+            } else if (typeof (px) == "string") ParseString(px, this);
             else {
                 this[0] = px;
                 this[1] = py;
@@ -226,15 +226,15 @@ export default class CSS_Transform2D extends Float64Array {
         this[4] = v;
     }
 
-    set scale(s){
+    set scale(s) {
         this.sx = s;
         this.sy = s;
     }
 
-    get scale(){
+    get scale() {
         return this.sx;
     }
-    
+
     lerp(to, t) {
         let out = new CSS_Transform2D();
         for (let i = 0; i < 5; i++) out[i] = this[i] + (to[i] - this[i]) * t;
@@ -248,7 +248,7 @@ export default class CSS_Transform2D extends Float64Array {
         let copy = new CSS_Transform2D(this);
 
 
-        if (typeof(v) == "string")
+        if (typeof (v) == "string")
             ParseString(v, copy);
 
         return copy;
@@ -257,20 +257,20 @@ export default class CSS_Transform2D extends Float64Array {
     /**
      * Sets the transform value of a canvas 2D context;
      */
-    setCTX(ctx){       
+    setCTX(ctx) {
         let cos = 1, sin = 0;
-        if(this[4] != 0){
+        if (this[4] != 0) {
             cos = Math.cos(this[4]);
             sin = Math.sin(this[4]);
         }
         ctx.transform(cos * this[2], -sin * this[2], this[3] * sin, this[3] * cos, this[0], this[1]);
     }
 
-    getLocalX(X){
+    getLocalX(X) {
         return (X - this.px) / this.sx;
     }
 
-    getLocalY(Y){
+    getLocalY(Y) {
         return (Y - this.py) / this.sy;
     }
 }
