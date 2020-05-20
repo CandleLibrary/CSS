@@ -1,4 +1,4 @@
-import whind from "@candlefw/wind";
+import wind from "@candlefw/wind";
 import { JUX, AND, OR, ONE_OF } from "./productions.js";
 import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms.js";
 import { virtual_property_definitions } from "./property_and_type_definitions.js";
@@ -18,7 +18,7 @@ function getExtendedIdentifier(l) {
 
     let id = "";
 
-    while (!pk.END && (pk.ty & (whind.types.id | whind.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next(); }
+    while (!pk.END && (pk.ty & (wind.types.id | wind.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next(); }
 
     id = pk.slice(l);
 
@@ -66,8 +66,9 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 
 function CreatePropertyParser(notation, name, definitions, productions) {
 
-    const l = whind(notation);
-    l.useExtendedId();
+    const l = wind(notation);
+
+    //l.useExtendedId();
 
     const important = { is: false };
 

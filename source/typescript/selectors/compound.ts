@@ -1,11 +1,11 @@
 export default class compoundSelector {
     constructor(sym, env) {
 
-        if(sym.length = 1)
-            if(Array.isArray(sym[0]) && sym[0].length == 1)
-                return sym[0][0]
+        if (sym.length == 1)
+            if (Array.isArray(sym[0]) && sym[0].length == 1)
+                return sym[0][0];
             else
-                return sym[0]
+                return sym[0];
 
         this.subclass = null;
         this.tag = null;
@@ -22,7 +22,7 @@ export default class compoundSelector {
     }
 
     get type() {
-        return "compound"
+        return "compound";
     }
 
     matchReturnElement(element, win) {
