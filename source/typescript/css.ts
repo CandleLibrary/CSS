@@ -1,4 +1,4 @@
-import whind from "@candlefw/wind";
+import wind from "@candlefw/wind";
 import css_parser from "./Parser/css.js";
 import { property_definitions, media_feature_definitions } from "./properties/property_and_type_definitions.js";
 import { getPropertyParser } from "./properties/parser.js";
@@ -74,7 +74,7 @@ const env = {
     body: null
 };
 
-const parse = function (string_data) { return css_parser(whind(string_data), env); };
+const parse = function (string_data) { return css_parser(wind(string_data), env); };
 
 export {
     css_parser,
