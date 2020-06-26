@@ -1,17 +1,17 @@
-export default class pseudoClassSelector{
-	constructor(sym,env){
+export default class pseudoClassSelector {
+	constructor(sym, env) {
 		this.val = sym[1];
 	}
 
-	get type(){
-		return "pseudoClass"
+	get type() {
+		return "pseudoClass";
 	}
 
-	matchReturnElement(element){
+	matchReturnElement(element) {
 		return element;
 	}
 
-	toString(){
-
+	toString() {
+		return `:${this.val}`;
 	}
 }

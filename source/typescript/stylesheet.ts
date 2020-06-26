@@ -11,7 +11,7 @@ export default class stylesheet {
 
         if (sym) {
             this.ruleset = sym[0];
-        }else {
+        } else {
             this.ruleset = new ruleset();
         }
         this.ruleset.parent = this;
@@ -21,8 +21,8 @@ export default class stylesheet {
         this.READY = true;
     }
 
-    destroy(){
-        
+    destroy() {
+
         this.ruleset.destroy();
         this.parent = null;
         this.READY = false;
@@ -30,8 +30,8 @@ export default class stylesheet {
         observer.destroy(this);
     }
 
-    get css_type(){
-        return "stylesheet"
+    get css_type() {
+        return "stylesheet";
     }
 
     /**
@@ -52,21 +52,21 @@ export default class stylesheet {
 
             let ruleset = in_stylesheet.ruleset;
             outer:
-                for (let i = 0; i < children.length; i++) {
-                    //determine if this child matches any existing selectors
-                    let child = children[i];
+            for (let i = 0; i < children.length; i++) {
+                //determine if this child matches any existing selectors
+                let child = children[i];
 
-                    for (let i = 0; i < this.children.length; i++) {
-                        let own_child = this.children[i];
+                for (let i = 0; i < this.children.length; i++) {
+                    let own_child = this.children[i];
 
-                        if (own_child.isSame(child)) {
-                            own_child.merge(child);
-                            continue outer;
-                        }
+                    if (own_child.isSame(child)) {
+                        own_child.merge(child);
+                        continue outer;
                     }
-
-                    this.children.push(child);
                 }
+
+                this.children.push(child);
+            }
         }
     }
 
@@ -88,16 +88,16 @@ export default class stylesheet {
     }
 
     * getApplicableSelectors(element, win = window) {
-        yield * this.ruleset.getApplicableSelectors(element, window);
+        yield* this.ruleset.getApplicableSelectors(element, window);
     }
 
     getApplicableRules(element, win = window, RETURN_ITERATOR = false, new_rule = new stylerule) {
-        if(!(element instanceof HTMLElement))
+        if (!(element instanceof HTMLElement))
             return new_rule;
 
         const iter = this.ruleset.getApplicableRules(element, win);
         if (RETURN_ITERATOR) {
-            return iter
+            return iter;
         } else
             for (const rule of iter) {
                 new_rule.merge(rule);
@@ -105,9 +105,9 @@ export default class stylesheet {
         return new_rule;
     }
 
-    * getApplicableProperties(element, win = window){
-        for(const rule of this.getApplicableRules(element, win, true))
-            yield * rule.iterateProps();
+    * getApplicableProperties(element, win = window) {
+        for (const rule of this.getApplicableRules(element, win, true))
+            yield* rule.iterateProps();
     }
 
     getRule(string) {
