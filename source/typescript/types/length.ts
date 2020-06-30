@@ -1,4 +1,4 @@
-import whind from "@candlefw/wind";
+import wind from "@candlefw/wind";
 
 import CSS_Percentage from "./percentage.js";
 
@@ -31,7 +31,7 @@ export default class CSS_Length extends Number {
     constructor(v, u = "") {
 
         if (typeof (v) == "string") {
-            let lex = whind(v);
+            let lex = wind(v);
             let val = CSS_Length.parse(lex);
             if (val) return val;
         }

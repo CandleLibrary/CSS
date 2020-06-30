@@ -68,10 +68,10 @@ export const property_definitions = {
 
 	/* https://www.w3.org/TR/css-position-3 */
 	position: "static|relative|absolute|sticky|fixed",
-	top: `<length>|<number>|<percentage>|auto`,
-	left: `<length>|<number>|<percentage>|auto`,
-	bottom: `<length>|<number>|<percentage>|auto`,
-	right: `<length>|<number>|<percentage>|auto`,
+	top: `<length>|<percentage>|<number>|auto`,
+	left: `<length>|<percentage>|<number>|auto`,
+	bottom: `<length>|<percentage>|<number>|auto`,
+	right: `<length>|<percentage>|<number>|auto`,
 	offset_before: `<length>|<percentage>|auto`,
 	offset_after: `<length>|<percentage>|auto`,
 	offset_start: `<length>|<percentage>|auto`,
@@ -276,7 +276,6 @@ export const property_definitions = {
 	bookmark_label: "<content-list>",
 	bookmark_level: "none|<integer>",
 	bookmark_state: "open|closed",
-	content: "normal|none|[<content-replacement>|<content-list>][/<string>]?",
 	quotes: "none|[<string><string>]+",
 	string_set: "none|[<custom-ident><string>+]#",
 
@@ -295,8 +294,6 @@ export const property_definitions = {
 	widows: "<integer>",
 
 	/* https://drafts.csswg.org/css-lists-3 */
-	counter_increment: "[<custom-ident> <integer>?]+ | none",
-	counter_reset: "[<custom-ident> <integer>?]+|none",
 	counter_set: "[<custom-ident> <integer>?]+|none",
 	list_style: "<list-style-type>||<list-style-position>||<list-style-image>",
 	list_style_image: "<url>|none",
@@ -407,7 +404,7 @@ export const virtual_property_definitions = {
 	frequency_percentage: `<frequency>|<percentage>`,
 	angle_percentage: `<angle>|<percentage>`,
 	time_percentage: `<time>|<percentage>`,
-	number_percentage: `<number>|<percentage>`,
+	number_percentage: `<percentage>|<number>`,
 
 	/*CSS Clipping https://www.w3.org/TR/css-masking-1/#clipping */
 	clip_path: `<clip_source>|[<basic_shape>||<geometry_box>]|none`,
@@ -456,6 +453,5 @@ export const media_feature_definitions = {
 	max_color: "<integer>",
 	color_index: "",
 	min_color_index: "<integer>",
-	max_color_index: "<integer>",
-
+	max_color_index: "<integer>"
 };

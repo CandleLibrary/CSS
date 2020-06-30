@@ -1,4 +1,4 @@
-import whind from "@candlefw/wind";
+import wind from "@candlefw/wind";
 import {
     property_definitions,
     media_feature_definitions
@@ -25,6 +25,7 @@ import { getPropertyParser } from "./parser.js";
 
 
 export default function parseDeclaration(sym) {
+
     if (sym.length == 0)
         return null;
 
@@ -39,7 +40,7 @@ export default function parseDeclaration(sym) {
 
     if (parser && !IS_VIRTUAL.is)
 
-        prop = parser.parse(whind(body_string));
+        prop = parser.parse(wind(body_string));
 
     else
         //Need to know what properties have not been defined

@@ -22,6 +22,14 @@ class JUX { /* Juxtaposition */
         return "jux";
     }
 
+    static step: number;
+    id: number;
+    r: any[];
+    terms: any[];
+    HAS_PROP: boolean;
+    name: string;
+    virtual: boolean;
+    REQUIRE_COMMA: boolean;
     constructor() {
         this.id = JUX.step++;
         this.r = [NaN, NaN];
@@ -69,10 +77,10 @@ class JUX { /* Juxtaposition */
         return prop_data;
     }
 
-
-
     parseLVL1(lx, out_val = [], ROOT = true) {
 
+        cfw.harness.inspect(this);
+        
         if (typeof (lx) == "string")
             lx = whind(lx);
 
@@ -120,8 +128,6 @@ class JUX { /* Juxtaposition */
 
         repeat:
         for (let j = 0; j < end && !lx.END; j++) {
-
-            //const copy = lx.copy();
 
             const temp = [];
 
@@ -187,9 +193,8 @@ class AND extends JUX {
 
             and:
             while (!copy.END) {
+
                 let FAILED = false;
-
-
 
                 for (let i = 0; i < l; i++) {
 
@@ -232,7 +237,6 @@ class OR extends JUX {
         return "or";
     }
     parseLVL2(lx, out_val, start, end) {
-
         const
             PROTO = new Array(this.terms.length),
             l = this.terms.length;
@@ -299,9 +303,6 @@ class ONE_OF extends JUX {
             temp_val = [];
 
         for (let j = 0; j < end && !lx.END; j++) {
-
-            const
-                temp_r = [];
 
             let bool = false;
 

@@ -1,4 +1,4 @@
-import whind from "@candlefw/wind";
+import wind from "@candlefw/wind";
 
 function getValue(lex, attribute) {
     let v = lex.tx,
@@ -56,7 +56,7 @@ function ParseString(string, transform) {
     lex = string;
 
     if (typeof (string) == "string")
-        lex = whind(string);
+        lex = wind(string);
 
     while (!lex.END) {
         let tx = lex.tx;

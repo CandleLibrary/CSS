@@ -1,4 +1,4 @@
-import whind from "@candlefw/wind";
+import wind from "@candlefw/wind";
 import Color from "@candlefw/color";
 
 /*
@@ -39,7 +39,7 @@ export default class CSS_Color extends Color {
         let c;
 
         if (typeof (l) == "string")
-            l = whind(l);
+            l = wind(l);
 
         let out = { r: 0, g: 0, b: 0, a: 1 };
 
@@ -93,7 +93,9 @@ export default class CSS_Color extends Color {
                 }
                 l.next();
                 break;
+
             case "r":
+
                 let tx = l.tx;
 
                 const RGB_TYPE = tx === "rgba" ? 1 : tx === "rgb" ? 2 : 0;

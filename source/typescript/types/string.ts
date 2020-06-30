@@ -1,4 +1,3 @@
-import whind from "@candlefw/wind";
 
 export default class CSS_String extends String {
 

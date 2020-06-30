@@ -1,4 +1,4 @@
-import whind from "@candlefw/wind";
+import wind from "@candlefw/wind";
 
 export default class CSS_Percentage extends Number {
     static parse(l, rule, r) {
@@ -31,7 +31,7 @@ export default class CSS_Percentage extends Number {
     constructor(v) {
 
         if (typeof (v) == "string") {
-            let lex = whind(v);
+            let lex = wind(v);
             let val = CSS_Percentage.parse(lex);
             if (val)
                 return val;

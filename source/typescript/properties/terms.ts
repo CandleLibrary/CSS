@@ -1,4 +1,4 @@
-import whind from "@candlefw/wind";
+import wind, { Lexer } from "@candlefw/wind";
 
 import { JUX, checkDefaults } from "./productions.js";
 
@@ -7,13 +7,21 @@ import { types } from "./property_and_type_definitions.js";
 
 class LiteralTerm {
 
-    get type() {
-        return "term";
-    }
+    value: any;
+    HAS_PROP: boolean;
 
-    constructor(value, type) {
+    get type() { return "term"; }
 
-        if (type == whind.types.string)
+    constructor(lex: Lexer) {
+
+        const cp = lex.copy();
+
+        while (!lex.END && lex.ty == lex.types.id || lex.tx == "-")
+            lex.next();
+
+        let value = lex.slice(cp).trim();
+
+        if (lex.type == lex.types.string)
             value = value.slice(1, -1);
 
         this.value = value;
@@ -23,17 +31,18 @@ class LiteralTerm {
     seal() { }
 
     parse(data) {
+
         const prop_data = [];
 
-        this.parseLVL1(data instanceof whind.constructor ? data : whind(data + ""), prop_data);
+        this.parseLVL1(data instanceof wind.constructor ? data : wind(data + ""), prop_data);
 
         return prop_data;
     }
 
-    parseLVL1(l, r, root = true) {
+    parseLVL1(l: Lexer, r, root = true) {
 
         if (typeof (l) == "string")
-            l = whind(l);
+            l = wind(l);
 
         if (root) {
             switch (checkDefaults(l)) {
@@ -45,16 +54,19 @@ class LiteralTerm {
             }
         }
 
-        let v = l.tx;
+        const cp = l.copy();
+
+        while (!cp.END && cp.ty == cp.types.id || cp.tx == "-")
+            cp.next();
+
+        let v = cp.slice(l);
 
         if (v == this.value) {
-            l.next();
+            l.sync(cp);
             r.push(v);
-            //if (this.HAS_PROP  && !this.virtual && root)
-            //    rule[0] = v;
-
             return true;
         }
+
         return false;
     }
 
@@ -66,10 +78,10 @@ class ValueTerm extends LiteralTerm {
 
     constructor(value, getPropertyParser, definitions, productions) {
 
-        super(value);
-
         if (value instanceof JUX)
             return value;
+
+        super(wind(value));
 
         this.value = null;
 
@@ -95,7 +107,7 @@ class ValueTerm extends LiteralTerm {
 
     parseLVL1(l, r, ROOT = true) {
         if (typeof (l) == "string")
-            l = whind(l);
+            l = wind(l);
 
         if (ROOT) {
             switch (checkDefaults(l)) {
@@ -138,7 +150,7 @@ class ValueTerm extends LiteralTerm {
 class SymbolTerm extends LiteralTerm {
     parseLVL1(l, rule, r) {
         if (typeof (l) == "string")
-            l = whind(l);
+            l = wind(l);
 
         if (l.tx == this.value) {
             l.next();

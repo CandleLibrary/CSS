@@ -4,6 +4,7 @@ import observer from "@candlefw/observer";
 export default class styleprop {
 
     constructor(name, original_value, val) {
+        cfw.harness.inspect(val);
         this.val = val;
         this.name = name.replace(/\-/g, "_");
         this.original_value = original_value;
@@ -19,7 +20,7 @@ export default class styleprop {
     }
 
     get css_type() {
-        return "styleprop"
+        return "styleprop";
     }
 
     updated() {
@@ -42,13 +43,13 @@ export default class styleprop {
             str = [],
             off = ("    ").repeat(offset);
 
-        return `${off+this.name.replace(/\_/g, "-")}:${this.value_string}`;
+        return `${off + this.name.replace(/\_/g, "-")}:${this.value_string}`;
     }
 
     setValueFromString(value) {
         const result = parseDeclaration([this.name, null, value]);
 
-        if (result) 
+        if (result)
             this.setValue(...result.prop);
     }
 
@@ -64,7 +65,7 @@ export default class styleprop {
                 this.val[i] = value;
             else
                 this.val[i] = value;
-            i++
+            i++;
         }
 
         this.val.length = values.length;

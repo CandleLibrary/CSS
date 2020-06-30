@@ -164,7 +164,7 @@
 	<> declaration → identifier \: declaration_values ( \! τimportant )?			↦r ^parseDeclaration
 
 	<> declaration_values → ( θws │ θany │ θid)(+")
-		│\( declaration_values \)	 												↦r { $$sym2 }
+		│\( declaration_values \)	 												↦r { $$sym1 + $$sym2 + $$sym3 }
 		│ declaration_values declaration_values 									↦r { $$sym1 + $$sym2 }
 
 	<> identifier → (RED θws) (RED θnl) (θid) ( θid │ \- │ \_ )(*")   				↦r { $sym1 + $sym2 } 

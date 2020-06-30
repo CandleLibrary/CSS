@@ -1,4 +1,4 @@
-import wind from "@candlefw/wind";
+import wind, { Lexer } from "@candlefw/wind";
 import { JUX, AND, OR, ONE_OF } from "./productions.js";
 import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms.js";
 import { virtual_property_definitions } from "./property_and_type_definitions.js";
@@ -66,57 +66,59 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 
 function CreatePropertyParser(notation, name, definitions, productions) {
 
-    const l = wind(notation);
-
-    //l.useExtendedId();
-
-    const important = { is: false };
+    const
+        l = wind(notation),
+        important = { is: false };
 
     let n = d(l, definitions, productions);
 
     n.seal();
 
-    //if (n instanceof productions.JUX && n.terms.length == 1 && n.r[1] < 2)
-    //    n = n.terms[0];
-
     n.HAS_PROP = true;
     n.IMP = important.is;
-
-    /*//******** DEV 
-    console.log("")
-    console.log("")
-    console.log(util.inspect(n, { showHidden: false, depth: null })) 
-    //********** END Dev*/
 
     return n;
 }
 
-function d(l, definitions, productions, super_term = false, oneof_group = false, or_group = false, and_group = false, important = null) {
+function d(
+    l: Lexer,
+    definitions,
+    productions,
+    super_term = false,
+    oneof_group = false,
+    or_group = false,
+    and_group = false,
+    important = null
+) {
     let term, nt, v;
-    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
 
-    let GROUP_BREAK = false;
+    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
 
     while (!l.END) {
 
         switch (l.ch) {
+
             case "]":
                 return term;
-                break;
+
             case "[":
 
                 v = d(l.next(), definitions, productions, true);
+
                 l.assert("]");
+
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX && term.isRepeating()) term = foldIntoProduction(productions, new JUX, term);
+                    if (term instanceof JUX && term.isRepeating())
+                        term = foldIntoProduction(productions, new JUX, term);
                     term = foldIntoProduction(productions, term, v);
                 } else
                     term = v;
                 break;
 
             case "<":
+
                 let id = getExtendedIdentifier(l.next());
 
                 v = new ValueTerm(id, getPropertyParser, definitions, productions);
@@ -126,7 +128,10 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
-                    if (term instanceof JUX /*&& term.isRepeating()*/) term = foldIntoProduction(productions, new JUX, term);
+
+                    if (term instanceof JUX /*&& term.isRepeating()*/)
+                        term = foldIntoProduction(productions, new JUX, term);
+
                     term = foldIntoProduction(productions, term, v);
                 } else {
                     term = v;
@@ -157,6 +162,7 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                     return nt;
                 }
                 break;
+
             case "|":
 
                 {
@@ -199,11 +205,12 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
                         return nt;
                     }
                 }
-                break;
+
             default:
 
-                v = (l.ty == l.types.symbol) ? new SymbolTerm(l.tx) : new LiteralTerm(l.tx, l.ty);
-                l.next();
+
+                v = (l.ty == l.types.symbol) ? new SymbolTerm(l) : new LiteralTerm(l);
+
                 v = checkExtensions(l, v, productions);
 
                 if (term) {
@@ -219,16 +226,17 @@ function d(l, definitions, productions, super_term = false, oneof_group = false,
 }
 
 function checkExtensions(l, term, productions) {
-    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
 
     outer: while (true) {
 
         switch (l.ch) {
+
             case "!":
                 /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
                 term.IMPORTANT = true;
                 l.next();
                 continue outer;
+
             case "{":
                 term = foldIntoProduction(productions, term);
                 term.r[0] = parseInt(l.next().tx);
@@ -245,24 +253,28 @@ function checkExtensions(l, term, productions) {
                     term.r[1] = term.r[0];
                 l.a("}");
                 break;
+
             case "*":
                 term = foldIntoProduction(productions, term);
                 term.r[0] = 0;
                 term.r[1] = Infinity;
                 l.next();
                 break;
+
             case "+":
                 term = foldIntoProduction(productions, term);
                 term.r[0] = 1;
                 term.r[1] = Infinity;
                 l.next();
                 break;
+
             case "?":
                 term = foldIntoProduction(productions, term);
                 term.r[0] = 0;
                 term.r[1] = 1;
                 l.next();
                 break;
+
             case "#":
 
                 let nr = new productions.JUX();

@@ -6,8 +6,8 @@
   "main": "./build/library/css.js",
   "types": "./build/types/css.node.d.ts",
   "scripts": {
-    "test": "mocha test/test.js -r esm",
-    "test.watch": "mocha test/test.js -r esm --watch --inspect",
+    "test": "cfw.test ./test/candlefw.css.test.js",
+    "test.watch": "cfw.test -w ./test/candlefw.css.test.js",
     "build": "rollup --config ./build/config/config.js",
     "build.watch": "rollup --config  ./build/config/config.js --watch",
     "build.ui.watch": "rollup --config  ./build/config/ui.config.js --watch",
@@ -30,9 +30,7 @@
   "homepage": "https://github.com/candlefw/css#readme",
   "dependencies": {},
   "devDependencies": {
-    "chai": "latest",
-    "esm": "^3.2.25",
-    "mocha": "latest",
+    "@candlefw/test": "^0.0.1",
     "rollup": "latest",
     "rollup-plugin-commonjs": "latest",
     "rollup-plugin-node-resolve": "latest",

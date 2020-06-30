@@ -30,17 +30,17 @@ export default class stylerule {
         this.addProps = this.addProp;
         this.UPDATE_LOOP_GAURD = false;
     }
-    
-    get css_type(){
-        return "stylerule"
+
+    get css_type() {
+        return "stylerule";
     }
 
-    destroy(){
-        
-        for(const prop of this.properties.values())
+    destroy() {
+
+        for (const prop of this.properties.values())
             prop.destroy();
 
-        for(const selector of this.selectors)
+        for (const selector of this.selectors)
             selector.destroy();
 
         this.parent = null;
@@ -63,7 +63,7 @@ export default class stylerule {
     }
 
     get type() {
-        return "stylerule"
+        return "stylerule";
     }
 
     get(obj, name) {
@@ -80,26 +80,26 @@ export default class stylerule {
         if (typeof props == "string") {
             return this.addProps(
                 props.split(";")
-                .filter(e => e !== "")
-                .map((e, a) => (a = e.split(":"), a.splice(1, 0, null), a))
-                .map(parseDeclaration)
-            )
+                    .filter(e => e !== "")
+                    .map((e, a) => (a = e.split(":"), a.splice(1, 0, null), a))
+                    .map(parseDeclaration)
+            );
         }
 
         if (props.type == "stylerule")
             props = props.properties.values();
         else
-        if (!Array.isArray(props))
-            props = [props];
+            if (!Array.isArray(props))
+                props = [props];
 
-       // this.UPDATE_LOOP_GAURD = true;
+        // this.UPDATE_LOOP_GAURD = true;
         for (const prop of props)
             if (prop) {
-                if(this.properties.has(prop.name))
+                if (this.properties.has(prop.name))
                     this.properties.get(prop.name).setValue(...prop.val);
                 else
                     this.properties.set(prop.name, prop);
-                
+
                 prop.parent = this;
             }
         //this.UPDATE_LOOP_GAURD = false;
@@ -142,24 +142,24 @@ export default class stylerule {
         for (const prop of this.properties.values())
             str.push(prop.toString(off));
 
-        return `${this.selectors.join("")}{${str.join(";")}}`;
+        return `${this.selectors.join(" ")}{\n\t${str.join(";\n\t")}\n}`;
     }
 
     merge(rule) {
-        if(!rule) return;
-        if (rule.type == "stylerule"){
-            for (const prop of rule.properties.values()){
+        if (!rule) return;
+        if (rule.type == "stylerule") {
+            for (const prop of rule.properties.values()) {
                 if (prop) {
                     this.properties.set(prop.name, prop);
                 }
             }
         }
-                
+
     }
 
     get _wick_type_() { return 0; }
 
-    set _wick_type_(v) {}
+    set _wick_type_(v) { }
 }
 
 observer("updatedCSSStyleRule", stylerule.prototype);
