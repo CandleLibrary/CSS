@@ -6,7 +6,7 @@ export default class selector {
 
     constructor(sym, env) {
         if (sym.length > 1)
-            this.vals = [sym, ...sym[1]];
+            this.vals = [sym[0], ...sym[1]];
         else
             this.vals = sym;
 

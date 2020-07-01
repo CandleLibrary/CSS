@@ -2,6 +2,8 @@
 
 @IGNORE θnl θws
 
+@IMPORT ../../node_modules/@candlefw/hydrocarbon/source/grammars/misc/default-productions.hcg as def 
+
 ##############################################################################################
 ##############################################################################################
 #### CSS
@@ -10,16 +12,16 @@
 
 	<> CSS → STYLE_SHEET															↦c ^stylesheet
 
-	<> STYLE_SHEET → (import)(*) ( STYLE_RULE │ AT_RULE )(*)						↦r {new env.fn.ruleset($$sym1, $$sym2)}
+	<> STYLE_SHEET → import(*) ( STYLE_RULE │ AT_RULE )(*)							↦r { [$$sym1, $$sym2] }
 
-	<> STYLE_RULE → COMPLEX_SELECTOR(*,) { declaration_list ;? } 					↦r {new env.fn.stylerule($$sym1, $$sym3)}
+	<> STYLE_RULE → COMPLEX_SELECTOR(+,) { declaration_list ;? } 					↦r {new env.fn.stylerule($$sym1, $$sym3)}
 
 	<> GROUP_RULE_BODY → STYLE_RULE(*)
 
-	<> AT_RULE → media ;
-		│ import ;
-		│ keyframes ;
-		│ supports ;
+	<> AT_RULE → media ;?
+		│ import ;?
+		│ keyframes ;?
+		│ supports ;?
 
 ##############################################################################################
 ##############################################################################################
@@ -46,7 +48,7 @@
 	<> supports → \@ τsupports supports_condition { GROUP_RULE_BODY }
 
 	<> supports_condition → τnot supports_in_parens
-		│ supports_in_parens ( ( τand │ τor )  supports_in_parens)(*)
+		│ supports_in_parens ( ( τand │ τor )  supports_in_parens )(*)
 
 	<> supports_in_parens → \( supports_condition \)
 		│ supports_feature
@@ -60,31 +62,33 @@
 
 # adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@media#Formal_syntax
 
-	<> media →  \@ τmedia media_query(+,) { GROUP_RULE_BODY }
+	<> media →  \@ (ERR g:ws) τmedia media_query(+,) { GROUP_RULE_BODY } 		↦c ^media
 
-	<> media_query → media_condition
-		│ (τnot │ τonly )? media_type (τand media_condition_without_or)?
+	<> media_query → media_condition 											
+		│ (τnot │ τonly )? media_type (τand media_condition_without_or ↦r{ {type:$sym1, val:$sym2 }})?		
+																				↦r { {condition:$sym1 || "", type:"query", val:[$sym2, $sym3] } }
+	
+
+	<> media_condition → media_condition_without_or
+		│ media_or
 
 	<> media_condition_without_or → media_not
 		│ media_and 
 		│ media_in_parenths
-	
-	<> media_condition → media_condition_without_or
-		│ media_or
 
-	<> media_not → τnot media_in_parenths
+	<> media_not → τnot media_in_parenths										↦r { {type:"not", val:$sym2 } }
 	<> media_and → media_in_parenths (τand media_in_parenths)(+)
 	<> media_or → media_in_parenths (τor media_in_parenths)(+)
 
-	<> media_in_parenths → \( media_condition \) 
+	<> media_in_parenths → \( media_condition \) 								↦r { {type:"parenthesis", val:$sym2 } }				
 		│ media_feature
 		│ general_enclosed
 
-	<> media_feature → \( ( mf_plain │ mf_boolean │ mf_range ) \)
+	<> media_feature → \( ( mf_plain │ mf_boolean │ mf_range ) \) 				↦r { {type:"feature", val:$sym2 } }	
 	<> general_enclosed → identifier\( (θany│θws)(*") \)
-		│ \( identifier (θany│θws)(*") \)
+		│ identifier (θany│θws)(*") 										↦r { {type:"general", name:$sym1, val:$sym3 } }	
 
-	<> mf_plain → mf_name : mf_value 
+	<> mf_plain → mf_name  \: mf_value 											↦r { {type:"keyvalue", key:$sym1, val:$sym3 } }	
 
 	<> mf_range → mf_name ( (< │ <=) │ (> │ >=) │ = ) mf_value
 		│ mf_value ( (< │ <=) │ (> │ >=) │ = ) mf_name
@@ -92,15 +96,15 @@
 		│ mf_value ( < │ <= ) identifier ( < │ <= ) mf_value
 
 	<> mf_value → θnum │ dimension │ mf_name │ ratio
-	<> mf_boolean → identifier
+	<> mf_boolean → τtrue | τfalse
 	<> mf_name → identifier
-	<> media_type → identifier
+	<> media_type → identifier													↦r { {type:"type", val:$sym1 } }
 
-	<> ratio → θnum / θnum
-	<> percentage → θnum % 
-	<> dimension → θnum ( τpx │ τin │ τrad ) 
+	<> ratio → θnum / θnum 														↦r { {type:"ratio", num:$sym1, den:$sym3 } }
+	<> percentage → θnum %  													↦r { new env.fn.percentage($sym1+$sym2) }
+	<> dimension → θnum θid  													↦r { new env.fn.length($sym1+$sym2) }
 
-	<> url →  τurl \( string \)
+	<> url →  τurl \( string \) 												
 
 	<>string → " θany(+") " │ ' θany(+") '
 
@@ -111,11 +115,11 @@
 	<> COMPLEX_SELECTOR →  COMPOUND_SELECTOR ( COMBINATOR? COMPOUND_SELECTOR ↦c ^comboSelector)(*)  ↦c ^selector
 	
 
-	<> COMPOUND_SELECTOR →  [ TYPE_SELECTOR? SUBCLASS_SELECTOR(*) ( PSEUDO_ELEMENT_SELECTOR PSEUDO_CLASS_SELECTOR(*) )(*) ]
+	<> COMPOUND_SELECTOR → (RED g:ws)  TYPE_SELECTOR? SUBCLASS_SELECTOR(*) ( PSEUDO_ELEMENT_SELECTOR PSEUDO_CLASS_SELECTOR(*) )(*) 
 		↦c ^compoundSelector
 
 	<> COMBINATOR →  >  				
-		│ + 								
+		│ + 	
 		│ ~ 								
 		│ \|| 								
 
@@ -131,9 +135,9 @@
 		│ ATTRIBUTE_SELECTOR 
 		│ PSEUDO_CLASS_SELECTOR
 
-	<> ID_SELECTOR →  \# identifier  												↦c ^idSelector
+	<> ID_SELECTOR →  \# (ERR g:ws) identifier  									↦c ^idSelector
 
-	<> CLASS_SELECTOR →  \. identifier 												↦c ^classSelector
+	<> CLASS_SELECTOR →  \. (ERR g:ws) identifier 									↦c ^classSelector
 
 	<> ATTRIBUTE_SELECTOR →  \[ WQ_NAME \] 											↦c ^attribSelector
 		│ \[ WQ_NAME ATTR_MATCHER ( identifier │ θstr ) ATTR_MODIFIER? \]			↦c ^attribSelector
@@ -147,9 +151,9 @@
 	<> ATTR_MODIFIER →  τi 
 		│ τs
 
-	<> PSEUDO_CLASS_SELECTOR →  \: identifier ( \( COMPLEX_SELECTOR \) )?   		↦c ^pseudoClassSelector
+	<> PSEUDO_CLASS_SELECTOR →  \: (ERR g:ws) identifier ( \( COMPLEX_SELECTOR \) )?   		↦c ^pseudoClassSelector
 
-	<> PSEUDO_ELEMENT_SELECTOR →  \: PSEUDO_CLASS_SELECTOR 							↦c ^pseudoElementSelector
+	<> PSEUDO_ELEMENT_SELECTOR →  \: (ERR g:ws) PSEUDO_CLASS_SELECTOR 							↦c ^pseudoElementSelector
 
 ##############################################################################################
 #### Body
@@ -167,4 +171,18 @@
 		│\( declaration_values \)	 												↦r { $$sym1 + $$sym2 + $$sym3 }
 		│ declaration_values declaration_values 									↦r { $$sym1 + $$sym2 }
 
-	<> identifier → (RED θws) (RED θnl) (θid) ( θid │ \- │ \_ )(*")   				↦r { $sym1 + $sym2 } 
+	<> identifier → (RED θws)  css_id_symbols  				 
+
+	<> css_id_symbols →  css_id_symbols θid          ↦r { $sym1 + $sym2 }
+	    │ css_id_symbols θkeyword                    ↦r { $sym1 + $sym2 }
+	    │ css_id_symbols \_                          ↦r { $sym1 + $sym2 }
+	    │ css_id_symbols \-                          ↦r { $sym1 + $sym2 }
+	    │ css_id_symbols \$                          ↦r { $sym1 + $sym2 }
+	    │ css_id_symbols θnum                        ↦r { $sym1 + $sym2 }
+	    │ css_id_symbols θhex                        ↦r { $sym1 + $sym2 }
+	    │ css_id_symbols θbin                        ↦r { $sym1 + $sym2 }
+	    │ css_id_symbols θoct                        ↦r { $sym1 + $sym2 }
+	    │ \_ 
+	    │ \$ 
+	    │ θid
+

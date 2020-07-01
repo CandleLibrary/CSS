@@ -1,20 +1,22 @@
 import observer from "@candlefw/observer";
 
 import stylerule from "./stylerule.js";
-import ruleset from "./ruleset.js";
-import css_parser from "./Parser/css.js";
 
 export default class stylesheet {
 
-    constructor(sym) {
-        this.ruleset = null;
+    rules: any[];
+    parent: any;
+    READY: boolean;
 
-        if (sym) {
-            this.ruleset = sym[0];
-        } else {
-            this.ruleset = new ruleset();
-        }
-        this.ruleset.parent = this;
+    imports: any[];
+
+    constructor(sym) {
+
+        const [imports, blocks = []] = sym[0];
+
+        this.imports = imports;
+
+        this.rules = blocks;
 
         this.parent = null;
 
@@ -23,7 +25,7 @@ export default class stylesheet {
 
     destroy() {
 
-        this.ruleset.destroy();
+        this.rules.forEach(r => r.destroy());
         this.parent = null;
         this.READY = false;
 
@@ -50,7 +52,7 @@ export default class stylesheet {
     merge(in_stylesheet) {
         if (in_stylesheet instanceof stylesheet) {
 
-            let ruleset = in_stylesheet.ruleset;
+            let ruleset = in_stylesheet.rules;
             outer:
             for (let i = 0; i < children.length; i++) {
                 //determine if this child matches any existing selectors
@@ -88,14 +90,14 @@ export default class stylesheet {
     }
 
     * getApplicableSelectors(element, win = window) {
-        yield* this.ruleset.getApplicableSelectors(element, window);
+        yield* this.rules.flatMap(s => [...s.getApplicableSelectors(element, window)]);
     }
 
     getApplicableRules(element, win = window, RETURN_ITERATOR = false, new_rule = new stylerule) {
         if (!(element instanceof HTMLElement))
             return new_rule;
 
-        const iter = this.ruleset.getApplicableRules(element, win);
+        const iter = this.rules.getApplicableRules(element, win);
         if (RETURN_ITERATOR) {
             return iter;
         } else
@@ -118,7 +120,7 @@ export default class stylesheet {
     }
 
     toString() {
-        return this.ruleset + "";
+        return this.rules.map(r => r + "").join("\n");
     }
 }
 

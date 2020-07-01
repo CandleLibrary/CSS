@@ -1,5 +1,7 @@
-import wind from "@candlefw/wind";
-import css_parser from "./Parser/css.js";
+import wind, { Lexer } from "@candlefw/wind";
+import { lrParse, ParserData, ParserEnvironment } from "@candlefw/hydrocarbon";
+import parser_data from "./parser/css.js";
+
 import { property_definitions, media_feature_definitions } from "./properties/property_and_type_definitions.js";
 import { getPropertyParser } from "./properties/parser.js";
 import * as productions from "./properties/productions.js";
@@ -31,6 +33,7 @@ import CSS_Gradient from "./types/gradient.js";
 import CSS_Transform2D from "./types/transform.js";
 import CSS_Path from "./types/path.js";
 import CSS_FontName from "./types/font_name.js";
+import media from "./media.js";
 
 const types = {
     color: CSS_Color,
@@ -55,7 +58,11 @@ const types = {
     fontname: CSS_FontName
 };
 
-const env = {
+type CSSParserEnvironment = ParserEnvironment & {};
+
+
+
+const env = <CSSParserEnvironment>{
     functions: {
         compoundSelector,
         comboSelector,
@@ -69,18 +76,37 @@ const env = {
         parseDeclaration,
         stylerule,
         ruleset,
-        stylesheet
+        stylesheet,
+        media,
+        url: CSS_URL,
+        percentage: CSS_Percentage,
+        length: CSS_Length
     },
     body: null
 };
 
-const parse = function (string_data) { return css_parser(wind(string_data), env); };
+const parse = function (string_data) {
+    let lex: Lexer = null;
+
+    if (typeof string_data == "string")
+        lex = new Lexer(string_data);
+    else lex = string_data;
+
+    const parse_result = lrParse(lex, <ParserData>parser_data, env);
+
+    console.log(parse_result);
+
+    if (parse_result.error)
+        throw new SyntaxError(parse_result.error);
+
+    return parse_result.value;
+};
 
 export {
-    css_parser,
     parse,
     CSS_Length as length,
     CSS_Length,
+    CSS_Percentage as percentage,
     CSS_URL,
     CSS_URL as url,
     stylerule,
@@ -101,5 +127,6 @@ export {
     media_feature_definitions,
     getPropertyParser,
     productions,
-    terms
+    terms,
+    media
 };

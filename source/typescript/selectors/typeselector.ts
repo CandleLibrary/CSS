@@ -1,4 +1,4 @@
-export default class type_selector_part {
+export default class type_selector {
 	constructor(sym) {
 
 		const val = sym[0];

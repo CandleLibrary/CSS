@@ -14,17 +14,31 @@ const standard_productions = {
 };
 
 function getExtendedIdentifier(l) {
+    const IWS = l.IWS;
+
+    l.IWS = false;
+
     let pk = l.pk;
 
     let id = "";
 
-    while (!pk.END && (pk.ty & (wind.types.id | wind.types.num)) || pk.tx == "-" || pk.tx == "_") { pk.next(); }
+    while (
+        !pk.END &&
+        pk.ty != pk.types.ws &&
+        (
+            pk.ty & (wind.types.id | wind.types.num)
+            || pk.tx == "-"
+            || pk.tx == "_"
+        )
+    ) pk.next();
 
-    id = pk.slice(l);
+    id = pk.slice(l).trim();
 
     l.sync();
 
     l.tl = 0;
+
+    l.IWS = IWS;
 
     return id;
 }
@@ -97,7 +111,6 @@ function d(
     while (!l.END) {
 
         switch (l.ch) {
-
             case "]":
                 return term;
 
@@ -208,8 +221,9 @@ function d(
 
             default:
 
-
                 v = (l.ty == l.types.symbol) ? new SymbolTerm(l) : new LiteralTerm(l);
+
+                l.next();
 
                 v = checkExtensions(l, v, productions);
 

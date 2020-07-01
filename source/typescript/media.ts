@@ -1,12 +1,39 @@
-import stylerule from "./stylerule.js";
 
-export default class ruleset {
+function queryNodeToString(node) {
+    switch (node.type) {
 
-    get type() { return "ruleset"; }
-    constructor(asts, rules = []) {
-        this.rules = rules;
+        case "query":
+            return node.val.map(queryNodeToString).join(" ");
 
-        rules.forEach(r => r.parent = this);
+        case "type":
+            return node.val;
+
+        case "keyvalue":
+            return `${node.key} : ${node.val}`;
+
+        case "feature":
+        case "parenthesis":
+            return `( ${queryNodeToString(node.val)} )`;
+
+        case "and":
+            return `and ${queryNodeToString(node.val)}`;
+
+        default:
+            return node + "";
+
+    }
+}
+
+export default class media {
+
+    get type() { return "media"; }
+    constructor(sym, rules = []) {
+
+        this.queries = sym[2];
+
+        this.rules = sym[4];
+
+        this.rules.forEach(r => r.parent = this);
 
         this.parent = null;
     }
@@ -42,6 +69,6 @@ export default class ruleset {
     }
 
     toString() {
-        return this.rules.join("\n");
+        return `@media ${this.queries.map(queryNodeToString).join(",")} {\n\t${this.rules.join("\n")}\n}`;
     }
 }

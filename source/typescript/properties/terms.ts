@@ -4,6 +4,35 @@ import { JUX, checkDefaults } from "./productions.js";
 
 import { types } from "./property_and_type_definitions.js";
 
+function getExtendedIdentifier(l: Lexer) {
+    const IWS = l.IWS;
+
+    l.IWS = false;
+
+    let pk = l.pk;
+
+    let id = "";
+
+    while (
+        !pk.END &&
+        pk.ty != pk.types.ws &&
+        (
+            pk.ty & (wind.types.id | wind.types.num)
+            || pk.tx == "-"
+            || pk.tx == "_"
+        )
+    ) pk.next();
+
+    id = pk.slice(l).trim();
+
+    l.sync();
+
+    l.tl = 0;
+
+    l.IWS = IWS;
+
+    return id;
+}
 
 class LiteralTerm {
 
@@ -14,17 +43,13 @@ class LiteralTerm {
 
     constructor(lex: Lexer) {
 
-        const cp = lex.copy();
-
-        while (!lex.END && lex.ty == lex.types.id || lex.tx == "-")
-            lex.next();
-
-        let value = lex.slice(cp).trim();
+        let value = getExtendedIdentifier(lex);
 
         if (lex.type == lex.types.string)
             value = value.slice(1, -1);
 
         this.value = value;
+
         this.HAS_PROP = false;
     }
 
@@ -47,7 +72,7 @@ class LiteralTerm {
         if (root) {
             switch (checkDefaults(l)) {
                 case 1:
-                    rule.push(l.tx);
+                    r.push(l.tx);
                     return true;
                 case 0:
                     return false;
@@ -55,15 +80,13 @@ class LiteralTerm {
         }
 
         const cp = l.copy();
-
-        while (!cp.END && cp.ty == cp.types.id || cp.tx == "-")
-            cp.next();
-
-        let v = cp.slice(l);
+        const v = getExtendedIdentifier(cp);
 
         if (v == this.value) {
             l.sync(cp);
-            r.push(v);
+            l.tl = 0;
+            l.next();
+            r.push(this.value);
             return true;
         }
 
@@ -119,25 +142,14 @@ class ValueTerm extends LiteralTerm {
             }
         }
 
-        //const rn = [];
-
         const v = this.value.parse(l);
 
-        /*if (rn.length > 0) {
-            
-           // r.push(...rn);
+        if (v) {
 
-            // if (this.HAS_PROP && !this.virtual)
-            //     rule[0] = rn.v;
-
-            return true;
-
-        } else */if (v) {
-
-            r.push(v);
-
-            //if (this.HAS_PROP && !this.virtual && ROOT)
-            //    rule[0] = v;
+            if (Array.isArray(v))
+                r.push(...v);
+            else
+                r.push(v);
 
             return true;
         } else

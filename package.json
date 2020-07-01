@@ -11,7 +11,7 @@
     "build": "rollup --config ./build/config/config.js",
     "build.watch": "rollup --config  ./build/config/config.js --watch",
     "build.ui.watch": "rollup --config  ./build/config/ui.config.js --watch",
-    "compile": "hydrocarbon compile -u -o ./source/Parser -t mjs ./source/grammar/css.hcg",
+    "compile": "hydrocarbon compile --parser glalr  -u -o ./source/typescript/parser -t module ./source/grammar/css.hcg",
     "compile.mount": "hydrocarbon compile --parser glalr -d -m ./source/grammar/css.hcg"
   },
   "repository": {
@@ -28,7 +28,9 @@
     "url": "https://github.com/candlefw/css/issues"
   },
   "homepage": "https://github.com/candlefw/css#readme",
-  "dependencies": {},
+  "dependencies": {
+    "@candlefw/hydrocarbon": "^0.3.4-dev-1"
+  },
   "devDependencies": {
     "@candlefw/test": "^0.0.1",
     "rollup": "latest",

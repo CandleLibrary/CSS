@@ -6,10 +6,13 @@ function setParent(array, parent) {
         prop.parent = parent;
 }
 
+const tab_char = "    ";
+
 /*
  * Holds a set of css style properties.
  */
 export default class stylerule {
+
 
     constructor(selectors = [], props = []) {
         this.selectors = selectors;
@@ -34,6 +37,11 @@ export default class stylerule {
     get css_type() {
         return "stylerule";
     }
+
+    get type() {
+        return "stylerule";
+    }
+
 
     destroy() {
 
@@ -142,7 +150,7 @@ export default class stylerule {
         for (const prop of this.properties.values())
             str.push(prop.toString(off));
 
-        return `${this.selectors.join(" ")}{\n\t${str.join(";\n\t")}\n}`;
+        return `${this.selectors.join(",")}{\n${tab_char}${str.join(`;\n${tab_char}`)}\n}`;
     }
 
     merge(rule) {

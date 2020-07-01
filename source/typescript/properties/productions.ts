@@ -18,9 +18,7 @@ export function checkDefaults(lx) {
 
 class JUX { /* Juxtaposition */
 
-    get type() {
-        return "jux";
-    }
+    get type() { return "jux"; }
 
     static step: number;
     id: number;
@@ -77,30 +75,6 @@ class JUX { /* Juxtaposition */
         return prop_data;
     }
 
-    parseLVL1(lx, out_val = [], ROOT = true) {
-
-        cfw.harness.inspect(this);
-        
-        if (typeof (lx) == "string")
-            lx = whind(lx);
-
-        let bool = false;
-
-        if (ROOT) {
-            switch (checkDefaults(lx)) {
-                case 1:
-                    this.sp(lx.tx, out_val);
-                    return true;
-                case 0:
-                    return false;
-            }
-            bool = this.parseLVL2(lx, out_val, this.start, this.end);
-        } else
-            bool = this.parseLVL2(lx, out_val, this.start, this.end);
-
-        return bool;
-    }
-
     checkForComma(lx, out_val, temp_val = [], j = 0) {
         if (this.REQUIRE_COMMA) {
             if (out_val) {
@@ -120,16 +94,42 @@ class JUX { /* Juxtaposition */
         return true;
     }
 
-    parseLVL2(lx, out_val, start, end) {
+    parseLVL1(lx, out_val = [], ROOT = true) {
+
+
+        if (typeof (lx) == "string")
+            lx = whind(lx);
+
+        let bool = false;
+
+        if (ROOT) {
+            switch (checkDefaults(lx)) {
+                case 1:
+                    this.sp(lx.tx, out_val);
+                    return true;
+                case 0:
+                    return false;
+            }
+            bool = this.parseLevel2(lx, out_val, this.start, this.end);
+        } else
+            bool = this.parseLevel2(lx, out_val, this.start, this.end);
+
+
+
+        return bool;
+    }
+
+    parseLevel2(lx, out_val, start, end) {
 
         let bool = false,
-            copy = lx.copy(),
             temp_val = [];
 
         repeat:
         for (let j = 0; j < end && !lx.END; j++) {
 
-            const temp = [];
+            const
+                copy = lx.copy(),
+                temp = [];
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
 
@@ -142,15 +142,15 @@ class JUX { /* Juxtaposition */
                 }
             }
 
-            temp_val.push(...temp);
-
             lx.sync(copy);
 
             bool = true;
 
-            if (!this.checkForComma(copy, out_val, temp_val, j))
+            if (!this.checkForComma(lx, out_val, temp, j))
                 break;
         }
+
+
 
         return bool;
     }
@@ -169,36 +169,39 @@ class JUX { /* Juxtaposition */
     set OPTIONAL(a) { }
 }
 JUX.step = 0;
+
+const enum Matched {
+    TRUE = 2,
+    OPTIONAL = 1,
+    FALSE = 0
+}
 class AND extends JUX {
 
-    get type() {
-        return "and";
-    }
-    parseLVL2(lx, out_val, start, end) {
+    get type() { return "and"; }
+    parseLevel2(lx, out_val, start, end) {
 
         const
             PROTO = new Array(this.terms.length),
             l = this.terms.length;
 
-        let bool = false,
-            temp_val = [],
-            copy = lx.copy();
+        let bool = false;
+
+
 
         repeat:
         for (let j = 0; j < end && !lx.END; j++) {
 
             const
-                HIT = PROTO.fill(0);
-            //temp_r = [];
+                matched: Matched[] = PROTO.fill(0),
+                copy = lx.copy(),
+                temp_val = [];
 
             and:
             while (!copy.END) {
 
-                let FAILED = false;
-
                 for (let i = 0; i < l; i++) {
 
-                    if (HIT[i] === 2) continue;
+                    if (matched[i] === Matched.TRUE) continue;
 
                     let term = this.terms[i];
 
@@ -206,15 +209,16 @@ class AND extends JUX {
 
                     if (!term.parseLVL1(copy, temp, false)) {
                         if (term.OPTIONAL)
-                            HIT[i] = 1;
-                    } else {
-                        temp_val.push(...temp);
-                        HIT[i] = 2;
-                        continue and;
+                            matched[i] = Matched.OPTIONAL;
+                        else {
+                            temp_val.push(...temp);
+                            matched[i] = Matched.TRUE;
+                            continue and;
+                        }
                     }
                 }
 
-                if (HIT.reduce((a, v) => a * v, 1) === 0)
+                if (matched.reduce((a, v) => a * v, 1) === 0)
                     break repeat;
 
                 break;
@@ -233,38 +237,37 @@ class AND extends JUX {
 }
 
 class OR extends JUX {
-    get type() {
-        return "or";
-    }
-    parseLVL2(lx, out_val, start, end) {
+    get type() { return "or"; }
+    parseLevel2(lx, out_val, start, end) {
         const
             PROTO = new Array(this.terms.length),
             l = this.terms.length;
 
         let
             bool = false,
-            NO_HIT = true,
-            copy = lx.copy(),
-            temp_val = [];
+            NO_HIT = true;
+
 
         repeat:
         for (let j = 0; j < end && !lx.END; j++) {
 
-            const HIT = PROTO.fill(0);
-            let temp_r = { v: null };
+            const
+                matched: Matched[] = PROTO.fill(0),
+                copy = lx.copy(),
+                temp_val = [];
 
             or:
             while (!copy.END) {
-                let FAILED = false;
+
                 for (let i = 0; i < l; i++) {
 
-                    if (HIT[i] === 2) continue;
+                    if (matched[i] === Matched.TRUE) continue;
 
                     let term = this.terms[i];
 
                     if (term.parseLVL1(copy, temp_val, false)) {
                         NO_HIT = false;
-                        HIT[i] = 2;
+                        matched[i] = Matched.TRUE;
                         continue or;
                     }
                 }
@@ -275,9 +278,6 @@ class OR extends JUX {
             }
 
             lx.sync(copy);
-
-            //if (temp_r.v)
-            //    this.mergeValues(r, temp_r)
 
             bool = true;
 
@@ -292,21 +292,24 @@ class OR extends JUX {
 OR.step = 0;
 
 class ONE_OF extends JUX {
-    get type() {
-        return "one_of";
-    }
-    parseLVL2(lx, out_val, start, end) {
+    get type() { return "one_of"; }
+    parseLevel2(lx, out_val, start, end) {
 
         let BOOL = false;
-        const
-            copy = lx.copy(),
-            temp_val = [];
 
         for (let j = 0; j < end && !lx.END; j++) {
 
             let bool = false;
 
+            const
+                copy = lx.copy();
+
+            let temp_val = [];
+
             for (let i = 0, l = this.terms.length; i < l; i++) {
+
+                temp_val.length = 0;
+
                 if (this.terms[i].parseLVL1(copy, temp_val, false)) {
                     bool = true;
                     break;
@@ -323,6 +326,8 @@ class ONE_OF extends JUX {
             if (!this.checkForComma(copy, out_val, temp_val, j))
                 break;
         }
+
+
 
         return BOOL;
     }

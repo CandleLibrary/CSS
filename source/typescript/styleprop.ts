@@ -4,7 +4,6 @@ import observer from "@candlefw/observer";
 export default class styleprop {
 
     constructor(name, original_value, val) {
-        cfw.harness.inspect(val);
         this.val = val;
         this.name = name.replace(/\-/g, "_");
         this.original_value = original_value;
