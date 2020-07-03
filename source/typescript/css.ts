@@ -1,23 +1,12 @@
 import wind, { Lexer } from "@candlefw/wind";
 import { lrParse, ParserData, ParserEnvironment } from "@candlefw/hydrocarbon";
+
 import parser_data from "./parser/css.js";
 
 import { property_definitions, media_feature_definitions } from "./properties/property_and_type_definitions.js";
 import { getPropertyParser } from "./properties/parser.js";
 import * as productions from "./properties/productions.js";
 import * as terms from "./properties/terms.js";
-import stylesheet from "./stylesheet.js";
-import ruleset from "./ruleset.js";
-import stylerule from "./stylerule.js";
-import compoundSelector from "./selectors/compound.js";
-import comboSelector from "./selectors/combo.js";
-import selector from "./selectors/selector.js";
-import typeselector from "./selectors/typeselector.js";
-import idSelector from "./selectors/id.js";
-import classSelector from "./selectors/class.js";
-import attribSelector from "./selectors/attribute.js";
-import pseudoClassSelector from "./selectors/pseudo_class.js";
-import pseudoElementSelector from "./selectors/pseudo_element.js";
 import parseDeclaration from "./properties/style_prop_parse_declaration.js";
 
 import CSS_Length from "./types/length.js";
@@ -33,7 +22,8 @@ import CSS_Gradient from "./types/gradient.js";
 import CSS_Transform2D from "./types/transform.js";
 import CSS_Path from "./types/path.js";
 import CSS_FontName from "./types/font_name.js";
-import media from "./media.js";
+
+import { CSSTreeNodeType, render, CSSTreeNode } from "./nodes/css_tree_node_type.js";
 
 const types = {
     color: CSS_Color,
@@ -60,73 +50,56 @@ const types = {
 
 type CSSParserEnvironment = ParserEnvironment & {};
 
-
-
 const env = <CSSParserEnvironment>{
+    typ: CSSTreeNodeType,
     functions: {
-        compoundSelector,
-        comboSelector,
-        typeselector,
-        selector,
-        idSelector,
-        classSelector,
-        attribSelector,
-        pseudoClassSelector,
-        pseudoElementSelector,
         parseDeclaration,
-        stylerule,
-        ruleset,
-        stylesheet,
-        media,
         url: CSS_URL,
         percentage: CSS_Percentage,
         length: CSS_Length
-    },
-    body: null
+    }
 };
 
-const parse = function (string_data) {
+const parse = function (string_data): CSSTreeNode {
     let lex: Lexer = null;
 
     if (typeof string_data == "string")
         lex = new Lexer(string_data);
     else lex = string_data;
 
-    const parse_result = lrParse(lex, <ParserData>parser_data, env);
-
-    console.log(parse_result);
+    const parse_result = lrParse<CSSTreeNode>(lex, <ParserData>parser_data, env);
 
     if (parse_result.error)
         throw new SyntaxError(parse_result.error);
 
+    const node = parse_result.value;
+
+    node.toString = () => render(node);
+
     return parse_result.value;
+};
+
+const selector = function (selector): CSSTreeNode {
+    const css = parse(`${selector}{top:0}`);
+    return css.nodes[0].selectors[0];
 };
 
 export {
     parse,
+    selector,
     CSS_Length as length,
     CSS_Length,
     CSS_Percentage as percentage,
     CSS_URL,
     CSS_URL as url,
-    stylerule,
-    ruleset,
-    compoundSelector,
-    comboSelector,
-    typeselector,
-    selector,
-    idSelector,
-    classSelector,
-    attribSelector,
-    pseudoClassSelector,
-    pseudoElementSelector,
+    CSSTreeNodeType,
+    CSSTreeNode,
     parseDeclaration,
-    stylesheet,
     types,
     property_definitions,
     media_feature_definitions,
     getPropertyParser,
     productions,
     terms,
-    media
+    render
 };

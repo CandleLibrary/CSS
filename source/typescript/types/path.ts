@@ -66,6 +66,7 @@ function parseNumberPairs(lex, array) {
 export default class CSS_Path extends Array {
     static FromString(string, array) {
         let lex = wind(string);
+        lex.USE_EXTENDED_NUMBER_TYPES = true;
         while (!lex.END) {
             let relative = false,
                 x = 0,
@@ -107,6 +108,7 @@ export default class CSS_Path extends Array {
                 case "c":
                     relative = true;
                 case "C":
+                    lex.next();
                     array.push((relative) ? PathSym.c : PathSym.C);
                     getNumberPair(lex, array);
                     getNumberPair(lex, array);
@@ -116,6 +118,7 @@ export default class CSS_Path extends Array {
                 case "s":
                     relative = true;
                 case "S":
+                    lex.next();
                     array.push((relative) ? PathSym.s : PathSym.S);
                     getNumberPair(lex, array);
                     getNumberPair(lex, array);
@@ -125,6 +128,7 @@ export default class CSS_Path extends Array {
                 case "q":
                     relative = true;
                 case "Q":
+                    lex.next();
                     array.push((relative) ? PathSym.q : PathSym.Q);
                     getNumberPair(lex, array);
                     getNumberPair(lex, array);
@@ -133,6 +137,7 @@ export default class CSS_Path extends Array {
                 case "t":
                     relative = true;
                 case "T":
+                    lex.next();
                     array.push((relative) ? PathSym.t : PathSym.T);
                     getNumberPair(lex, array);
                     parseNumberPairs(lex, array);
@@ -224,7 +229,7 @@ export default class CSS_Path extends Array {
         super();
 
         if (typeof (data) == "string") {
-            Path.FromString(data, this);
+            CSS_Path.FromString(data, this);
         } else if (Array.isArray(data)) {
             for (let i = 0; i < data.length; i++) {
                 this.push(parseFloat(data[i]));
@@ -232,11 +237,20 @@ export default class CSS_Path extends Array {
         }
     }
 
-    toString() {
-        return Path.ToString(this);
+    copy(value) {
+        return new CSS_Path(value);
     }
 
-    lerp(to, t, array = new Path) {
+    toString() {
+        return CSS_Path.ToString(this);
+    }
+    /**
+     * 
+     * @param to Assumes another path of identical element configuration
+     * @param t 
+     * @param array 
+     */
+    lerp(to, t, array = new CSS_Path(to)) {
         let l = Math.min(this.length, to.length);
 
         for (let i = 0; i < l; i++)

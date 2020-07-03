@@ -414,7 +414,7 @@ export const virtual_property_definitions = {
 	basic_shape: `<CSS_Shape>`,
 	ratio: `<integer>/<integer>`,
 
-	/* https://www.w3.org/TR/css-fonts-3/*/
+	/* https://www.w3.org/TR/css-fonts-3/ */
 	common_lig_values: `[ common-ligatures | no-common-ligatures ]`,
 	discretionary_lig_values: `[ discretionary-ligatures | no-discretionary-ligatures ]`,
 	historical_lig_values: `[ historical-ligatures | no-historical-ligatures ]`,

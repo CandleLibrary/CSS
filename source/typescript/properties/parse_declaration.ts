@@ -1,9 +1,7 @@
 import wind from "@candlefw/wind";
 import {
-    property_definitions,
-    media_feature_definitions
+    property_definitions
 } from "./property_and_type_definitions.js";
-import { types } from "./property_and_type_definitions.js";
 import { getPropertyParser } from "./parser.js";
 
 /* 
