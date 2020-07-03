@@ -1,45 +1,46 @@
 {
-  "name": "@candlefw/css",
-  "version": "0.1.6",
-  "type": "module",
-  "description": "CSS Parser",
-  "main": "./build/library/css.js",
-  "types": "./build/types/css.node.d.ts",
-  "scripts": {
-    "test": "cfw.test ./test/candlefw.css.test.js",
-    "test.watch": "cfw.test -w ./test/candlefw.css.test.js",
-    "build": "rollup --config ./build/config/config.js",
-    "build.watch": "rollup --config  ./build/config/config.js --watch",
-    "build.ui.watch": "rollup --config  ./build/config/ui.config.js --watch",
-    "compile": "hydrocarbon compile --parser glalr  -u -o ./source/typescript/parser -t module ./source/grammar/css.hcg",
-    "compile.mount": "hydrocarbon compile --parser glalr -d -m ./source/grammar/css.hcg"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/candlefw/css.git"
-  },
-  "keywords": [
-    "CSS",
-    "Parser"
-  ],
-  "author": "Anthony Weathersby",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/candlefw/css/issues"
-  },
-  "homepage": "https://github.com/candlefw/css#readme",
-  "dependencies": {
-    "@candlefw/hydrocarbon": "^0.3.4-dev-1"
-  },
-  "devDependencies": {
-    "@candlefw/test": "^0.0.1",
-    "rollup": "latest",
-    "rollup-plugin-commonjs": "latest",
-    "rollup-plugin-node-resolve": "latest",
-    "rollup-plugin-resolve": "latest"
-  },
-  "jshintConfig": {
-    "esversion": 6,
-    "unused": true
-  }
+    "name": "@candlefw/css",
+    "version": "0.1.6",
+    "type": "module",
+    "description": "CSS Parser",
+    "main": "./build/library/css.js",
+    "types": "./build/types/css.node.d.ts",
+    "scripts": {
+        "test": "cfw.test ./test/candlefw.css.spec.js",
+        "test.watch": "cfw.test -w ./test/candlefw.css.spec.js",
+        "build": "rollup --config ./build/config/config.js",
+        "build.watch": "rollup --config  ./build/config/config.js --watch",
+        "build.ui.watch": "rollup --config  ./build/config/ui.config.js --watch",
+        "compile": "hydrocarbon compile --parser glalr  -u -o ./source/typescript/parser -t module ./source/grammar/css.hcg",
+        "compile.mount": "hydrocarbon compile --parser glalr -d -m ./source/grammar/css.hcg"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/candlefw/css.git"
+    },
+    "keywords": [
+        "CSS",
+        "Parser"
+    ],
+    "author": "Anthony Weathersby",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/candlefw/css/issues"
+    },
+    "homepage": "https://github.com/candlefw/css#readme",
+    "dependencies": {
+        "@candlefw/conflagrate": "^0.0.5-alpha",
+        "@candlefw/hydrocarbon": "^0.3.4-dev-1"
+    },
+    "devDependencies": {
+        "@candlefw/test": "0.1.0-alpha",
+        "rollup": "latest",
+        "rollup-plugin-commonjs": "latest",
+        "rollup-plugin-node-resolve": "latest",
+        "rollup-plugin-resolve": "latest"
+    },
+    "jshintConfig": {
+        "esversion": 6,
+        "unused": true
+    }
 }
