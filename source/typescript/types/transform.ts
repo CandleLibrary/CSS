@@ -1,6 +1,6 @@
 import wind from "@candlefw/wind";
 
-function getValue(lex, attribute) {
+function getValue(lex, attribute?) {
     let v = lex.tx,
         mult = 1;
 
@@ -174,7 +174,7 @@ export default class CSS_Transform2D extends Float64Array {
     }
 
 
-    constructor(px, py, sx, sy, r) {
+    constructor(px?, py?, sx?, sy?, r?) {
         super(5);
         this.sx = 1;
         this.sy = 1;
