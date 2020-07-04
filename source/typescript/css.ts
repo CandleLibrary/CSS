@@ -24,6 +24,7 @@ import CSS_Path from "./types/path.js";
 import CSS_FontName from "./types/font_name.js";
 
 import { CSSTreeNodeType, render, CSSTreeNode } from "./nodes/css_tree_node_type.js";
+import { getMatchedElements, SelectionHelpers } from "./selector/lookup_nodes.js";
 
 const types = {
     color: CSS_Color,
@@ -84,6 +85,11 @@ const selector = function (selector): CSSTreeNode {
     return css.nodes[0].selectors[0];
 };
 
+export function matchAll<Element>(selector_string, ele, helpers: SelectionHelpers<Element>): Element[] {
+    const selector_node = selector(selector_string);
+    return [...getMatchedElements<Element>(ele, selector_node, helpers)];
+};
+
 export {
     parse,
     selector,
@@ -94,6 +100,7 @@ export {
     CSS_URL as url,
     CSSTreeNodeType,
     CSSTreeNode,
+    SelectionHelpers,
     parseDeclaration,
     types,
     property_definitions,

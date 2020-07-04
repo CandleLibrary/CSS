@@ -40,11 +40,11 @@ export enum CSSTreeNodeType {
     MediaRangeAscending = (277 << 23),
     MediaRangeDescending = (278 << 23),
     ComboSelector = (279 << 23),
-    Selector = (280 << 23),
+    ComplexSelector = (280 << 23),
     PseudoSelector = (281 << 23),
     CompoundSelector = (282 << 23),
     TypeSelector = (283 << 23),
-    MetaSelect = (284 << 23),
+    MetaSelector = (284 << 23),
     NamespacePrefix = (285 << 23),
     QualifiedName = (286 << 23),
     IdSelector = (287 << 23),
@@ -181,7 +181,7 @@ export const NodeDefinitions = [
 
     },
     {
-        type: CSSTreeNodeType.Selector,
+        type: CSSTreeNodeType.ComplexSelector,
         template_pattern: "@... ",
 
     },
@@ -196,7 +196,7 @@ export const NodeDefinitions = [
 
     },
     {
-        type: CSSTreeNodeType.MetaSelect,
+        type: CSSTreeNodeType.MetaSelector,
         template_pattern: "@1?\*",
 
     },
@@ -236,6 +236,11 @@ export const NodeDefinitions = [
     {
         type: CSSTreeNodeType.PseudoElementSelector,
         template_pattern: ":@1",
+
+    },
+    {
+        type: CSSTreeNodeType.TypeSelector,
+        template_pattern: "@1",
 
     },
 ];
