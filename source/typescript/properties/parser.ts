@@ -290,12 +290,9 @@ function checkExtensions(l, term, productions) {
                 break;
 
             case "#":
-
                 let nr = new productions.JUX();
-                //nr.terms.push(new SymbolTerm(","));
                 nr.terms.push(term);
                 term = nr;
-                //term = foldIntoProduction(productions, term);
                 term.r[0] = 1;
                 term.r[1] = Infinity;
                 term.REQUIRE_COMMA = true;
