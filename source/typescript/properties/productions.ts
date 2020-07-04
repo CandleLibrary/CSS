@@ -122,13 +122,14 @@ class JUX { /* Juxtaposition */
     parseLevel2(lx, out_val, start, end) {
 
         let bool = false,
-            temp_val = [];
+            top_copy = lx.copy(),
+            temp_val = [], j = 0;
 
         repeat:
-        for (let j = 0; j < end && !lx.END; j++) {
+        for (j = 0; j < end && !top_copy.END; j++) {
 
             const
-                copy = lx.copy(),
+                copy = top_copy.copy(),
                 temp = [];
 
             for (let i = 0, l = this.terms.length; i < l; i++) {
@@ -142,15 +143,22 @@ class JUX { /* Juxtaposition */
                 }
             }
 
-            lx.sync(copy);
+            top_copy.sync(copy);
 
             bool = true;
 
-            if (!this.checkForComma(lx, out_val, temp, j))
+            if (!this.checkForComma(top_copy, temp_val, temp, j)) {
+                j++;
                 break;
+            }
         }
 
+        if (j < start) {
+            return false;
+        }
 
+        out_val.push(...temp_val);
+        lx.sync(top_copy);
 
         return bool;
     }
@@ -180,13 +188,12 @@ class AND extends JUX {
     get type() { return "and"; }
     parseLevel2(lx, out_val, start, end) {
 
+
         const
             PROTO = new Array(this.terms.length),
             l = this.terms.length;
 
         let bool = false;
-
-
 
         repeat:
         for (let j = 0; j < end && !lx.END; j++) {
@@ -210,11 +217,12 @@ class AND extends JUX {
                     if (!term.parseLVL1(copy, temp, false)) {
                         if (term.OPTIONAL)
                             matched[i] = Matched.OPTIONAL;
-                        else {
-                            temp_val.push(...temp);
-                            matched[i] = Matched.TRUE;
-                            continue and;
-                        }
+                        else
+                            matched[i] = Matched.FALSE;
+                    } else {
+                        temp_val.push(...temp);
+                        matched[i] = Matched.TRUE;
+                        continue and;
                     }
                 }
 
@@ -223,7 +231,6 @@ class AND extends JUX {
 
                 break;
             }
-
             lx.sync(copy);
 
             bool = true;
@@ -231,6 +238,8 @@ class AND extends JUX {
             if (!this.checkForComma(copy, out_val, temp_val, j))
                 break;
         }
+
+        console.log(bool);
 
         return bool;
     }
@@ -276,8 +285,6 @@ class OR extends JUX {
 
                 break;
             }
-
-            lx.sync(copy);
 
             bool = true;
 
@@ -326,8 +333,6 @@ class ONE_OF extends JUX {
             if (!this.checkForComma(copy, out_val, temp_val, j))
                 break;
         }
-
-
 
         return BOOL;
     }

@@ -366,7 +366,7 @@ export const virtual_property_definitions = {
 	attachment: `scroll|fixed|local`,
 	line_style: `none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset`,
 	line_width: `thin|medium|thick|<length>`,
-	shadow: `inset?&&<length>{2,4}&&<color>?`,
+	shadow: `inset?<length>{2,4}&&<color>?`,
 
 	/* Font https://www.w3.org/TR/css-fonts-4/#family-name-value */
 
