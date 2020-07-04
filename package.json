@@ -4,7 +4,7 @@
     "type": "module",
     "description": "CSS Parser",
     "main": "./build/library/css.js",
-    "types": "./build/types/css.node.d.ts",
+    "types": "./build/types/css.d.ts",
     "scripts": {
         "test": "cfw.test ./test/candlefw.css.spec.js",
         "test.watch": "cfw.test -w ./test/candlefw.css.spec.js",
