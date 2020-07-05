@@ -1,5 +1,5 @@
 import wind, { Lexer } from "@candlefw/wind";
-import { lrParse, ParserData, ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime";
+import { lrParse, ParserData, ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.js";
 
 import parser_data from "./parser/css.js";
 
