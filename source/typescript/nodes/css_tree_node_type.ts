@@ -56,13 +56,14 @@ export enum CSSTreeNodeType {
 }
 
 export const NodeDefinitions = [
+
     {
         type: CSSTreeNodeType.Stylesheet,
         template_pattern: "1@...\n0",
     },
     {
         type: CSSTreeNodeType.Rule,
-        template_pattern: "@_selectors%{}",
+        template_pattern: "@_selectors...,%{}",
 
     },
     {
@@ -247,6 +248,8 @@ export const NodeDefinitions = [
 
 
 const definitions = CFLbuildRenderers(NodeDefinitions, CSSTreeNodeType);
+
+console.log(definitions);
 
 export function render(
     node: CSSTreeNode,
