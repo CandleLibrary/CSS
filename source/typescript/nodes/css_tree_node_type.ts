@@ -249,7 +249,6 @@ export const NodeDefinitions = [
 
 const definitions = CFLbuildRenderers(NodeDefinitions, CSSTreeNodeType);
 
-console.log(definitions);
 
 export function render(
     node: CSSTreeNode,
