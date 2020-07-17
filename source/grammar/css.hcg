@@ -16,7 +16,7 @@
                                                                                     ↦r { {type:env.typ.Stylesheet, imports:$$sym1, nodes:$$sym2, pos} }
 
     <> STYLE_RULE → COMPLEX_SELECTOR(+,) { declaration_list ;? }                    
-                                                                                    ↦r { {type:env.typ.Rule, selectors:$$sym1, vals:$$sym3, pos} }
+                                                                                    ↦r { {type:env.typ.Rule, selectors:$$sym1, props: new Map($$sym3.map(s=>[s.name, s])), pos} }
 
     <> GROUP_RULE_BODY → STYLE_RULE(*)
 

@@ -6,14 +6,21 @@ import {
     renderWithFormattingAndSourceMap as CFLrenderWithFormattingAndSourceMap,
     FormatRule
 } from "@candlefw/conflagrate";
+import { Lexer } from "@candlefw/wind";
+import { property } from "../properties/property";
 
 export interface CSSTreeNode {
     type: CSSTreeNodeType,
-    selectors?: CSSTreeNode;
-    nodes: CSSTreeNode[];
+    nodes?: CSSTreeNode[];
+
+    pos?: Lexer;
     //Property Values
-    vals?: any[];
 };
+
+export interface CSSRuleNode extends CSSTreeNode {
+    selectors?: CSSTreeNode[];
+    props?: Map<string, property>;
+}
 
 export enum CSSTreeNodeType {
     Stylesheet = (256 << 23),
@@ -257,7 +264,7 @@ export function render(
 ): string {
     return CFLrenderWithFormatting<CSSTreeNode>(node, definitions, format_rules, (str, name, node): string => {
         if (node.type == CSSTreeNodeType.Rule)
-            return `{${node.vals.map(n => n + "").join(";\n")}}`;
+            return `{${Array.from((<CSSRuleNode>node).props.values()).map(n => n + "").join(";\n")}}`;
         return str;
     });
 };
