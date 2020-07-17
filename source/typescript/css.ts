@@ -1,4 +1,6 @@
-import wind, { Lexer } from "@candlefw/wind";
+import { addModuleToCFW } from "@candlefw/candle";
+import { Lexer } from "@candlefw/wind";
+
 import { lrParse, ParserData, ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.js";
 
 import parser_data from "./parser/css.js";
@@ -7,7 +9,7 @@ import { property_definitions, media_feature_definitions } from "./properties/pr
 import { getPropertyParser } from "./properties/parser.js";
 import * as productions from "./properties/productions.js";
 import * as terms from "./properties/terms.js";
-import parseDeclaration from "./properties/style_prop_parse_declaration.js";
+import parseDeclaration from "./properties/parse_declaration.js";
 
 import CSS_Length from "./types/length.js";
 import CSS_URL from "./types/url.js";
@@ -23,8 +25,9 @@ import CSS_Transform2D from "./types/transform.js";
 import CSS_Path from "./types/path.js";
 import CSS_FontName from "./types/font_name.js";
 
-import { CSSTreeNodeType, render, CSSTreeNode } from "./nodes/css_tree_node_type.js";
-import { getMatchedElements, SelectionHelpers } from "./selector/lookup_nodes.js";
+import { CSSTreeNodeType, render, CSSTreeNode, CSSRuleNode } from "./nodes/css_tree_node_type.js";
+import { getMatchedElements, SelectionHelpers, matchElement, DOMHelpers } from "./selector/lookup_nodes.js";
+import { property } from "./properties/property.js";
 
 const types = {
     color: CSS_Color,
@@ -66,7 +69,8 @@ const parse = function (string_data): CSSTreeNode {
 
     if (typeof string_data == "string")
         lex = new Lexer(string_data);
-    else lex = string_data;
+    else
+        lex = string_data;
 
     const parse_result = lrParse<CSSTreeNode>(lex, <ParserData>parser_data, env);
 
@@ -80,15 +84,89 @@ const parse = function (string_data): CSSTreeNode {
     return parse_result.value;
 };
 
+const properties = function (props): Map<string, property> {
+    const css = parse(`*{${props}}`);
+    return (<CSSRuleNode>css.nodes[0]).props;
+};
+
 const selector = function (selector): CSSTreeNode {
     const css = parse(`${selector}{top:0}`);
-    return css.nodes[0].selectors[0];
+    return (<CSSRuleNode>css.nodes[0]).selectors[0];
+};
+
+const rule = function (rule: string = "*{display:block}"): CSSTreeNode {
+    const css = parse(rule);
+    return css.nodes[0];
+};
+
+const newRule = function (): CSSRuleNode {
+    return <CSSRuleNode>{
+        selectors: [],
+        props: new Map,
+        type: CSSTreeNodeType.Rule,
+        pos: null,
+    };
 };
 
 export function matchAll<Element>(selector_string, ele, helpers: SelectionHelpers<Element>): Element[] {
     const selector_node = selector(selector_string);
     return [...getMatchedElements<Element>(ele, selector_node, helpers)];
 };
+
+export function getApplicableRules(ele, css, helpers = DOMHelpers): CSSRuleNode[] {
+    const rules = [];
+
+    if (css.type == CSSTreeNodeType.Stylesheet) {
+        for (const rule of css.nodes.filter(r => r.type == CSSTreeNodeType.Rule)) {
+            for (const selector of rule.selectors) {
+                if (matchElement(ele, selector, helpers)) {
+                    rules.push(rule);
+                    break;
+                }
+            }
+        }
+    }
+    return rules;
+}
+
+/**
+ * Merges properties and selectors from an array of rules into  a single,
+ * monolithic rule. Property collisions are resolved in a first-come::only-set
+ * basis, unless **!important** has been set on a following property.
+ * 
+ * Assumes rule precedence greatest to least, or lowest to highest (if
+ * described as within a CSS).
+ * 
+ * @param rules 
+ */
+export function mergeRulesIntoOne(...rules: CSSRuleNode[]): CSSRuleNode {
+
+    const new_rule = <CSSRuleNode>{
+        type: CSSTreeNodeType.Rule,
+        props: new Map(),
+        selectors: []
+    };
+
+    for (const rule of rules) {
+        for (const prop of rule.props.values())
+            if (!new_rule.props.has(prop.name) || prop.IMPORTANT)
+                new_rule.props.set(prop.name, prop);
+
+        new_rule.selectors.push(...(rule.selectors || []));
+    }
+
+    return new_rule;
+}
+
+export function addPropsToRule(rule: CSSRuleNode, prop_string: string): CSSRuleNode {
+
+    const props = properties(prop_string);
+
+    for (const prop of props.values())
+        rule.props.set(prop.name, prop);
+
+    return rule;
+}
 
 export {
     parse,
@@ -108,5 +186,31 @@ export {
     getPropertyParser,
     productions,
     terms,
-    render
+    render,
+    rule
 };
+
+addModuleToCFW({
+    getApplicableRules,
+    DOMHelpers,
+    getMatchedElements,
+    matchElements: matchElement,
+    parse,
+    selector,
+    CSS_URL,
+    CSSTreeNodeType,
+    parseDeclaration,
+    types,
+    property_definitions,
+    media_feature_definitions,
+    getPropertyParser,
+    productions,
+    terms,
+    matchAll,
+    render,
+    rule,
+    properties,
+    addPropsToRule,
+    mergeRulesIntoOne,
+    newRule
+}, "css");

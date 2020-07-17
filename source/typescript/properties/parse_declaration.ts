@@ -1,8 +1,10 @@
+import observer from "@candlefw/observer";
 import wind from "@candlefw/wind";
 import {
     property_definitions
 } from "./property_and_type_definitions.js";
 import { getPropertyParser } from "./parser.js";
+import { property } from "./property.js";
 
 /* 
     Parses a string value of a css property. Returns result of parse or null.
@@ -19,10 +21,10 @@ import { getPropertyParser } from "./parser.js";
         important : boolean value indicating the presence of "important" value.
 */
 
+observer("updatedCSSStyleProperty", property.prototype);
 
+export default function parseDeclaration(sym, a, b, pos) {
 
-
-export default function parseDeclaration(sym) {
 
     if (sym.length == 0)
         return null;
@@ -44,5 +46,9 @@ export default function parseDeclaration(sym) {
         //Need to know what properties have not been defined
         console.warn(`Unable to get parser for CSS property ${rule_name}`);
 
-    return { name: rule_name, body_string, prop, important };
+
+    if (prop)
+        return new property(rule_name, body_string, prop, important, pos);
+
+    return null;
 }

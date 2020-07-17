@@ -12,7 +12,7 @@ export interface SelectionHelpers<Element> {
     getChildren: (ele: Element) => Element[];
 }
 
-const DOMHelpers: SelectionHelpers<HTMLElement> = {
+export const DOMHelpers: SelectionHelpers<HTMLElement> = {
     hasAttribute: (ele, name, value, sym, modifier) => {
         const attrib = ele.getAttribute(name);
         if (attrib)
@@ -46,7 +46,7 @@ const DOMHelpers: SelectionHelpers<HTMLElement> = {
     }
 };
 
-export function matchElements<Element>(ele, selector: CSSTreeNode, helpers: SelectionHelpers<Element>): boolean {
+export function matchElement<Element>(ele, selector: CSSTreeNode, helpers: SelectionHelpers<Element>): boolean {
 
     switch (selector.type) {
 
@@ -54,7 +54,7 @@ export function matchElements<Element>(ele, selector: CSSTreeNode, helpers: Sele
             {
                 const selectors = selector.nodes.slice().reverse();
                 for (const selector of selectors)
-                    if (!matchElements(ele, selector, helpers)) return false;
+                    if (!matchElement(ele, selector, helpers)) return false;
             }
             break;
 
@@ -62,7 +62,7 @@ export function matchElements<Element>(ele, selector: CSSTreeNode, helpers: Sele
             {
                 const selectors = selector.nodes.slice().reverse();
                 for (const selector of selectors)
-                    if (!matchElements(ele, selector, helpers)) return false;
+                    if (!matchElement(ele, selector, helpers)) return false;
             }
             break;
 
@@ -83,12 +83,12 @@ export function matchElements<Element>(ele, selector: CSSTreeNode, helpers: Sele
 
         case CSSTreeNodeType.PseudoClassSelector:
             if (!helpers.hasPseudoClass(ele, selector.val)) return false;
-            else if (selector.nodes[0]) return matchElements(ele, selector.nodes[0], helpers);
+            else if (selector.nodes[0]) return matchElement(ele, selector.nodes[0], helpers);
             break;
 
         case CSSTreeNodeType.PseudoElementSelector:
             if (!helpers.hasPseudoElement(ele, selector.val)) return false;
-            else if (selector.nodes[0]) return matchElements(ele, selector.nodes[0], helpers);
+            else if (selector.nodes[0]) return matchElement(ele, selector.nodes[0], helpers);
             break;
     }
 
@@ -101,7 +101,7 @@ export function* getMatchedElements<Element = HTMLElement>(
     helpers: SelectionHelpers<Element>
 ): Generator<Element, Element> {
 
-    if (matchElements<Element>(ele, selector, helpers)) yield ele;
+    if (matchElement<Element>(ele, selector, helpers)) yield ele;
 
     for (const c_ele of helpers.getChildren(ele))
         yield* getMatchedElements<Element>(c_ele, selector, helpers);

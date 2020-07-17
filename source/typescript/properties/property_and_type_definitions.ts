@@ -81,6 +81,14 @@ export const property_definitions = {
 	/* https://www.w3.org/TR/css-display-3/ */
 	display: `[ <display_outside> || <display_inside> ] | <display_listitem> | <display_internal> | <display_box> | <display_legacy>`,
 
+	/* https://drafts.fxtf.org/filter-effects-1/ */
+	filter: `none|<filter_value_list>`,
+	filter_value_list: `[<filter_function>|<url>]+`,
+	filter_function: `<blur()>|<brightness()>|<contrast()>|<drop-shadow()>|<grayscale()>|<hue_rotate()>|<invert()>|<opacity()>|<sepia()>|<saturate()>`,
+
+	/* https://drafts.fxtf.org/filter-effects-2/#BackdropFilterProperty */
+	backdrop_filter: `<filter_value_list>`,
+
 	/* https://www.w3.org/TR/css-box-3 */
 	margin: `[<length>|<percentage>|0|auto]{1,4}`,
 	margin_top: `<length>|<percentage>|0|auto`,
