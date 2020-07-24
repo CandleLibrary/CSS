@@ -239,8 +239,6 @@ class AND extends JUX {
                 break;
         }
 
-        console.log(bool);
-
         return bool;
     }
 }
