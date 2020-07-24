@@ -140,7 +140,7 @@ export const NodeDefinitions = [
     },
     {
         type: CSSTreeNodeType.Media,
-        template_pattern: "@media @1 {1@...\n0}",
+        template_pattern: "@media @1%{1@...\n0}",
 
     },
     {
@@ -184,23 +184,20 @@ export const NodeDefinitions = [
 
     },
     {
-        type: CSSTreeNodeType.ComboSelector,
-        template_pattern: "@combinator?@1",
-
-    },
-    {
         type: CSSTreeNodeType.ComplexSelector,
         template_pattern: "@... ",
 
     },
     {
-        type: CSSTreeNodeType.PseudoSelector,
-        template_pattern: "@1",
+        type: CSSTreeNodeType.CompoundSelector, template_pattern: {
+            default: "@...%",
+            combinator: "@combinator @...%"
+        }
 
     },
     {
-        type: CSSTreeNodeType.CompoundSelector,
-        template_pattern: "@...%",
+        type: CSSTreeNodeType.PseudoSelector,
+        template_pattern: "@1",
 
     },
     {
@@ -215,7 +212,7 @@ export const NodeDefinitions = [
     },
     {
         type: CSSTreeNodeType.QualifiedName,
-        template_pattern: "@val?@1?",
+        template_pattern: { ns: "@ns|@val", default: "@val" },
 
     },
     {
@@ -230,20 +227,28 @@ export const NodeDefinitions = [
     },
     {
         type: CSSTreeNodeType.AttributeSelector,
-        template_pattern: "[@1@sym@id@mod]",
+        template_pattern: {
+            default: "[%@1%]",
+            mod: "[@1 @match_type @match_val @mod]",
+            match_type: "[@1 @match_type @match_val]"
+
+        }
 
     },
     {
         type: CSSTreeNodeType.PseudoClassSelector,
         template_pattern: {
-            default: ":@val(%@1%)",
-            $not_1: ":@val"
+            val: ":@id(@val)",
+            default: ":@id"
         },
 
     },
     {
         type: CSSTreeNodeType.PseudoElementSelector,
-        template_pattern: ":@1",
+        template_pattern: {
+            val: "::@id(@val)",
+            default: "::@id"
+        }
 
     },
     {

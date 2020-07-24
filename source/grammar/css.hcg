@@ -175,7 +175,7 @@
 ##############################################################################################
 
     <> COMPLEX_SELECTOR →  COMPOUND_SELECTOR ( 
-                                                ( COMBINATOR? COMPOUND_SELECTOR ↦r { $$sym1 ? $sym2.combinator = $sym1 : null, $sym2 } )
+                                                ( COMBINATOR? COMPOUND_SELECTOR ↦r { $$sym1 ? $sym2.combinator = $sym1 : "", $sym2 } )
                                                                                     
                                             )(*)  
                                                                                     ↦r { {type:env.typ.ComplexSelector, nodes:[$sym1, ...$sym2], pos } } 
@@ -194,13 +194,13 @@
 
     <> TYPE_SELECTOR →  WQ_NAME                                                     ↦r { {type:env.typ.TypeSelector, nodes:[$sym1], pos } }
         │ NS_PREFIX? \*                                                             
-                                                                                    ↦r { {type:env.typ.MetaSelector, nodes:[$sym1], pos } }
+                                                                                    ↦r { {type:env.typ.TypeSelector, nodes:[{type:env.typ.QualifiedName, ns:$sym1 || "", val:"*", pos }], pos } }
     
     <> NS_PREFIX →  (identifier │ \* )? \| 
-                                                                                    ↦r { {type:env.typ.NamespacePrefix, vals:$sym1, pos } }
+                                                                                    ↦r { $$sym1 }
 
     <> WQ_NAME →  NS_PREFIX? identifier                                             
-                                                                                    ↦r { {type:env.typ.QualifiedName, nodes:[$sym1], val:$sym2, pos } }
+                                                                                    ↦r { {type:env.typ.QualifiedName, ns:$sym1 || "", val:$sym2, pos } }
 
     <> SUBCLASS_SELECTOR →  ID_SELECTOR 
         │ CLASS_SELECTOR 
@@ -212,7 +212,8 @@
     <> CLASS_SELECTOR →  \. (ERR g:ws) identifier                                   ↦r { {type:env.typ.ClassSelector, val:$sym2, pos } } 
 
     <> ATTRIBUTE_SELECTOR →  \[ WQ_NAME \]                                          ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], pos } } 
-        │ \[ WQ_NAME ATTR_MATCHER ( identifier │ θstr ) ATTR_MODIFIER? \]           ↦r { {type:env.typ.AttributeSelector, match_type:$sym3, val:$sym4, mod:$sym5, nodes:[$sym2], pos } } 
+        │ \[ WQ_NAME ATTR_MATCHER ( identifier │ \" declaration_values \" ↦r { "\"" + $sym2 + "\"" }   ) ATTR_MODIFIER? \]           
+                                        ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], match_type:$sym3, match_val:$sym4, mod:$sym5, pos } } 
 
     <> ATTR_MATCHER → ~=                                                
         │ ^=                                                                
@@ -223,11 +224,11 @@
     <> ATTR_MODIFIER →  τi 
         │ τs
 
-    <> PSEUDO_CLASS_SELECTOR →  \: (ERR g:ws) identifier ( \( COMPLEX_SELECTOR  \) ↦r {$sym2} )?        
-                                                                                    ↦r { {type:env.typ.PseudoClassSelector, val:$sym2, nodes:[$sym3], pos } } 
+    <> PSEUDO_CLASS_SELECTOR →  \: (ERR g:ws) identifier ( \(   declaration_values \) ↦r {$sym2} )?        
+                                                                                    ↦r { {type:env.typ.PseudoClassSelector, id:$sym2, val:$sym3, pos } } 
 
     <> PSEUDO_ELEMENT_SELECTOR →  \: (ERR g:ws) PSEUDO_CLASS_SELECTOR               
-                                                                                    ↦r { {type:env.typ.PseudoElementSelector, val:$sym1, pos } } 
+                                                                                    ↦r { $sym2.type = env.typ.PseudoElementSelector, $sym2 } 
 
 ##############################################################################################
 #### Body
