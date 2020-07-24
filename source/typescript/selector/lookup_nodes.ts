@@ -1,4 +1,5 @@
-import { CSSTreeNode, CSSTreeNodeType } from "../nodes/css_tree_node_type.js";
+import { CSSTreeNode, CSSTreeNodeType, CSSRuleNode } from "../nodes/css_tree_node_type.js";
+import { selector } from "../css.js";
 
 export interface SelectionHelpers<Element> {
     hasAttribute: (ele: Element, name: string, value: string, sym: string, modifier: string) => boolean;
@@ -108,6 +109,60 @@ export function* getMatchedElements<Element = HTMLElement>(
 
     return;
 };
+
+export function isSelectorEqual(a: CSSRuleNode, b: CSSRuleNode) {
+    if (b.type == a.type) {
+        switch (b.type) {
+
+            case CSSTreeNodeType.ComplexSelector:
+            case CSSTreeNodeType.CompoundSelector:
+                {
+
+                    if (a.nodes.length == b.nodes.length) {
+                        const selectorsA = a.nodes;
+                        const selectorsB = b.nodes;
+
+                        for (let i = 0; i < selectorsA.length; i++) {
+                            const a_sub = selectorsA[i],
+                                b_sub = selectorsB[i];
+                            if (!isSelectorEqual(a_sub, b_sub)) return false;
+                        }
+
+                        return true;
+                    }
+                }
+                break;
+
+            case CSSTreeNodeType.TypeSelector:
+                return a.ns == b.ns && b.val == a.val;
+
+            case CSSTreeNodeType.AttributeSelector:
+                return a.ns == b.ns && b.val == a.val && a.match_type == b.match_type && b.match_val == a.match_val && b.mod == a.mod;
+
+            case CSSTreeNodeType.ClassSelector:
+            case CSSTreeNodeType.IdSelector:
+                return b.val == a.val;
+
+            case CSSTreeNodeType.PseudoClassSelector:
+            case CSSTreeNodeType.PseudoElementSelector:
+                return a.id == b.id && b.val == a.val;
+        }
+    }
+
+
+    return false;
+}
+
+export function doesRuleHaveMatchingSelector(rule: CSSRuleNode, selector: CSSTreeNode): boolean {
+
+    if (!rule.type || rule.type !== CSSTreeNodeType.Rule)
+        throw new Error("rule argument is not a CSSTreeNodeType.Rule");
+
+    for (const match_selector of rule.selectors) {
+        if (isSelectorEqual(selector, match_selector)) return true;
+    }
+    return false;
+}
 
 export const getMatchedHTMLElements = (ele: HTMLElement, selector) => getMatchedElements<HTMLElement>(ele, selector, DOMHelpers);
 

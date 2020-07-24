@@ -26,7 +26,11 @@ import CSS_Path from "./types/path.js";
 import CSS_FontName from "./types/font_name.js";
 
 import { CSSTreeNodeType, render, CSSTreeNode, CSSRuleNode } from "./nodes/css_tree_node_type.js";
-import { getMatchedElements, SelectionHelpers, matchElement, DOMHelpers } from "./selector/lookup_nodes.js";
+import {
+    getMatchedElements, SelectionHelpers, matchElement, DOMHelpers,
+    isSelectorEqual,
+    doesRuleHaveMatchingSelector
+} from "./selector/lookup_nodes.js";
 import { property } from "./properties/property.js";
 
 const types = {
@@ -65,6 +69,7 @@ const env = <CSSParserEnvironment>{
 };
 
 const parse = function (string_data): CSSTreeNode {
+
     let lex: Lexer = null;
 
     if (typeof string_data == "string")
@@ -168,7 +173,12 @@ export function addPropsToRule(rule: CSSRuleNode, prop_string: string): CSSRuleN
     return rule;
 }
 
+function renderProps(rule: CSSRuleNode) {
+    return Array.from(rule.props.values()).join(";");
+}
+
 export {
+    renderProps,
     parse,
     selector,
     CSS_Length as length,
@@ -187,10 +197,15 @@ export {
     productions,
     terms,
     render,
-    rule
+    rule,
+    isSelectorEqual,
+    doesRuleHaveMatchingSelector
 };
 
 addModuleToCFW({
+    isSelectorEqual,
+    doesRuleHaveMatchingSelector,
+    renderProps,
     getApplicableRules,
     DOMHelpers,
     getMatchedElements,
