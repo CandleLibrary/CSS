@@ -1,5 +1,4 @@
 import wind from "@candlefw/wind";
-import Color from "@candlefw/color";
 
 /*
     BODY {color: black; background: white }
@@ -10,7 +9,86 @@ import Color from "@candlefw/color";
     EM { color: rgb(255,0,0) }      // integer range 0 - 255 //
     EM { color: rgb(100%, 0%, 0%) } // float range 0.0% - 100.0% //
 */
-export default class CSS_Color extends Color {
+export default class CSS_Color extends Float64Array {
+
+    get r(): number { return this[0]; }
+    set r(r: number) { this[0] = r; }
+
+    get g(): number { return this[1]; }
+    set g(g: number) { this[1] = g; }
+
+    get b(): number { return this[2]; }
+    set b(b: number) { this[2] = b; }
+
+    get a(): number { return this[3]; }
+    set a(a: number) { this[3] = a; }
+
+    constructor(r?: number, g?: number, b?: number, a: number = 1) {
+        super(4);
+
+        this.r = 0;
+        this.g = 0;
+        this.b = 0;
+        this.a = 1;
+
+        if (typeof (r) === "number") {
+            this.r = r; //Math.max(Math.min(Math.round(r),255),-255);
+            this.g = g; //Math.max(Math.min(Math.round(g),255),-255);
+            this.b = b; //Math.max(Math.min(Math.round(b),255),-255);
+            this.a = a; //Math.max(Math.min(a,1),-1);
+        } else if (typeof (r) == "string")
+            this.set(CSS_Color._fs_(r) || { r: 255, g: 255, b: 255, a: 0 });
+    }
+
+    set(color: CSS_Color) {
+        this.r = color.r;
+        this.g = color.g;
+        this.b = color.b;
+        this.a = (color.a != undefined) ? color.a : this.a;
+    }
+
+    add(color: CSS_Color): CSS_Color {
+        return new CSS_Color(
+            color.r + this.r,
+            color.g + this.g,
+            color.b + this.b,
+            color.a + this.a
+        );
+    }
+
+    mult(val: number | CSS_Color) {
+        if (typeof (val) == "number") {
+            return new CSS_Color(
+                this.r * val,
+                this.g * val,
+                this.b * val,
+                this.a * val
+            );
+        } else {
+            return new CSS_Color(
+                this.r * val.r,
+                this.g * val.g,
+                this.b * val.b,
+                this.a * val.a
+            );
+        }
+    }
+
+    sub(color: CSS_Color) {
+        return new CSS_Color(
+            this.r - color.r,
+            this.g - color.g,
+            this.b - color.b,
+            this.a - color.a
+        );
+    }
+
+    lerp(to: CSS_Color, t: number) {
+        return this.add(to.sub(this).mult(t));
+    }
+
+    copy(other) { return new CSS_Color(other); }
+
     static parse(l) {
 
         let c = CSS_Color._fs_(l);
@@ -158,14 +236,6 @@ export default class CSS_Color extends Color {
         }
 
         return out;
-    }
-
-    constructor(r, g, b, a) {
-        super(r, g, b, a);
-
-        if (typeof (r) == "string")
-            this.set(CSS_Color._fs_(r) || { r: 255, g: 255, b: 255, a: 0 });
-
     }
 
     toString() {
