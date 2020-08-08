@@ -4,7 +4,7 @@ import { CSSTreeNode } from "../css.js";
 import { Lexer } from "@candlefw/wind";
 /* 	Wraps parseDeclaration with a function that returns a styleprop object or null.
     Uses same args as parseDeclaration */
-export class property {
+export class CSSProperty {
 
 	parent: CSSTreeNode;
 	val: any;
@@ -19,6 +19,7 @@ export class property {
 	IMPORTANT: boolean;
 
 	pos?: Lexer;
+
 
 	constructor(name, original_value, val, IMP, pos) {
 		this.val = val;
@@ -36,6 +37,15 @@ export class property {
 		this.rule = null;
 		observer.destroy(this);
 	}
+	get camelName() {
+		return this.name
+			.split("_")
+			.map(
+				(v, i) => i > 0 ? v[0].toUpperCase() + v.slice(1) : v
+			)
+			.join("");
+	}
+
 	get css_type() {
 		return "styleprop";
 	}
@@ -61,7 +71,12 @@ export class property {
 			this.setValue(...result.prop);
 	}
 	setValue(...values) {
+
+		if (values[0] instanceof CSSProperty)
+			return this.setValue(...values[0].val);
+
 		let i = 0;
+
 		for (const value of values) {
 			const own_val = this.val[i];
 			if (own_val && value instanceof own_val.constructor)
@@ -70,12 +85,26 @@ export class property {
 				this.val[i] = value;
 			i++;
 		}
+
 		this.val.length = values.length;
 		this.ver++;
 		this.updated();
 	}
 
+	copyVal() {
+		if (Array.isArray(this.val)) {
+			return this.val.slice();
+		}
+		else
+			return this.val;
+	}
+
 	copy() {
-		return new property(this.name, this.original_value, this.val, this.IMPORTANT, this.pos);
+		return new CSSProperty(this.name, this.original_value, this.copyVal(), this.IMPORTANT, this.pos);
+	}
+
+	set(prop: CSSProperty) {
+		if (prop.name == this.name)
+			this.val = prop.val.slice();
 	}
 }

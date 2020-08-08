@@ -4,7 +4,7 @@ import {
     property_definitions
 } from "./property_and_type_definitions.js";
 import { getPropertyParser } from "./parser.js";
-import { property } from "./property.js";
+import { CSSProperty } from "./property.js";
 
 /* 
     Parses a string value of a css property. Returns result of parse or null.
@@ -21,7 +21,7 @@ import { property } from "./property.js";
         important : boolean value indicating the presence of "important" value.
 */
 
-observer("updatedCSSStyleProperty", property.prototype);
+observer("updatedCSSStyleProperty", CSSProperty.prototype);
 
 export default function parseDeclaration(sym, a, b, pos) {
 
@@ -48,7 +48,7 @@ export default function parseDeclaration(sym, a, b, pos) {
 
 
     if (prop)
-        return new property(rule_name, body_string, prop, important, pos);
+        return new CSSProperty(rule_name, body_string, prop, important, pos);
 
     return null;
 }

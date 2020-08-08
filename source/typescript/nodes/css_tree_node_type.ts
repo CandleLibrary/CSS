@@ -7,11 +7,13 @@ import {
     FormatRule
 } from "@candlefw/conflagrate";
 import { Lexer } from "@candlefw/wind";
-import { property } from "../properties/property";
+import { CSSProperty } from "../properties/property";
 
 export interface CSSTreeNode {
     type: CSSTreeNodeType,
     nodes?: CSSTreeNode[];
+
+    selectors?: CSSTreeNode[];
 
     pos?: Lexer;
     //Property Values
@@ -19,7 +21,7 @@ export interface CSSTreeNode {
 
 export interface CSSRuleNode extends CSSTreeNode {
     selectors?: CSSTreeNode[];
-    props?: Map<string, property>;
+    props?: Map<string, CSSProperty>;
 }
 
 export enum CSSTreeNodeType {
@@ -62,15 +64,15 @@ export enum CSSTreeNodeType {
     KeyframeSelectors = (293 << 23),
 }
 
-export const NodeDefinitions = [
+export const CSSTreeNodeDefinitions = [
 
     {
         type: CSSTreeNodeType.Stylesheet,
-        template_pattern: "1@...\n0",
+        template_pattern: "^1@...\n^0",
     },
     {
         type: CSSTreeNodeType.Rule,
-        template_pattern: "@_selectors...,%{}",
+        template_pattern: "@_selectors...,{}",
 
     },
     {
@@ -80,12 +82,12 @@ export const NodeDefinitions = [
     },
     {
         type: CSSTreeNodeType.Keyframes,
-        template_pattern: "\@keyframes @name {1%@2%0}",
+        template_pattern: "\@keyframes @name {^1%@2%^0}",
 
     },
     {
         type: CSSTreeNodeType.KeyframeBlock,
-        template_pattern: "@1 1{1@2;0}0",
+        template_pattern: "@1 ^1{^1@2;^0}^0",
 
     },
     {
@@ -140,7 +142,7 @@ export const NodeDefinitions = [
     },
     {
         type: CSSTreeNodeType.Media,
-        template_pattern: "@media @1%{1@...\n0}",
+        template_pattern: "@media @1%{^1@...\n^0}",
 
     },
     {
@@ -259,7 +261,7 @@ export const NodeDefinitions = [
 ];
 
 
-const definitions = CFLbuildRenderers(NodeDefinitions, CSSTreeNodeType);
+const definitions = CFLbuildRenderers(CSSTreeNodeDefinitions, CSSTreeNodeType);
 
 
 export function render(
@@ -268,7 +270,7 @@ export function render(
     format_rules: FormatRule[] = []
 ): string {
     return CFLrenderWithFormatting<CSSTreeNode>(node, definitions, format_rules, (str, name, node): string => {
-        if (node.type == CSSTreeNodeType.Rule)
+        if (node.type == CSSTreeNodeType.Rule && name !== "@full_render")
             return `{${Array.from((<CSSRuleNode>node).props.values()).map(n => n + "").join(";\n")}}`;
         return str;
     });
