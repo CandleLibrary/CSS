@@ -2,27 +2,29 @@ import { CSSTreeNode, CSSTreeNodeType, CSSRuleNode } from "../nodes/css_tree_nod
 import { selector } from "../css.js";
 
 export interface SelectionHelpers<Element> {
-    hasAttribute: (ele: Element, name: string, value: string, sym: string, modifier: string) => boolean;
-    hasType: (ele: Element, type: string) => boolean;
+    hasAttribute: (ele: Element, namespace: string, name: string, value: string, sym: string, modifier: string) => boolean;
+    hasType: (ele: Element, namespace: string, type: string) => boolean;
     hasClass: (ele: Element, class_: string) => boolean;
     hasID: (ele: Element, id: string) => boolean;
-    hasPseudoClass: (ele: Element, id: string) => boolean;
-    hasPseudoElement: (ele: Element, id: string) => boolean;
+    hasPseudoClass: (ele: Element, id: string, val: string) => boolean;
+    hasPseudoElement: (ele: Element, id: string, val: string) => boolean;
     WQmatch: (ele: Element, wq_selector: CSSTreeNode) => string;
     getParent: (ele: Element) => Element;
     getChildren: (ele: Element) => Element[];
+    getIndexFigures: (ele, tag_name) => { tag_index: number, ele_index: number; };
 }
 
 export const DOMHelpers: SelectionHelpers<HTMLElement> = {
-    hasAttribute: (ele, name, value, sym, modifier) => {
+    hasAttribute: (ele, namespace, name, value, sym, modifier) => {
         const attrib = ele.getAttribute(name);
         if (attrib)
             if (value) return value == attrib;
             else return true;
         return false;
     },
-    hasType: (ele, type) => {
-        return ele.tagName == type.toUpperCase();
+    hasType: (ele, namespace, name) => {
+        if (!namespace)
+            return ele.tagName == name.toUpperCase();
     },
     hasClass: (ele, class_) => {
         return ele.classList.contains(class_);
@@ -30,51 +32,88 @@ export const DOMHelpers: SelectionHelpers<HTMLElement> = {
     hasID: (ele, id) => {
         return ele.id == id;
     },
-    hasPseudoClass: (ele, id) => {
+    hasPseudoClass: (ele, id, val) => {
         return ele.id == id;
     },
-    hasPseudoElement: (ele, id) => {
+    hasPseudoElement: (ele, id, val) => {
         return ele.id == id;
     },
+
     WQmatch: (ele, wq_selector) => wq_selector.val,
 
     getParent(ele) {
         return ele.parentElement;
     },
 
+    getIndexFigures(ele, tag_name): { tag_index: number, ele_index: number; } {
+        const par = this.get(parent);
+
+        let tag_index = 0;
+        let ele_index = 0;
+
+        for (const child of par.children) {
+            if (child == ele) break;
+            if (child.tagName == tag_name.toUpperCase) tag_index++;
+            ele_index++;
+        }
+
+        return {
+            tag_index,
+            ele_index
+        };
+    }
+
     getChildren(ele) {
         return <HTMLElement[]>Array.from(ele.children);
     }
 };
 
-export function matchElement<Element>(ele, selector: CSSTreeNode, helpers: SelectionHelpers<Element>): boolean {
+export function matchElement<Element>(ele, selector: CSSTreeNode, helpers: SelectionHelpers<Element>, meta?: any): boolean {
+
+
 
     switch (selector.type) {
 
         case CSSTreeNodeType.ComplexSelector: //Complex
             {
                 const selectors = selector.nodes.slice().reverse();
-                for (const selector of selectors)
-                    if (!matchElement(ele, selector, helpers)) return false;
+                for (let i = 0; i < selectors.length;) {
+                    const sel = selectors[i];
+
+                    if (!matchElement(ele, sel, helpers)) {
+                        if (!helpers.getParent(ele) || i == 0)
+                            return false;
+                    } else
+                        i++;
+
+                    ele = helpers.getParent(ele);
+
+                    if (!ele) return false;
+
+                }
             }
             break;
 
         case CSSTreeNodeType.CompoundSelector:
-            {
-                const selectors = selector.nodes.slice().reverse();
-                for (const selector of selectors)
-                    if (!matchElement(ele, selector, helpers)) return false;
-            }
+            for (const sel of selector.nodes)
+                if (!matchElement(ele, sel, helpers)) return false;
             break;
 
-        case CSSTreeNodeType.TypeSelector:
-            return helpers.hasType(ele, helpers.WQmatch(ele, selector.nodes[0]));
+        case CSSTreeNodeType.TypeSelector: {
+            const { ns, val } = selector.nodes[0];
+            //const { tag_index, ele_index } = helpers.getIndexFigures(ele, val);
+            //meta.tag_index = tag_index;
+            //meta.ele_index = val;
+            return helpers.hasType(ele, ns, val);
+        }
 
         case CSSTreeNodeType.MetaSelector:
             return true;
 
-        case CSSTreeNodeType.AttributeSelector:
-            return helpers.hasAttribute(ele, helpers.WQmatch(ele, selector.nodes[0]), selector.val, selector.match_type, selector.mod);
+        case CSSTreeNodeType.AttributeSelector: {
+            const { ns, val } = selector.nodes[0];
+            return helpers.hasAttribute(ele, ns, val, selector.match_type, selector.match_val, selector.mod);
+        }
 
         case CSSTreeNodeType.ClassSelector:
             return helpers.hasClass(ele, selector.val);
@@ -83,32 +122,18 @@ export function matchElement<Element>(ele, selector: CSSTreeNode, helpers: Selec
             return helpers.hasID(ele, selector.val);
 
         case CSSTreeNodeType.PseudoClassSelector:
-            if (!helpers.hasPseudoClass(ele, selector.val)) return false;
+            if (!helpers.hasPseudoClass(ele, selector.id, selector.val)) return false;
             else if (selector.nodes[0]) return matchElement(ele, selector.nodes[0], helpers);
             break;
 
         case CSSTreeNodeType.PseudoElementSelector:
-            if (!helpers.hasPseudoElement(ele, selector.val)) return false;
+            if (!helpers.hasPseudoElement(ele, selector.id, selector.val)) return false;
             else if (selector.nodes[0]) return matchElement(ele, selector.nodes[0], helpers);
             break;
     }
 
     return true;
 }
-
-export function* getMatchedElements<Element = HTMLElement>(
-    ele: Element,
-    selector: CSSTreeNode,
-    helpers: SelectionHelpers<Element>
-): Generator<Element, Element> {
-
-    if (matchElement<Element>(ele, selector, helpers)) yield ele;
-
-    for (const c_ele of helpers.getChildren(ele))
-        yield* getMatchedElements<Element>(c_ele, selector, helpers);
-
-    return;
-};
 
 export function isSelectorEqual(a: CSSRuleNode, b: CSSRuleNode) {
     if (b.type == a.type) {
@@ -153,6 +178,55 @@ export function isSelectorEqual(a: CSSRuleNode, b: CSSRuleNode) {
     return false;
 }
 
+function matchAnySelector<Element>(ele: Element, helpers: SelectionHelpers<Element>, ...selectors: CSSTreeNode[]): boolean {
+    for (const selector of selectors)
+        if (matchElement<Element>(ele, selector, helpers))
+            return true;
+    return false;
+}
+
+export function* getMatchedElements<Element = HTMLElement>(
+    ele: Element,
+    node: CSSTreeNode,
+    helpers: SelectionHelpers<Element> = DOMHelpers
+): Generator<Element, Element> {
+
+    let selectors = null;
+
+    if (node.type == CSSTreeNodeType.Rule) {
+        selectors = node.selectors;
+    } else if (node.type == CSSTreeNodeType.Stylesheet) {
+        selectors = node.nodes
+            .filter(n => n.type == CSSTreeNodeType.Rule)
+            .flatMap(r => r.selectors);
+    } else selectors = [node];
+
+    if (matchAnySelector<Element>(ele, helpers, ...selectors)) yield ele;
+
+    for (const c_ele of helpers.getChildren(ele))
+        yield* getMatchedElements<Element>(c_ele, node, helpers);
+
+    return;
+};
+
+export function getMatchedSelectors<Element>(rule: CSSRuleNode, ele: Element, helpers: SelectionHelpers<Element> = DOMHelpers): CSSTreeNode[] {
+
+    const matches = [];
+
+    if (!rule.type || rule.type !== CSSTreeNodeType.Rule)
+        throw new Error("rule argument is not a CSSTreeNodeType.Rule");
+
+    for (const match_selector of rule.selectors) {
+        if (matchElement<Element>(ele, match_selector, helpers)) matches.push(match_selector);
+    }
+
+    return matches;
+}
+
+export function getFirstMatchedSelector<Element>(rule: CSSRuleNode, ele: Element, helpers: SelectionHelpers<Element>) {
+    return getMatchedSelectors(rule, ele, helpers)[0];
+}
+
 export function doesRuleHaveMatchingSelector(rule: CSSRuleNode, selector: CSSTreeNode): boolean {
 
     if (!rule.type || rule.type !== CSSTreeNodeType.Rule)
@@ -162,6 +236,20 @@ export function doesRuleHaveMatchingSelector(rule: CSSRuleNode, selector: CSSTre
         if (isSelectorEqual(selector, match_selector)) return true;
     }
     return false;
+}
+
+export function getLastRuleWithMatchingSelector(stylesheet: CSSTreeNode, selector: CSSTreeNode, helpers: SelectionHelpers<any> = DOMHelpers): CSSRuleNode {
+    if (stylesheet.type != CSSTreeNodeType.Stylesheet) return null;
+
+    for (const node of stylesheet.nodes.reverse()) {
+        if (node.type == CSSTreeNodeType.Rule) {
+            if (doesRuleHaveMatchingSelector(node, selector)) return node;
+        } else if (node.type == CSSTreeNodeType.Media) {
+
+        }
+    }
+
+    return null;
 }
 
 export const getMatchedHTMLElements = (ele: HTMLElement, selector) => getMatchedElements<HTMLElement>(ele, selector, DOMHelpers);
