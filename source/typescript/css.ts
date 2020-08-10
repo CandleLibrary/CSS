@@ -25,13 +25,18 @@ import CSS_Transform2D from "./types/transform.js";
 import CSS_Path from "./types/path.js";
 import CSS_FontName from "./types/font_name.js";
 
-import { CSSTreeNodeType, render, CSSTreeNode, CSSRuleNode } from "./nodes/css_tree_node_type.js";
+import { CSSTreeNodeType, render, CSSTreeNode, CSSRuleNode, CSSTreeNodeDefinitions } from "./nodes/css_tree_node_type.js";
+
 import {
     getMatchedElements, SelectionHelpers, matchElement, DOMHelpers,
     isSelectorEqual,
-    doesRuleHaveMatchingSelector
+    doesRuleHaveMatchingSelector,
+    getFirstMatchedSelector,
+    getMatchedSelectors,
+    getLastRuleWithMatchingSelector
 } from "./selector/lookup_nodes.js";
-import { property } from "./properties/property.js";
+
+import { CSSProperty } from "./properties/property.js";
 
 const types = {
     color: CSS_Color,
@@ -89,9 +94,14 @@ const parse = function (string_data): CSSTreeNode {
     return parse_result.value;
 };
 
-const properties = function (props): Map<string, property> {
+const properties = function (props): Map<string, CSSProperty> {
     const css = parse(`*{${props}}`);
     return (<CSSRuleNode>css.nodes[0]).props;
+};
+
+const property = function (prop): CSSProperty {
+    const css = parse(`*{${prop}}`);
+    return [...(<CSSRuleNode>css.nodes[0]).props.values()][0];
 };
 
 const selector = function (selector): CSSTreeNode {
@@ -112,6 +122,29 @@ const newRule = function (): CSSRuleNode {
         pos: null,
     };
 };
+
+function removeRule(stylesheet: CSSTreeNode, rule: CSSRuleNode) {
+
+    for (let i = 0; i < stylesheet.nodes.length; i++) {
+
+        const node = stylesheet.nodes[i];
+
+        if (node.type == CSSTreeNodeType.Rule) {
+            if (rule == node) {
+                stylesheet.nodes.splice(i, 1);
+                return true;
+            }
+        }
+
+        if (node.type == CSSTreeNodeType.Media && removeRule(node, rule))
+            return true;
+
+        if (node.type == CSSTreeNodeType.Keyframes && removeRule(node, rule))
+            return true;
+    }
+
+    return false;
+}
 
 export function matchAll<Element>(selector_string, ele, helpers: SelectionHelpers<Element>): Element[] {
     const selector_node = selector(selector_string);
@@ -135,7 +168,7 @@ export function getApplicableRules(ele, css, helpers = DOMHelpers): CSSRuleNode[
 }
 
 /**
- * Merges properties and selectors from an array of rules into  a single,
+ * Merges properties and selectors from an array of rules into  a single,propert
  * monolithic rule. Property collisions are resolved in a first-come::only-set
  * basis, unless **!important** has been set on a following property.
  * 
@@ -155,7 +188,7 @@ export function mergeRulesIntoOne(...rules: CSSRuleNode[]): CSSRuleNode {
     for (const rule of rules) {
         for (const prop of rule.props.values())
             if (!new_rule.props.has(prop.name) || prop.IMPORTANT)
-                new_rule.props.set(prop.name, prop);
+                new_rule.props.set(prop.name, prop); 
 
         new_rule.selectors.push(...(rule.selectors || []));
     }
@@ -178,6 +211,9 @@ function renderProps(rule: CSSRuleNode) {
 }
 
 export {
+    removeRule,
+    property,
+    CSSProperty,
     renderProps,
     parse,
     selector,
@@ -186,8 +222,10 @@ export {
     CSS_Percentage as percentage,
     CSS_URL,
     CSS_URL as url,
+    CSSTreeNodeDefinitions,
     CSSTreeNodeType,
     CSSTreeNode,
+    CSSRuleNode,
     SelectionHelpers,
     parseDeclaration,
     types,
@@ -199,10 +237,15 @@ export {
     render,
     rule,
     isSelectorEqual,
-    doesRuleHaveMatchingSelector
+    doesRuleHaveMatchingSelector,
+    getLastRuleWithMatchingSelector
 };
 
 addModuleToCFW({
+    removeRule,
+    getMatchedSelectors,
+    getFirstMatchedSelector,
+    getLastRuleWithMatchingSelector,
     isSelectorEqual,
     doesRuleHaveMatchingSelector,
     renderProps,
@@ -214,6 +257,7 @@ addModuleToCFW({
     selector,
     CSS_URL,
     CSSTreeNodeType,
+    CSSTreeNodeDefinitions,
     parseDeclaration,
     types,
     property_definitions,
@@ -225,6 +269,7 @@ addModuleToCFW({
     render,
     rule,
     properties,
+    property,
     addPropsToRule,
     mergeRulesIntoOne,
     newRule
