@@ -59,7 +59,7 @@
 
             supports_condition                                                      ↦r { { type:env.typ.SupportConditions, nodes:$$sym1, pos } }
         
-        ) { GROUP_RULE_BODY }               
+        ) { GROUP_RULE_BODY? }               
                                                                                     ↦r { { type:env.typ.Supports, nodes:[$sym1, $$sym3], pos } }
 
     <> supports_condition → τnot supports_in_parens                                 ↦r { [{ type:env.typ.Not, nodes:[$sym2], pos }] }
@@ -178,14 +178,25 @@
                                                 ( COMBINATOR? COMPOUND_SELECTOR ↦r { $$sym1 ? $sym2.combinator = $sym1 : "", $sym2 } )
                                                                                     
                                             )(*)  
-                                                                                    ↦r { {type:env.typ.ComplexSelector, nodes:[$sym1, ...$sym2], pos } } 
+                                                                                    ↦r { 
+                                                                                        ($$sym1 && $$sym2) ?
+                                                                                        {type:env.typ.ComplexSelector, nodes:[$sym1, ...$sym2], pos } 
+                                                                                        : $sym1
+                                                                                    } 
     
 
     <> COMPOUND_SELECTOR → (RED g:ws)  TYPE_SELECTOR? SUBCLASS_SELECTOR(*) ( 
                                                                                 PSEUDO_ELEMENT_SELECTOR PSEUDO_CLASS_SELECTOR(*) 
                                                                                     ↦r { {type:env.typ.PseudoSelector, nodes:[$sym1, ...$sym2], pos } } 
                                                                             )(*) 
-                                                                                    ↦r { {type:env.typ.CompoundSelector, nodes:[$sym1, ...$sym2, ...$sym3], pos } } 
+                                                                                    ↦r { 
+                                                                                            ( $$sym1 && !($$sym2 || $$sym3 )) 
+                                                                                            ? $$sym1 
+                                                                                            : 
+                                                                                                ( $$sym2 && $$sym2.length == 1 && !($$sym1 || $$sym3 ))
+                                                                                                ? $$sym2[0]
+                                                                                                :  { type:env.typ.CompoundSelector, nodes:[$sym1, ...$sym2, ...$sym3], pos }
+                                                                                    } 
 
     <> COMBINATOR →  >                  
         │ +     
