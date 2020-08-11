@@ -1,5 +1,4 @@
 import { CSSTreeNode, CSSTreeNodeType, CSSRuleNode } from "../nodes/css_tree_node_type.js";
-import { selector } from "../css.js";
 
 export interface SelectionHelpers<Element> {
     hasAttribute: (ele: Element, namespace: string, name: string, value: string, sym: string, modifier: string) => boolean;
