@@ -35,8 +35,9 @@ import {
     justify-content:space-around;
     font-family:Arial  , "Times new Roman"
 }`;
-
+    console.log(stylesheet);
     const s = stylesheet.toString();
+    "Expect parser-render to match source string"; "#";
     ((s == result));
 }
 

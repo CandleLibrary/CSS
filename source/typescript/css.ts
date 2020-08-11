@@ -1,10 +1,4 @@
 import { addModuleToCFW } from "@candlefw/candle";
-import { Lexer } from "@candlefw/wind";
-
-import { lrParse, ParserData, ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.js";
-
-import parser_data from "./parser/css.js";
-
 import { property_definitions, media_feature_definitions } from "./properties/property_and_type_definitions.js";
 import { getPropertyParser } from "./properties/parser.js";
 import * as productions from "./properties/productions.js";
@@ -25,7 +19,9 @@ import CSS_Transform2D from "./types/transform.js";
 import CSS_Path from "./types/path.js";
 import CSS_FontName from "./types/font_name.js";
 
-import { CSSTreeNodeType, render, CSSTreeNode, CSSRuleNode, CSSTreeNodeDefinitions } from "./nodes/css_tree_node_type.js";
+import { CSSProperty } from "./properties/property.js";
+import { CSSNodeType } from "./types/node_type.js";
+import { CSSNode, CSSRuleNode } from "./types/node";
 
 import {
     getMatchedElements, SelectionHelpers, matchElement, DOMHelpers,
@@ -36,7 +32,9 @@ import {
     getLastRuleWithMatchingSelector
 } from "./selector/lookup_nodes.js";
 
-import { CSSProperty } from "./properties/property.js";
+import { selector, properties, parse, property, rule } from "./parser/parse.js";
+import { CSSNodeTypeLU } from "./types/node_type_lu.js";
+export * from "./parser/parse.js";
 
 const types = {
     color: CSS_Color,
@@ -61,85 +59,32 @@ const types = {
     fontname: CSS_FontName
 };
 
-type CSSParserEnvironment = ParserEnvironment & {};
-
-const env = <CSSParserEnvironment>{
-    typ: CSSTreeNodeType,
-    functions: {
-        parseDeclaration,
-        url: CSS_URL,
-        percentage: CSS_Percentage,
-        length: CSS_Length
-    }
-};
-
-const parse = function (string_data): CSSTreeNode {
-
-    let lex: Lexer = null;
-
-    if (typeof string_data == "string")
-        lex = new Lexer(string_data);
-    else
-        lex = string_data;
-
-    const parse_result = lrParse<CSSTreeNode>(lex, <ParserData>parser_data, env);
-
-    if (parse_result.error)
-        throw new SyntaxError(parse_result.error);
-
-    const node = parse_result.value;
-
-    node.toString = () => render(node);
-
-    return parse_result.value;
-};
-
-const properties = function (props): Map<string, CSSProperty> {
-    const css = parse(`*{${props}}`);
-    return (<CSSRuleNode>css.nodes[0]).props;
-};
-
-const property = function (prop): CSSProperty {
-    const css = parse(`*{${prop}}`);
-    return [...(<CSSRuleNode>css.nodes[0]).props.values()][0];
-};
-
-const selector = function (selector): CSSTreeNode {
-    const css = parse(`${selector}{top:0}`);
-    return (<CSSRuleNode>css.nodes[0]).selectors[0];
-};
-
-const rule = function (rule: string = "*{display:block}"): CSSTreeNode {
-    const css = parse(rule);
-    return css.nodes[0];
-};
-
 const newRule = function (): CSSRuleNode {
     return <CSSRuleNode>{
         selectors: [],
         props: new Map,
-        type: CSSTreeNodeType.Rule,
+        type: CSSNodeType.Rule,
         pos: null,
     };
 };
 
-function removeRule(stylesheet: CSSTreeNode, rule: CSSRuleNode) {
+function removeRule(stylesheet: CSSNode, rule: CSSRuleNode) {
 
     for (let i = 0; i < stylesheet.nodes.length; i++) {
 
         const node = stylesheet.nodes[i];
 
-        if (node.type == CSSTreeNodeType.Rule) {
+        if (node.type == CSSNodeType.Rule) {
             if (rule == node) {
                 stylesheet.nodes.splice(i, 1);
                 return true;
             }
         }
 
-        if (node.type == CSSTreeNodeType.Media && removeRule(node, rule))
+        if (node.type == CSSNodeType.Media && removeRule(node, rule))
             return true;
 
-        if (node.type == CSSTreeNodeType.Keyframes && removeRule(node, rule))
+        if (node.type == CSSNodeType.Keyframes && removeRule(node, rule))
             return true;
     }
 
@@ -154,8 +99,8 @@ export function matchAll<Element>(selector_string, ele, helpers: SelectionHelper
 export function getApplicableRules(ele, css, helpers = DOMHelpers): CSSRuleNode[] {
     const rules = [];
 
-    if (css.type == CSSTreeNodeType.Stylesheet) {
-        for (const rule of css.nodes.filter(r => r.type == CSSTreeNodeType.Rule)) {
+    if (css.type == CSSNodeType.Stylesheet) {
+        for (const rule of css.nodes.filter(r => r.type == CSSNodeType.Rule)) {
             for (const selector of rule.selectors) {
                 if (matchElement(ele, selector, helpers)) {
                     rules.push(rule);
@@ -180,7 +125,7 @@ export function getApplicableRules(ele, css, helpers = DOMHelpers): CSSRuleNode[
 export function mergeRulesIntoOne(...rules: CSSRuleNode[]): CSSRuleNode {
 
     const new_rule = <CSSRuleNode>{
-        type: CSSTreeNodeType.Rule,
+        type: CSSNodeType.Rule,
         props: new Map(),
         selectors: []
     };
@@ -188,7 +133,7 @@ export function mergeRulesIntoOne(...rules: CSSRuleNode[]): CSSRuleNode {
     for (const rule of rules) {
         for (const prop of rule.props.values())
             if (!new_rule.props.has(prop.name) || prop.IMPORTANT)
-                new_rule.props.set(prop.name, prop); 
+                new_rule.props.set(prop.name, prop);
 
         new_rule.selectors.push(...(rule.selectors || []));
     }
@@ -210,38 +155,41 @@ function renderProps(rule: CSSRuleNode) {
     return Array.from(rule.props.values()).join(";");
 }
 
+export * from "./render/render.js";
+export * from "./render/rules.js";
+
 export {
-    removeRule,
-    property,
+    //object types
     CSSProperty,
-    renderProps,
-    parse,
-    selector,
     CSS_Length as length,
     CSS_Length,
     CSS_Percentage as percentage,
     CSS_URL,
     CSS_URL as url,
-    CSSTreeNodeDefinitions,
-    CSSTreeNodeType,
-    CSSTreeNode,
-    CSSRuleNode,
-    SelectionHelpers,
-    parseDeclaration,
     types,
+    terms,
+    productions,
     property_definitions,
     media_feature_definitions,
+    SelectionHelpers,
+    CSSNodeTypeLU,
+
+    //pure types
+    CSSNodeType,
+    CSSNode,
+    CSSRuleNode,
+
+    //functions
+    removeRule,
+    renderProps,
+    parseDeclaration,
     getPropertyParser,
-    productions,
-    terms,
-    render,
-    rule,
     isSelectorEqual,
     doesRuleHaveMatchingSelector,
     getLastRuleWithMatchingSelector
 };
 
-addModuleToCFW({
+addModuleToCFW(Object.assign({
     removeRule,
     getMatchedSelectors,
     getFirstMatchedSelector,
@@ -256,8 +204,7 @@ addModuleToCFW({
     parse,
     selector,
     CSS_URL,
-    CSSTreeNodeType,
-    CSSTreeNodeDefinitions,
+    CSSNodeType: CSSNodeTypeLU,
     parseDeclaration,
     types,
     property_definitions,
@@ -266,11 +213,10 @@ addModuleToCFW({
     productions,
     terms,
     matchAll,
-    render,
     rule,
     properties,
     property,
     addPropsToRule,
     mergeRulesIntoOne,
     newRule
-}, "css");
+}), "css");
