@@ -1,9 +1,10 @@
 import { addModuleToCFW } from "@candlefw/candle";
 import { property_definitions, media_feature_definitions } from "./properties/property_and_type_definitions.js";
 import { getPropertyParser } from "./properties/parser.js";
+import parseDeclaration from "./properties/parse_declaration.js";
+
 import * as productions from "./properties/productions.js";
 import * as terms from "./properties/terms.js";
-import parseDeclaration from "./properties/parse_declaration.js";
 
 import CSS_Length from "./types/length.js";
 import CSS_URL from "./types/url.js";
@@ -24,12 +25,17 @@ import { CSSNodeType } from "./types/node_type.js";
 import { CSSNode, CSSRuleNode } from "./types/node";
 
 import {
-    getMatchedElements, SelectionHelpers, matchElement, DOMHelpers,
+    getMatchedElements,
+    SelectionHelpers,
+    matchElement,
+    DOMHelpers,
     isSelectorEqual,
     doesRuleHaveMatchingSelector,
     getFirstMatchedSelector,
     getMatchedSelectors,
-    getLastRuleWithMatchingSelector
+    getLastRuleWithMatchingSelector,
+    getMatchedRules,
+    matchAnySelector
 } from "./selector/lookup_nodes.js";
 
 import { selector, properties, parse, property, rule } from "./parser/parse.js";
@@ -96,22 +102,6 @@ export function matchAll<Element>(selector_string, ele, helpers: SelectionHelper
     return [...getMatchedElements<Element>(ele, selector_node, helpers)];
 };
 
-export function getApplicableRules(ele, css, helpers = DOMHelpers): CSSRuleNode[] {
-    const rules = [];
-
-    if (css.type == CSSNodeType.Stylesheet) {
-        for (const rule of css.nodes.filter(r => r.type == CSSNodeType.Rule)) {
-            for (const selector of rule.selectors) {
-                if (matchElement(ele, selector, helpers)) {
-                    rules.push(rule);
-                    break;
-                }
-            }
-        }
-    }
-    return rules;
-}
-
 /**
  * Merges properties and selectors from an array of rules into  a single,propert
  * monolithic rule. Property collisions are resolved in a first-come::only-set
@@ -157,6 +147,7 @@ function renderProps(rule: CSSRuleNode) {
 
 export * from "./render/render.js";
 export * from "./render/rules.js";
+export * from "./selector/lookup_nodes.js";
 
 export {
     //object types
@@ -171,7 +162,6 @@ export {
     productions,
     property_definitions,
     media_feature_definitions,
-    SelectionHelpers,
     CSSNodeTypeLU,
 
     //pure types
@@ -190,33 +180,42 @@ export {
 };
 
 addModuleToCFW(Object.assign({
+    //types
+    CSSNodeType: CSSNodeTypeLU,
+    CSS_URL,
+
+    //parsers
+    parse,
+    selector,
+    rule,
+    property,
+
+    //Properties
+    getPropertyParser,
+    media_feature_definitions,
+    terms,
+    parseDeclaration,
+    productions,
+    property_definitions,
+    properties,
+
+    //Rule Helpers
+    addPropsToRule,
+    mergeRulesIntoOne,
+    newRule,
     removeRule,
+    renderProps,
+
+    //Selector helpers
+    matchAll,
     getMatchedSelectors,
     getFirstMatchedSelector,
     getLastRuleWithMatchingSelector,
     isSelectorEqual,
     doesRuleHaveMatchingSelector,
-    renderProps,
-    getApplicableRules,
+    getMatchedRules,
     DOMHelpers,
     getMatchedElements,
     matchElements: matchElement,
-    parse,
-    selector,
-    CSS_URL,
-    CSSNodeType: CSSNodeTypeLU,
-    parseDeclaration,
-    types,
-    property_definitions,
-    media_feature_definitions,
-    getPropertyParser,
-    productions,
-    terms,
-    matchAll,
-    rule,
-    properties,
-    property,
-    addPropsToRule,
-    mergeRulesIntoOne,
-    newRule
-}), "css");
+    matchAnySelector: matchAnySelector,
+}, types), "css");

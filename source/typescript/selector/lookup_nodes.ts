@@ -252,5 +252,23 @@ export function getLastRuleWithMatchingSelector(stylesheet: CSSNode, selector: C
     return null;
 }
 
+export function getMatchedRules(ele, css, helpers = DOMHelpers): CSSRuleNode[] {
+    const rules = [];
+
+    if (css.type == CSSNodeType.Stylesheet) {
+        for (const rule of css.nodes.filter(r => r.type == CSSNodeType.Rule)) {
+            for (const selector of rule.selectors) {
+                if (matchElement(ele, selector, helpers)) {
+                    rules.push(rule);
+                    break;
+                }
+            }
+        }
+    }
+    return rules;
+}
+
+
+
 export const getMatchedHTMLElements = (ele: HTMLElement, selector) => getMatchedElements<HTMLElement>(ele, selector, DOMHelpers);
 
