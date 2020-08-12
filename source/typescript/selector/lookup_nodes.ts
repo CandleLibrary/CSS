@@ -61,7 +61,7 @@ export const DOMHelpers: SelectionHelpers<HTMLElement> = {
             tag_index,
             ele_index
         };
-    }
+    },
 
     getChildren(ele) {
         return <HTMLElement[]>Array.from(ele.children);
@@ -178,7 +178,7 @@ export function isSelectorEqual(a: CSSRuleNode, b: CSSRuleNode) {
     return false;
 }
 
-function matchAnySelector<Element>(ele: Element, helpers: SelectionHelpers<Element>, ...selectors: CSSNode[]): boolean {
+export function matchAnySelector<Element>(ele: Element, helpers: SelectionHelpers<any> = DOMHelpers, ...selectors: CSSNode[]): boolean {
     for (const selector of selectors)
         if (matchElement<Element>(ele, selector, helpers))
             return true;
@@ -188,7 +188,7 @@ function matchAnySelector<Element>(ele: Element, helpers: SelectionHelpers<Eleme
 export function* getMatchedElements<Element = HTMLElement>(
     ele: Element,
     node: CSSNode,
-    helpers: SelectionHelpers<Element> = DOMHelpers
+    helpers: SelectionHelpers<any> = DOMHelpers
 ): Generator<Element, Element> {
 
     let selectors = null;
@@ -209,7 +209,7 @@ export function* getMatchedElements<Element = HTMLElement>(
     return;
 };
 
-export function getMatchedSelectors<Element>(rule: CSSRuleNode, ele: Element, helpers: SelectionHelpers<Element> = DOMHelpers): CSSNode[] {
+export function getMatchedSelectors<Element>(rule: CSSRuleNode, ele: Element, helpers: SelectionHelpers<any> = DOMHelpers): CSSNode[] {
 
     const matches = [];
 
@@ -223,7 +223,7 @@ export function getMatchedSelectors<Element>(rule: CSSRuleNode, ele: Element, he
     return matches;
 }
 
-export function getFirstMatchedSelector<Element>(rule: CSSRuleNode, ele: Element, helpers: SelectionHelpers<Element>) {
+export function getFirstMatchedSelector<Element>(rule: CSSRuleNode, ele: Element, helpers: SelectionHelpers<any> = DOMHelpers) {
     return getMatchedSelectors(rule, ele, helpers)[0];
 }
 
