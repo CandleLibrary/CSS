@@ -42,28 +42,7 @@ import { selector, properties, parse, property, rule } from "./parser/parse.js";
 import { CSSNodeTypeLU } from "./types/node_type_lu.js";
 export * from "./parser/parse.js";
 
-const types = {
-    color: CSS_Color,
-    length: CSS_Length,
-    time: CSS_Length,
-    flex: CSS_Length,
-    angle: CSS_Length,
-    frequency: CSS_Length,
-    resolution: CSS_Length,
-    percentage: CSS_Percentage,
-    url: CSS_URL,
-    uri: CSS_URL,
-    number: CSS_Number,
-    id: CSS_Id,
-    string: CSS_String,
-    shape: CSS_Shape,
-    cubic_bezier: CSS_Bezier,
-    integer: CSS_Number,
-    gradient: CSS_Gradient,
-    transform2D: CSS_Transform2D,
-    path: CSS_Path,
-    fontname: CSS_FontName
-};
+
 
 const newRule = function (): CSSRuleNode {
     return <CSSRuleNode>{
@@ -153,11 +132,20 @@ export {
     //object types
     CSSProperty,
     CSS_Length as length,
-    CSS_Length,
     CSS_Percentage as percentage,
     CSS_URL,
     CSS_URL as url,
-    types,
+    CSS_Color,
+    CSS_Length,
+    CSS_Percentage,
+    CSS_Id,
+    CSS_String,
+    CSS_Shape,
+    CSS_Bezier,
+    CSS_Gradient,
+    CSS_Path,
+    CSS_FontName,
+    CSS_Transform2D,
     terms,
     productions,
     property_definitions,
@@ -218,4 +206,18 @@ addModuleToCFW(Object.assign({
     getMatchedElements,
     matchElements: matchElement,
     matchAnySelector: matchAnySelector,
-}, types), "css");
+}, {
+    CSS_Color,
+    CSS_Length,
+    CSS_Percentage,
+    CSS_URL,
+    CSS_Number,
+    CSS_Id,
+    CSS_String,
+    CSS_Shape,
+    CSS_Bezier,
+    CSS_Gradient,
+    CSS_Transform2D,
+    CSS_Path,
+    CSS_FontName
+}), "css");
