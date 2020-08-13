@@ -36,7 +36,7 @@ import {
     getLastRuleWithMatchingSelector,
     getMatchedRules,
     matchAnySelector
-} from "./selector/lookup_nodes.js";
+} from "./selector/utilities.js";
 
 import { selector, properties, parse, property, rule } from "./parser/parse.js";
 import { CSSNodeTypeLU } from "./types/node_type_lu.js";
@@ -126,7 +126,7 @@ function renderProps(rule: CSSRuleNode) {
 
 export * from "./render/render.js";
 export * from "./render/rules.js";
-export * from "./selector/lookup_nodes.js";
+export * from "./selector/utilities.js";
 
 export {
     //object types
