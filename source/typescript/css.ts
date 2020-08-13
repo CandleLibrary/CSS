@@ -145,6 +145,7 @@ export {
     CSS_Gradient,
     CSS_Path,
     CSS_FontName,
+    CSS_Number,
     CSS_Transform2D,
     terms,
     productions,
