@@ -33,7 +33,7 @@ export function renderWithFormatting(
     //format rules
     fr: FormatRule[] = format_rules.format_rules
 ) {
-    return CFLrenderWithFormatting<Node>(node, renderers, fr);
+    return CFLrenderWithFormatting<Node>(node, renderers, fr, FormatFunction);
 }
 
 export function renderWithSourceMap(

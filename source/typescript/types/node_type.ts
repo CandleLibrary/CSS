@@ -37,5 +37,6 @@ export const enum CSSNodeType {
     PseudoClassSelector = (290 << 23),
     PseudoElementSelector = (291 << 23),
     KeyframeSelectors = (293 << 23),
+    Combinator = (294 << 23),
 }
 

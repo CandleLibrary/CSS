@@ -135,13 +135,13 @@
     <> mf_plain → mf_name  \: mf_value                                              ↦r { {type:env.typ.MediaValue, key:$sym1, val:$sym3, pos } }   
 
     <> mf_range → mf_name ( < │ <= │ > │ >= │ = ) mf_value                          
-                                                                                    ↦r { {type:env.typ.MediaEquality, sym:$sym1, left:$sym1, right:$sym3, pos } }  
+                                                                                    ↦r { {type:env.typ.MediaEquality, sym:$sym2, left:$sym1, right:$sym3, pos } }  
         │ mf_value ( < │ <= │ > │ >= │ = ) mf_name                                  
-                                                                                    ↦r { {type:env.typ.MediaEquality, sym:$sym1, left:$sym1, right:$sym3, pos } }  
+                                                                                    ↦r { {type:env.typ.MediaEquality, sym:$sym2, left:$sym1, right:$sym3, pos } }  
         │ mf_value ( > │ >= ) identifier ( > │ >= ) mf_value                        
-                                                                                    ↦r { {type:env.typ.MediaRangeDescending, sym:$sym1, max:$sym1, id:$sym3, min:$sym5, pos } } 
+                                                                                    ↦r { {type:env.typ.MediaRangeDescending, sym:$sym2, max:$sym1, id:$sym3, min:$sym5, pos } } 
         │ mf_value ( < │ <= ) identifier ( < │ <= ) mf_value                        
-                                                                                    ↦r { {type:env.typ.MediaRangeAscending, sym:$sym1, min:$sym1, id:$sym3, max:$sym5, pos } } 
+                                                                                    ↦r { {type:env.typ.MediaRangeAscending, sym:$sym2, min:$sym1, id:$sym3, max:$sym5, pos } } 
 
     <> mf_value → θnum 
         │ dimension 
@@ -174,13 +174,10 @@
 #### Modified from https://drafts.csswg.org/selectors-4/#grammar
 ##############################################################################################
 
-    <> COMPLEX_SELECTOR →  COMPOUND_SELECTOR ( 
-                                                ( COMBINATOR? COMPOUND_SELECTOR ↦r { $$sym1 ? $sym2.combinator = $sym1 : "", $sym2 } )
-                                                                                    
-                                            )(*)  
+    <> COMPLEX_SELECTOR →  COMPOUND_SELECTOR  ( (COMBINATOR ↦r{ {type:env.typ.Combinator, val:$sym1} } )? COMPOUND_SELECTOR ↦r { [$sym1, $sym2] } )(*)  
                                                                                     ↦r { 
                                                                                         ($$sym1 && $$sym2) ?
-                                                                                        {type:env.typ.ComplexSelector, nodes:[$sym1, ...$sym2], pos } 
+                                                                                        {type:env.typ.ComplexSelector, nodes:[$sym1, ...( ($sym2).flat(2) )], pos } 
                                                                                         : $sym1
                                                                                     } 
     
@@ -198,9 +195,9 @@
                                                                                                 :  { type:env.typ.CompoundSelector, nodes:[$sym1, ...$sym2, ...$sym3], pos }
                                                                                     } 
 
-    <> COMBINATOR →  >                  
-        │ +     
-        │ ~                                 
+    <> COMBINATOR →  \>                         
+        │ \+     
+        │ \~                                 
         │ \||                               
 
     <> TYPE_SELECTOR →  WQ_NAME                                                     ↦r { {type:env.typ.TypeSelector, nodes:[$sym1], pos } }

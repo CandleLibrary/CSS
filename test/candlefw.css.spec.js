@@ -1,12 +1,11 @@
 import {
-    render,
+    renderWithFormatting,
     rule,
     selector,
     parse,
     isSelectorEqual,
     doesRuleHaveMatchingSelector
 } from "../build/library/css.js";
-
 
 "@candlefw/css test spec";
 "PARSER"; "#";
@@ -30,32 +29,34 @@ import {
 }
     `),
         result =
-            ` div{
-    top:320%;
-    justify-content:space-around;
-    font-family:Arial  , "Times new Roman"
-}`;
-    console.log(stylesheet);
+            `div{top:320%;
+justify-content:space-around;
+font-family:Arial   , "Times new Roman";
+box-shadow:inset 2px 2px 2px #141414}
+@media screen and (min-width:900px){.sdfsf #nav{padding:0 2px;
+z-index:-5820}}
+@media screen and (max-width:800px){body{background-color:#ff0000}}`;
+
     const s = stylesheet.toString();
-    "Expect parser-render to match source string"; "#";
+    "Expect parser-renderWithFormatting to match source string"; "#";
     ((s == result));
 }
 
 "selectors"; "#";
 {
-    ((render(selector(".div")) == ".div"));
-    ((render(selector("#div")) == "#div"));
-    ((render(selector("#div[src]")) == "#div[src]"));
-    ((render(selector("#div[src].a")) == "#div[src].a"));
-    ((render(selector("#div[src ^= \"true\"].a")) == "#div[src ^= \"true\"].a"));
-    ((render(selector("#div[src ^= \"true\" i].a")) == "#div[src ^= \"true\" i].a"));
-    ((render(selector("#div a")) == "#div a"));
-    ((render(selector("svg|* a")) == "svg|* a"));
-    ((render(selector("svg|* a || a")) == "svg|* a || a"));
-    ((render(selector("svg|* a + a")) == "svg|* a + a"));
-    ((render(selector("svg|* a:test")) == "svg|* a:test"));
-    ((render(selector("svg|* a:nth-child(2n+1)")) == "svg|* a:nth-child(2n+1)"));
-    ((render(selector("svg|* a::after")) == "svg|* a::after"));
+    ((renderWithFormatting(selector(".div")) == ".div"));
+    ((renderWithFormatting(selector("#div")) == "#div"));
+    ((renderWithFormatting(selector("#div[src]")) == "#div[src]"));
+    ((renderWithFormatting(selector("#div[src].a")) == "#div[src].a"));
+    ((renderWithFormatting(selector("#div[src ^= \"true\"].a")) == "#div[src ^= \"true\"].a"));
+    ((renderWithFormatting(selector("#div[src ^= \"true\" i].a")) == "#div[src ^= \"true\" i].a"));
+    ((renderWithFormatting(selector("#div a")) == "#div a"));
+    ((renderWithFormatting(selector("svg|* a")) == "svg|* a"));
+    ((renderWithFormatting(selector("svg|* a || a")) == "svg|* a || a"));
+    ((renderWithFormatting(selector("svg|* a + a")) == "svg|* a + a"));
+    ((renderWithFormatting(selector("svg|* a:test")) == "svg|* a:test"));
+    ((renderWithFormatting(selector("svg|* a:nth-child(2n+1)")) == "svg|* a:nth-child(2n+1)"));
+    ((renderWithFormatting(selector("svg|* a::after")) == "svg|* a::after"));
 }
 
 "isSelectorEqual"; "#";

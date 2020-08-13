@@ -1,8 +1,12 @@
 import { CSSNodeType } from "../types/node_type.js";
 import { CSSNode } from "../types/node";
-import { buildRenderers, buildFormatRules } from "@candlefw/conflagrate";
+import { buildRenderers, buildFormatRules, FormatRule as $ } from "@candlefw/conflagrate";
 import { CSSNodeTypeLU } from "../types/node_type_lu.js";
-export const format_rules = buildFormatRules([]);
+
+export const format_rules = buildFormatRules([{
+    type: CSSNodeType.Stylesheet,
+    format_rule: $.INDENT | $.OPTIONAL_SPACE | $.LIST_SPLIT * 2 | $.MIN_LIST_ELE_LIMIT * 15
+}]);
 export const CSSNodeDefinitions = [
     {
         type: CSSNodeType.Stylesheet,
@@ -90,7 +94,7 @@ export const CSSNodeDefinitions = [
     },
     {
         type: CSSNodeType.MediaEquality,
-        template_pattern: "",
+        template_pattern: "@left%@sym%@right",
     },
     {
         type: CSSNodeType.MediaRangeAscending,
@@ -107,12 +111,16 @@ export const CSSNodeDefinitions = [
     {
         type: CSSNodeType.CompoundSelector, template_pattern: {
             default: "@...%",
-            combinator: "@combinator @...%"
+            combinator: "@@...%"
         }
     },
     {
+        type: CSSNodeType.Combinator,
+        template_pattern: "@val",
+    },
+    {
         type: CSSNodeType.PseudoSelector,
-        template_pattern: "@1",
+        template_pattern: "@1@...%",
     },
     {
         type: CSSNodeType.MetaSelector,
@@ -145,7 +153,7 @@ export const CSSNodeDefinitions = [
     {
         type: CSSNodeType.PseudoClassSelector,
         template_pattern: {
-            val: ":@id(@val)",
+            val: ":@id(%@val%)",
             default: ":@id"
         },
     },
