@@ -1,4 +1,4 @@
- import wind from "@candlefw/wind";
+import wind from "@candlefw/wind";
 
 function getValue(lex, attribute?) {
     let v = lex.tx,
@@ -145,6 +145,8 @@ function ParseString(string, transform) {
 // A 2D transform composition of 2D position, 2D scale, and 1D rotation.
 
 export default class CSS_Transform2D extends Float64Array {
+
+
     static ToString(pos = [0, 0], scl = [1, 1], rot = 0) {
         var px = 0,
             py = 0,
@@ -195,43 +197,43 @@ export default class CSS_Transform2D extends Float64Array {
             }
         }
     }
-    get px() {
+    get px(): number {
         return this[0];
     }
-    set px(v) {
+    set px(v: number) {
         this[0] = v;
     }
-    get py() {
+    get py(): number {
         return this[1];
     }
-    set py(v) {
+    set py(v: number) {
         this[1] = v;
     }
-    get sx() {
+    get sx(): number {
         return this[2];
     }
-    set sx(v) {
+    set sx(v: number) {
         this[2] = v;
     }
-    get sy() {
+    get sy(): number {
         return this[3];
     }
-    set sy(v) {
+    set sy(v: number) {
         this[3] = v;
     }
-    get r() {
+    get r(): number {
         return this[4];
     }
-    set r(v) {
+    set r(v: number) {
         this[4] = v;
     }
 
-    set scale(s) {
+    set scale(s: number) {
         this.sx = s;
         this.sy = s;
     }
 
-    get scale() {
+    get scale(): number {
         return this.sx;
     }
 

@@ -40,6 +40,7 @@ import {
 
 import { selector, properties, parse, property, rule } from "./parser/parse.js";
 import { CSSNodeTypeLU } from "./types/node_type_lu.js";
+import { CSSNodeDefinitions } from "./render/rules.js";
 export * from "./parser/parse.js";
 
 
@@ -127,7 +128,6 @@ function renderProps(rule: CSSRuleNode) {
 export * from "./render/render.js";
 export * from "./render/rules.js";
 export * from "./selector/utilities.js";
-
 export {
     //object types
     CSSProperty,
@@ -152,6 +152,7 @@ export {
     property_definitions,
     media_feature_definitions,
     CSSNodeTypeLU,
+    CSSNodeDefinitions,
 
     //pure types
     CSSNodeType,
@@ -163,9 +164,6 @@ export {
     renderProps,
     parseDeclaration,
     getPropertyParser,
-    isSelectorEqual,
-    doesRuleHaveMatchingSelector,
-    getLastRuleWithMatchingSelector
 };
 
 addModuleToCFW(Object.assign({
@@ -222,3 +220,4 @@ addModuleToCFW(Object.assign({
     CSS_Path,
     CSS_FontName
 }), "css");
+

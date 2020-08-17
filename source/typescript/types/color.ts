@@ -11,83 +11,71 @@ import wind from "@candlefw/wind";
 */
 export default class CSS_Color extends Float64Array {
 
-    get r(): number { return this[0]; }
-    set r(r: number) { this[0] = r; }
+    static colors: CSS_Color[];
 
-    get g(): number { return this[1]; }
-    set g(g: number) { this[1] = g; }
+    static fromHCMX(
+        h: number,
+        c: number,
+        m: number,
+        x: number
+    ) {
+        let r = m, g = m, b = m;
 
-    get b(): number { return this[2]; }
-    set b(b: number) { this[2] = b; }
+        if (h < 1 && h >= 0) {
+            r += c;
+            g += x;
+        } else if (h < 2) {
+            r += x;
+            g += c;
+        } else if (h < 3) {
+            g += c;
+            b += x;
+        } else if (h < 4) {
+            g += x;
+            b += c;
+        } else if (h < 5) {
+            r += x;
+            b += c;
+        } else if (h < 6) {
+            r += c;
+            b += x;
+        };
 
-    get a(): number { return this[3]; }
-    set a(a: number) { this[3] = a; }
+        r *= 255;
+        g *= 255;
+        b *= 255;
 
-    constructor(r?: number, g?: number, b?: number, a: number = 1) {
-        super(4);
+        return new CSS_Color(r, g, b);
+    };
 
-        this.r = 0;
-        this.g = 0;
-        this.b = 0;
-        this.a = 1;
+    static fromHSV(
+        hue: number,
+        saturation: number,
+        value: number
+    ) {
+        const
+            h = (hue) / 60,
+            c = value * saturation,
+            m = value - c,
+            x = c * (1 - Math.abs((h % 2) - 1));
 
-        if (typeof (r) === "number") {
-            this.r = r; //Math.max(Math.min(Math.round(r),255),-255);
-            this.g = g; //Math.max(Math.min(Math.round(g),255),-255);
-            this.b = b; //Math.max(Math.min(Math.round(b),255),-255);
-            this.a = a; //Math.max(Math.min(a,1),-1);
-        } else if (typeof (r) == "string")
-            this.set(CSS_Color._fs_(r) || { r: 255, g: 255, b: 255, a: 0 });
+        return CSS_Color.fromHCMX(h, c, m, x);
     }
 
-    set(color: CSS_Color) {
-        this.r = color.r;
-        this.g = color.g;
-        this.b = color.b;
-        this.a = (color.a != undefined) ? color.a : this.a;
+    static fromHSL(
+        hue: number,
+        saturation: number,
+        lightness: number
+    ) {
+        const
+            h = (hue % 360) / 60,
+            c = (1 - Math.abs(2 * lightness - 1)) * saturation,
+            x = c * (1 - Math.abs((h % 2) - 1)),
+            m = lightness - 0.5 * c;
+
+        return CSS_Color.fromHCMX(h, c, m, x);
     }
 
-    add(color: CSS_Color): CSS_Color {
-        return new CSS_Color(
-            color.r + this.r,
-            color.g + this.g,
-            color.b + this.b,
-            color.a + this.a
-        );
-    }
-
-    mult(val: number | CSS_Color) {
-        if (typeof (val) == "number") {
-            return new CSS_Color(
-                this.r * val,
-                this.g * val,
-                this.b * val,
-                this.a * val
-            );
-        } else {
-            return new CSS_Color(
-                this.r * val.r,
-                this.g * val.g,
-                this.b * val.b,
-                this.a * val.a
-            );
-        }
-    }
-
-    sub(color: CSS_Color) {
-        return new CSS_Color(
-            this.r - color.r,
-            this.g - color.g,
-            this.b - color.b,
-            this.a - color.a
-        );
-    }
-
-    lerp(to: CSS_Color, t: number) {
-        return this.add(to.sub(this).mult(t));
-    }
-
-    copy(other) { return new CSS_Color(other); }
 
     static parse(l) {
 
@@ -104,12 +92,14 @@ export default class CSS_Color extends Float64Array {
 
         return null;
     }
+
     static _verify_(l) {
         let c = CSS_Color._fs_(l, true);
         if (c)
             return true;
         return false;
     }
+
     /**
         Creates a new Color from a string or a Lexer.
     */
@@ -221,30 +211,205 @@ export default class CSS_Color extends Float64Array {
                     c.set(out);
                     return c;
                 }  // intentional
+
+            case "h":
+
+                tx = l.tx;
+
+                const HSL_TYPE = tx === "hsla" ? 1 : tx === "hsl" ? 2 : 0;
+
+                let h = 0, s = 0, l_ = 0;
+
+                if (HSL_TYPE > 0) {
+
+                    l.next(); // (
+
+                    h = parseInt(l.next().tx);
+
+                    l.next(); // , or  %
+
+                    if (l.ch == "%") {
+                        l.next(); out.r = out.r * 255 / 100;
+                    }
+
+
+                    s = parseInt(l.next().tx);
+
+                    l.next(); // , or  %
+
+                    if (l.ch == "%") {
+                        l.next(); out.g = out.g * 255 / 100;
+                    }
+
+
+                    l_ = parseInt(l.next().tx);
+
+                    l.next(); // , or ) or %
+
+                    if (l.ch == "%")
+                        l.next(), out.b = out.b * 255 / 100;
+
+                    if (HSL_TYPE < 2) {
+                        out.a = parseFloat(l.next().tx);
+
+                        l.next();
+
+                        if (l.ch == "%")
+                            l.next(), out.a = out.a * 255 / 100;
+                    }
+
+                    l.a(")");
+
+                    return CSS_Color.fromHSL(h, s, l_);
+                }  // intentional
             default:
 
                 let string = l.tx;
 
-                if (l.ty == l.types.str) {
-                    string = string.slice(1, -1);
-                }
+                if (l.ty == l.types.str) { string = string.slice(1, -1); }
 
                 out = CSS_Color.colors[string.toLowerCase()];
 
-                if (out)
-                    l.next();
+                if (out) l.next();
         }
 
         return out;
     }
 
+
+    get r(): number { return this[0]; }
+    set r(r: number) { this[0] = Math.min(Math.max(0, r), 255) | 0; }
+
+    get g(): number { return this[1]; }
+    set g(g: number) { this[1] = Math.min(Math.max(0, g), 255) | 0; }
+
+    get b(): number { return this[2]; }
+    set b(b: number) { this[2] = Math.min(Math.max(0, b), 255) | 0; }
+
+    get a(): number { return this[3]; }
+    set a(a: number) { this[3] = a; }
+
+    constructor(r?: number, g?: number, b?: number, a: number = 1) {
+        super(4);
+
+        this.r = 0;
+        this.g = 0;
+        this.b = 0;
+        this.a = 1;
+
+        if (typeof (r) === "number") {
+            this.r = r; //Math.max(Math.min(Math.round(r),255),-255);
+            this.g = g; //Math.max(Math.min(Math.round(g),255),-255);
+            this.b = b; //Math.max(Math.min(Math.round(b),255),-255);
+            this.a = a; //Math.max(Math.min(a,1),-1);
+        } else if (typeof (r) == "string")
+            this.set(CSS_Color._fs_(r) || { r: 255, g: 255, b: 255, a: 0 });
+    }
+
+    set(color: CSS_Color) {
+        this.r = color.r;
+        this.g = color.g;
+        this.b = color.b;
+        this.a = (color.a != undefined) ? color.a : this.a;
+    }
+
+    add(color: CSS_Color): CSS_Color {
+        return new CSS_Color(
+            color.r + this.r,
+            color.g + this.g,
+            color.b + this.b,
+            color.a + this.a
+        );
+    }
+
+    mult(val: number | CSS_Color) {
+        if (typeof (val) == "number") {
+            return new CSS_Color(
+                this.r * val,
+                this.g * val,
+                this.b * val,
+                this.a * val
+            );
+        } else {
+            return new CSS_Color(
+                this.r * val.r,
+                this.g * val.g,
+                this.b * val.b,
+                this.a * val.a
+            );
+        }
+    }
+
+    sub(color: CSS_Color) {
+        return new CSS_Color(
+            this.r - color.r,
+            this.g - color.g,
+            this.b - color.b,
+            this.a - color.a
+        );
+    }
+
+    lerp(to: CSS_Color, t: number) {
+        return this.add(to.sub(this).mult(t));
+    }
+
+    copy(other) { return new CSS_Color(other); }
+
     toString() {
+
         if (this.a !== 1)
-            return this.toRGBString();
+            return this.toRGBAString();
+
         return `#${("0" + this.r.toString(16)).slice(-2)}${("0" + this.g.toString(16)).slice(-2)}${("0" + this.b.toString(16)).slice(-2)}`;
     }
-    toRGBString() {
-        return `rgba(${this.r.toString()},${this.g.toString()},${this.b.toString()},${this.a.toString()})`;
+
+    toRGBAString() {
+        const rgb = this.toRGBString();
+        if (this.a == 1) return rgb;
+        return "rgba" + rgb.slice(3, -1) + `,${this.a})`;
+    }
+    toRGBString() { return `rgb(${this.r | 0},${this.g | 0},${this.b | 0})`; }
+
+    toHSLString() {
+
+        let { r, g, b } = this;
+
+        r /= 255;
+        g /= 255;
+        b /= 255;
+
+        let h = 0, h_ = 0, l = 0, s = 0,
+            // hue
+            M = Math.max(r, g, b),
+            m = Math.min(r, g, b),
+            c = M - m;
+
+        if (M === r)
+            h_ = ((g - b) / c);
+        else if (M === g)
+            h_ = ((b - r) / c) + 2;
+        else
+            h_ = ((r - g) / c) + 4;
+
+        h_ *= 60;
+
+        h = h_; //(((Math.PI / 180) * 60) * Math.abs(((h_+30) % 360)));
+
+        if (h < 0) h += 360;
+
+        //value
+        l = (r * 0.3 + g * 0.59 + b * 0.11) / (r + g + b);
+
+        //saturation
+        s = (c == 0) ? 0 : c / M;
+
+        return `hsl(${Math.round(h * 10) / 10},${Math.round(s * 10) / 10},${Math.round(l * 10) / 10})`;
+    }
+
+    toHSLAString() {
+        const hsv = this.toHSLString();
+        if (this.a == 1) return hsv;
+        return "hsla" + hsv.slice(3, -1) + `,${this.a})`;
     }
 } {
 
@@ -393,6 +558,7 @@ export default class CSS_Color extends Float64Array {
         "white smoke": _$(245, 245, 245),
         "white": _$(255, 255, 255),
         "yellow green": _$(154, 205, 50),
-        "yellow": _$(255, 255)
+        "yellow": _$(255, 255),
+        "rebeccapurple": _$(102, 81, 153)
     };
 }

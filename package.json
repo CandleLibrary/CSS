@@ -1,6 +1,6 @@
 {
     "name": "@candlefw/css",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "type": "module",
     "description": "CSS Parser",
     "main": "./build/library/css.js",
@@ -28,8 +28,8 @@
     },
     "homepage": "https://github.com/candlefw/css#readme",
     "dependencies": {
-        "@candlefw/conflagrate": "^0.0.5-alpha",
-        "@candlefw/hydrocarbon": "^0.3.4-dev-1"
+        "@candlefw/conflagrate": "^0.1.0",
+        "@candlefw/hydrocarbon": "^0.4.0-dev"
     },
     "devDependencies": {
         "@candlefw/test": "0.1.0-alpha",
