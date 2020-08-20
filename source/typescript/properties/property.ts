@@ -1,22 +1,17 @@
-import parseDeclaration from "./parse_declaration.js";
-import observer from "@candlefw/observer";
+import parsePropertyDefinitionFromHydrocarbon from "./parse_declaration.js";
 import { CSSNode } from "../css.js";
 import { Lexer } from "@candlefw/wind";
-/* 	Wraps parseDeclaration with a function that returns a styleprop object or null.
-    Uses same args as parseDeclaration */
+import { PrecedenceFlags } from "../types/precedence_flags.js";
 export class CSSProperty {
 
 	parent: CSSNode;
+
 	val: any;
 
 	name: string;
-	original_value: string;
 
 	rule: any;
-
-	ver: number;
-
-	IMPORTANT: boolean;
+	precedence: PrecedenceFlags;
 
 	pos?: Lexer;
 
@@ -24,52 +19,22 @@ export class CSSProperty {
 	constructor(name, original_value, val, IMP, pos) {
 		this.val = val;
 		this.name = name.replace(/\-/g, "_");
-		this.original_value = original_value;
 		this.rule = null;
-		this.ver = 0;
-		this.IMPORTANT = IMP;
+		this.precedence = +(!!IMP) << PrecedenceFlags.IMPORTANT_BIT_SHIFT;
 		this.pos = pos;
 	}
 	destroy() {
-		this.val = null;
 		this.name = "";
-		this.original_value = "";
+		this.val = null;
 		this.rule = null;
-		observer.destroy(this);
-	}
-	get camelName() {
-		return this.name
-			.split("_")
-			.map(
-				(v, i) => i > 0 ? v[0].toUpperCase() + v.slice(1) : v
-			)
-			.join("");
+		this.pos = null;
 	}
 
-	get css_type() {
-		return "styleprop";
-	}
-	updated() {
-		this.updateObservers();
-		if (this.parent)
-			this.parent.update();
-	}
-	get value() {
-		return this.val.length > 1 ? this.val : this.val[0];
-	}
-	get value_string() {
-		return this.val.join(" ");
-	}
 	toString(offset = 0) {
 		const str = [], off = ("    ").repeat(offset);
 		return `${off + this.name.replace(/\_/g, "-")}:${this.value_string}`;
 	}
 
-	/*setValueFromString(value) {
-		const result = parseDeclaration([this.name, null, value]);
-		if (result)
-			this.setValue(...result.prop);
-	}*/
 	setValue(...values) {
 
 		if (values[0] instanceof CSSProperty)
@@ -87,14 +52,15 @@ export class CSSProperty {
 		}
 
 		this.val.length = values.length;
-		this.ver++;
-		this.updated();
+	}
+
+	get IMPORTANT(): boolean {
+		return !!(this.precedence & PrecedenceFlags.IMPORTANT_BIT_MASK);
 	}
 
 	copyVal() {
-		if (Array.isArray(this.val)) {
+		if (Array.isArray(this.val))
 			return this.val.slice();
-		}
 		else
 			return this.val;
 	}
@@ -106,5 +72,29 @@ export class CSSProperty {
 	set(prop: CSSProperty) {
 		if (prop.name == this.name)
 			this.val = prop.val.slice();
+	}
+	get original_value() {
+		return this.pos.slice();
+	}
+
+	get camelName() {
+		return this.name
+			.split("_")
+			.map(
+				(v, i) => i > 0 ? v[0].toUpperCase() + v.slice(1) : v
+			)
+			.join("");
+	}
+
+	get css_type() {
+		return "styleprop";
+	}
+
+	get value() {
+		return this.val.length > 1 ? this.val : this.val[0];
+	}
+
+	get value_string() {
+		return this.val.join(" ");
 	}
 }

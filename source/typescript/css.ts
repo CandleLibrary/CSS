@@ -41,6 +41,7 @@ import {
 import { selector, properties, parse, property, rule } from "./parser/parse.js";
 import { CSSNodeTypeLU } from "./types/node_type_lu.js";
 import { CSSNodeDefinitions } from "./render/rules.js";
+import { PrecedenceFlags } from "./types/precedence_flags.js";
 export * from "./parser/parse.js";
 
 
@@ -158,6 +159,8 @@ export {
     CSSNodeType,
     CSSNode,
     CSSRuleNode,
+    PrecedenceFlags,
+
 
     //functions
     removeRule,
