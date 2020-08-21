@@ -1,4 +1,4 @@
-import Point2D from "./point.mjs"
+import Point2D from "./point.js";
 
 function curvePoint(curve, t) {
     var point = {
@@ -24,7 +24,7 @@ function splitCurve(bp, t) {
             left.push(bp[0], bp[1]);
             right.push(bp[0], bp[1]);
         } else {
-            var new_bp = [] //bp.slice(0,-2);
+            var new_bp = []; //bp.slice(0,-2);
             for (var i = 0; i < bp.length - 2; i += 2) {
                 if (i == 0) {
                     left.push(bp[i], bp[i + 1]);
@@ -59,14 +59,14 @@ function curveIntersections(p1, p2, p3) {
 
     var c = p1;
 
-    if (b == 0) {} else if (Math.abs(a) < 0.00000000005) {
+    if (b == 0) { } else if (Math.abs(a) < 0.00000000005) {
         intersections.a = (-c / b); //c / b;
     } else {
 
         intersections.a = ((-b - Math.sqrt((b * b) - 4 * a * c)) / (2 * a));
         intersections.b = ((-b + Math.sqrt((b * b) - 4 * a * c)) / (2 * a));
     }
-    return intersections
+    return intersections;
 }
 
 export default class QBezier {
@@ -78,7 +78,7 @@ export default class QBezier {
         this.y2 = 0;
         this.y3 = 0;
 
-        if (typeof(x1) == "number") {
+        if (typeof (x1) == "number") {
             this.x1 = x1;
             this.x2 = x2;
             this.x3 = x3;
@@ -117,13 +117,13 @@ export default class QBezier {
             this.y2,
             this.x1,
             this.y1
-        )
+        );
     }
 
     point(t) {
         return new Point2D(
             posOnCurve(t, this.x1, this.x2, this.x3),
-            posOnCurve(t, this.y1, this.y2, this.y3))
+            posOnCurve(t, this.y1, this.y2, this.y3));
 
     }
 
@@ -158,7 +158,7 @@ export default class QBezier {
             this.x1,
             this.x2,
             this.x3
-        )
+        );
 
     }
 
@@ -246,11 +246,11 @@ export default class QBezier {
         return {
             x: curveIntersections(this.x1, this.x2, this.x3),
             y: curveIntersections(this.y1, this.y2, this.y3)
-        }
+        };
     }
 
     add(x, y) {
-        if (typeof(x) == "number") {
+        if (typeof (x) == "number") {
             return new QBezier(
                 this.x1 + x,
                 this.y1 + y,
@@ -258,7 +258,7 @@ export default class QBezier {
                 this.y2 + y,
                 this.x3 + x,
                 this.y3 + y,
-            )
+            );
         }
     }
 }
