@@ -1,5 +1,7 @@
-import { CSSNodeType } from "../types/node_type.js";
-import { CSSNode, CSSRuleNode } from "../types/node.js";
+import { CSSNodeType, CSSNodeFlags } from "../types/node_type.js";
+import { CSSNode, CSSRuleNode, CSSSelectorNode } from "../types/node.js";
+import { PrecedenceFlags } from "../css.js";
+import { traverse } from "@candlefw/conflagrate";
 
 export interface SelectionHelpers<Element> {
     hasAttribute: (ele: Element, namespace: string, name: string, value: string, sym: string, modifier: string) => boolean;
@@ -135,6 +137,20 @@ export function matchElement<Element>(ele, selector: CSSNode, helpers: Selection
     return true;
 }
 
+/**
+ * Return a number representing the precedence value for the selector
+ */
+export function getSelectorPrecedence(selector: CSSNode): PrecedenceFlags {
+
+    let val = 0;
+
+    for (const { node: sel } of traverse(<CSSSelectorNode>selector, "nodes")
+        .bitFilter("type", CSSNodeFlags.SELECTOR)
+    ) val += sel.precedence || 0;
+
+    return val;
+}
+
 export function isSelectorEqual(a: CSSRuleNode, b: CSSRuleNode) {
     if (b.type == a.type) {
         switch (b.type) {
@@ -251,22 +267,47 @@ export function getLastRuleWithMatchingSelector(stylesheet: CSSNode, selector: C
 
     return null;
 }
-
-export function getMatchedRules(ele, css, helpers = DOMHelpers): CSSRuleNode[] {
-    const rules = [];
+/**
+ * Yields all rules that match the ele argument. 
+ * 
+ * Performs cascade precedence calculations on all rules and 
+ * applies the value to each rule's precedence property. This performed each time this function is
+ * called; Repeated calls to the function may mutate the precedence value on nodes that have been returned
+ * by previous calls. 
+ * 
+ * @param ele - An object that can be treated as an HTMLElement by the helper functions.
+ * @param css - A CSSNode with the type **CSSNodeType.StyleSheet**.
+ * @param helpers - Set of SelectionHelpers functions; defaults to DOMHelpers.
+ * @param cascade_start - An offset that can be applied to the cascade precedence calculation.
+ */
+export function* getMatchedRulesGen(ele, css, helpers = DOMHelpers, cascade_start: number = 0): Generator<CSSRuleNode> {
+    let cascade_index = cascade_start;
 
     if (css.type == CSSNodeType.Stylesheet) {
+
         for (const rule of css.nodes.filter(r => r.type == CSSNodeType.Rule)) {
+
             for (const selector of rule.selectors) {
+
                 if (matchElement(ele, selector, helpers)) {
-                    rules.push(rule);
+
+                    rule.precedence = (cascade_index++) << PrecedenceFlags.RULE_ORDER_BIT_SHIFT;
+
+                    yield rule;
+
                     break;
                 }
             }
         }
     }
-    return rules;
 }
+
+/**
+ * Same as @function getMatchedRulesGen, except an array of matched rules is returned.
+ */
+export function getArrayOfMatchedRules(ele, css, helpers = DOMHelpers, cascade_start: number = 0): CSSRuleNode[] {
+    return [...getMatchedRulesGen(ele, css, helpers, cascade_start)];
+};
 
 
 

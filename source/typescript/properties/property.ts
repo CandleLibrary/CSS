@@ -64,9 +64,14 @@ export class CSSProperty {
 		else
 			return this.val;
 	}
-
-	copy() {
-		return new CSSProperty(this.name, this.original_value, this.copyVal(), this.IMPORTANT, this.pos);
+	/**
+	 * Copies the property and returns a new object. Optionally specify a precedence value to assign to
+	 * the copy.
+	 */
+	copy(precedence: PrecedenceFlags = 0) {
+		const copy = new CSSProperty(this.name, this.original_value, this.copyVal(), this.IMPORTANT, this.pos);
+		copy.precedence |= precedence;
+		return copy;
 	}
 
 	set(prop: CSSProperty) {

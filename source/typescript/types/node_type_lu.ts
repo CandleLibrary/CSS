@@ -38,7 +38,10 @@ export enum CSSNodeTypeLU {
     PseudoClassSelector = CSSNodeType.PseudoClassSelector,
     PseudoElementSelector = CSSNodeType.PseudoElementSelector,
     KeyframeSelectors = CSSNodeType.KeyframeSelectors,
-
     Combinator = CSSNodeType.Combinator,
+    A_SPECIFIER = CSSNodeType.A_SPECIFIER,
+    B_SPECIFIER = CSSNodeType.B_SPECIFIER,
+    C_SPECIFIER = CSSNodeType.C_SPECIFIER,
+    D_SPECIFIER = CSSNodeType.D_SPECIFIER
 }
 

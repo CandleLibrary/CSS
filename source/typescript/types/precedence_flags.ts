@@ -34,8 +34,8 @@
  *
  * - **A** = Property found in the element's style attribute
  * - **B** = Number of [**id**] selectors
- * - **C** = Number of [**class**] selectors and pseudo-classes
- * - **D** = Number of [**type | tag**] selectors and pseudo-elements
+ * - **C** = Number of [**class**], attribute, and pseudo-class selectors
+ * - **D** = Number of [**type | tag**] and pseudo-element selectors
  * - **\*** = Match-All [**\***] selectors are ignored
  * 
  */

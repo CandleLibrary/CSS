@@ -16,7 +16,7 @@
                                                                                     ↦r { {type:env.typ.Stylesheet, imports:$$sym1, nodes:$$sym2, pos} }
 
     <> STYLE_RULE → COMPLEX_SELECTOR(+,) { declaration_list ;? }                    
-                                                                                    ↦r { {type:env.typ.Rule, selectors:$$sym1, props: new Map($$sym3.map(s=>[s.name, s])), pos} }
+                                                                                    ↦r { {type:env.typ.Rule, selectors:$$sym1, props: new Map($$sym3.map(s=>[s.name, s])), pos, precedence: 0} }
 
     <> GROUP_RULE_BODY → STYLE_RULE(*)
 
@@ -199,29 +199,26 @@
         │ \+     
         │ \~                                 
         │ \||                               
-
-    <> TYPE_SELECTOR →  WQ_NAME                                                     ↦r { {type:env.typ.TypeSelector, nodes:[$sym1], pos } }
-        │ NS_PREFIX? \*                                                             
-                                                                                    ↦r { {type:env.typ.TypeSelector, nodes:[{type:env.typ.QualifiedName, ns:$sym1 || "", val:"*", pos }], pos } }
     
-    <> NS_PREFIX →  (identifier │ \* )? \| 
-                                                                                    ↦r { $$sym1 }
+    <> NS_PREFIX →  (identifier │ \* )? \|                                          ↦r { $$sym1 }
 
-    <> WQ_NAME →  NS_PREFIX? identifier                                             
-                                                                                    ↦r { {type:env.typ.QualifiedName, ns:$sym1 || "", val:$sym2, pos } }
+    <> WQ_NAME →  NS_PREFIX? identifier                                              ↦r { {type:env.typ.QualifiedName, ns:$sym1 || "", val:$sym2, pos } }
 
     <> SUBCLASS_SELECTOR →  ID_SELECTOR 
         │ CLASS_SELECTOR 
         │ ATTRIBUTE_SELECTOR 
         │ PSEUDO_CLASS_SELECTOR
 
-    <> ID_SELECTOR →  \# (ERR g:ws) identifier                                      ↦r { {type:env.typ.IdSelector, val:$sym2, pos } } 
+    <> ID_SELECTOR →  \# (ERR g:ws) identifier                                      ↦r { {type:env.typ.IdSelector, val:$sym2, pos, precedence: env.typ.B_SPECIFIER } } 
+    
+    <> CLASS_SELECTOR →  \. (ERR g:ws) identifier                                   ↦r { {type:env.typ.ClassSelector, val:$sym2, pos,precedence: env.typ.C_SPECIFIER } } 
 
-    <> CLASS_SELECTOR →  \. (ERR g:ws) identifier                                   ↦r { {type:env.typ.ClassSelector, val:$sym2, pos } } 
+    <> PSEUDO_CLASS_SELECTOR →  \: (ERR g:ws) identifier ( \(   declaration_values \) ↦r {$sym2} )?        
+                                                                                    ↦r { {type:env.typ.PseudoClassSelector, id:$sym2, val:$sym3, pos, precedence: env.typ.C_SPECIFIER } }
 
-    <> ATTRIBUTE_SELECTOR →  \[ WQ_NAME \]                                          ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], pos } } 
+    <> ATTRIBUTE_SELECTOR →  \[ WQ_NAME \]                                          ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], pos, precedence: env.typ.C_SPECIFIER } } 
         │ \[ WQ_NAME ATTR_MATCHER ( identifier │ \" declaration_values \" ↦r { "\"" + $sym2 + "\"" }   ) ATTR_MODIFIER? \]           
-                                        ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], match_type:$sym3, match_val:$sym4, mod:$sym5, pos } } 
+                                        ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], match_type:$sym3, match_val:$sym4, mod:$sym5, pos, precedence: env.typ.C_SPECIFIER } } 
 
     <> ATTR_MATCHER → ~=                                                
         │ ^=                                                                
@@ -232,11 +229,13 @@
     <> ATTR_MODIFIER →  τi 
         │ τs
 
-    <> PSEUDO_CLASS_SELECTOR →  \: (ERR g:ws) identifier ( \(   declaration_values \) ↦r {$sym2} )?        
-                                                                                    ↦r { {type:env.typ.PseudoClassSelector, id:$sym2, val:$sym3, pos } } 
+
+
+    <> TYPE_SELECTOR →  WQ_NAME                                                     ↦r { {type:env.typ.TypeSelector, nodes:[$sym1], pos,  precedence: env.typ.D_SPECIFIER  } }
+        │ NS_PREFIX? \*                                                             ↦r { {type:env.typ.TypeSelector, nodes:[{type:env.typ.QualifiedName, ns:$sym1 || "", val:"*", pos, precedence: 0 }], pos } } 
 
     <> PSEUDO_ELEMENT_SELECTOR →  \: (ERR g:ws) PSEUDO_CLASS_SELECTOR               
-                                                                                    ↦r { $sym2.type = env.typ.PseudoElementSelector, $sym2 } 
+                                                                                    ↦r { $sym2.type = env.typ.PseudoElementSelector,  $sym2.precedence = env.typ.D_SPECIFIER , $sym2} 
 
 ##############################################################################################
 #### Body
