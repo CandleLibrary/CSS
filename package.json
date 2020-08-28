@@ -1,8 +1,8 @@
 {
     "name": "@candlefw/css",
-    "version": "0.2.3",
+    "version": "0.2.4",
     "type": "module",
-    "description": "CSS Parser",
+    "description": "CSS Management Tools",
     "main": "./build/library/css.js",
     "types": "./build/types/css.d.ts",
     "scripts": {
