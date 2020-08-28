@@ -1,7 +1,7 @@
 import { addModuleToCFW } from "@candlefw/candle";
 import { property_definitions, media_feature_definitions } from "./properties/property_and_type_definitions.js";
 import { getPropertyParser } from "./properties/parser.js";
-import parseDeclaration from "./properties/parse_declaration.js";
+import parsePropertyDefinitionFromHydrocarbon, { parseProperty } from "./properties/parse_declaration.js";
 
 import * as productions from "./properties/productions.js";
 import * as terms from "./properties/terms.js";
@@ -34,7 +34,7 @@ import {
     getFirstMatchedSelector,
     getMatchedSelectors,
     getLastRuleWithMatchingSelector,
-    getMatchedRules,
+    getArrayOfMatchedRules,
     matchAnySelector
 } from "./selector/utilities.js";
 
@@ -81,7 +81,7 @@ function removeRule(stylesheet: CSSNode, rule: CSSRuleNode) {
 export function matchAll<Element>(selector_string, ele, helpers: SelectionHelpers<Element>): Element[] {
     const selector_node = selector(selector_string);
     return [...getMatchedElements<Element>(ele, selector_node, helpers)];
-};
+}
 
 /**
  * Merges properties and selectors from an array of rules into  a single,propert
@@ -129,6 +129,7 @@ function renderProps(rule: CSSRuleNode) {
 export * from "./render/render.js";
 export * from "./render/rules.js";
 export * from "./selector/utilities.js";
+import * as utilities from "./selector/utilities.js";
 export {
     //object types
     CSSProperty,
@@ -165,14 +166,16 @@ export {
     //functions
     removeRule,
     renderProps,
-    parseDeclaration,
-    getPropertyParser,
+    parsePropertyDefinitionFromHydrocarbon as parseDeclaration,
+    parseProperty,
+    getPropertyParser
 };
 
 addModuleToCFW(Object.assign({
     //types
     CSSNodeType: CSSNodeTypeLU,
     CSS_URL,
+    CSSProperty,
 
     //parsers
     parse,
@@ -184,10 +187,11 @@ addModuleToCFW(Object.assign({
     getPropertyParser,
     media_feature_definitions,
     terms,
-    parseDeclaration,
+    parseProperty,
     productions,
     property_definitions,
     properties,
+    parseDeclaration: parsePropertyDefinitionFromHydrocarbon,
 
     //Rule Helpers
     addPropsToRule,
@@ -203,7 +207,8 @@ addModuleToCFW(Object.assign({
     getLastRuleWithMatchingSelector,
     isSelectorEqual,
     doesRuleHaveMatchingSelector,
-    getMatchedRules,
+    /* Deprecate */getMatchedRules: getArrayOfMatchedRules,
+    getArrayOfMatchedRules,
     DOMHelpers,
     getMatchedElements,
     matchElements: matchElement,
@@ -222,5 +227,5 @@ addModuleToCFW(Object.assign({
     CSS_Transform2D,
     CSS_Path,
     CSS_FontName
-}), "css");
-
+},
+    utilities), "css");
