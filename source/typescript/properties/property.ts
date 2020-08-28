@@ -16,7 +16,7 @@ export class CSSProperty {
 	pos?: Lexer;
 
 
-	constructor(name, original_value, val, IMP, pos) {
+	constructor(name, original_value, val, IMP, pos = new Lexer(original_value)) {
 		this.val = val;
 		this.name = name.replace(/\-/g, "_");
 		this.rule = null;
@@ -82,13 +82,8 @@ export class CSSProperty {
 		return this.pos.slice();
 	}
 
-	get camelName() {
-		return this.name
-			.split("_")
-			.map(
-				(v, i) => i > 0 ? v[0].toUpperCase() + v.slice(1) : v
-			)
-			.join("");
+	get camelName(): string {
+		return CSSProperty.camelName(this.name);
 	}
 
 	get css_type() {
@@ -101,5 +96,18 @@ export class CSSProperty {
 
 	get value_string() {
 		return this.val.join(" ");
+	}
+	/**
+	 * Converts underscore_identifiers and hyphen-identifiers to camelCaseIdentifiers
+	 * @param str - A string to convert to camel case.
+	 */
+	static camelName(str: string): string {
+		return str
+			.replace(/\-/g, "_")
+			.split("_")
+			.map(
+				(v, i) => i > 0 ? v[0].toUpperCase() + v.slice(1) : v
+			)
+			.join("");
 	}
 }
