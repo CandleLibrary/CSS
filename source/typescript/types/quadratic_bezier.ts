@@ -70,7 +70,14 @@ function curveIntersections(p1, p2, p3) {
 }
 
 export default class QBezier {
-    constructor(x1, y1, x2, y2, x3, y3) {
+
+    x1: number;
+    x2: number;
+    x3: number;
+    y1: number;
+    y2: number;
+    y3: number;
+    constructor(x1: number | QBezier | number[], y1?: number, x2?: number, y2?: number, x3?: number, y3?: number) {
         this.x1 = 0;
         this.x2 = 0;
         this.x3 = 0;
@@ -201,40 +208,40 @@ export default class QBezier {
 
         return [t1, t2];
     }
-
-    boundingBox() {
-        var x1 = curve[0];
-        var y1 = curve[1];
-        var x2 = curve[2];
-        var y2 = curve[3];
-        var x3 = curve[4];
-        var y3 = curve[5];
-        var roots = getRootsClamped(curve);
-        var min_x = Math.min(x1, x2, x3, roots.y[0] || Infinity, roots.x[0] || Infinity);
-        var min_y = Math.min(y1, y2, y3, roots.y[1] || Infinity, roots.x[1] || Infinity);
-        var max_x = Math.max(x1, x2, x3, roots.y[0] || -Infinity, roots.x[0] || -Infinity);
-        var max_y = Math.max(y1, y2, y3, roots.y[1] || -Infinity, roots.x[1] || -Infinity);
-
-        return {
-            min: {
-                x: min_x,
-                y: min_y
-            },
-            max: {
-                x: max_x,
-                y: max_y
-            }
-        };
-    }
-
+    /*
+        boundingBox() {
+            var x1 = this[0];
+            var y1 = this[1];
+            var x2 = this[2];
+            var y2 = this[3];
+            var x3 = this[4];
+            var y3 = this[5];
+            var roots = this.getRootsClamped(curve);
+            var min_x = Math.min(x1, x2, x3, roots.y[0] || Infinity, roots.x[0] || Infinity);
+            var min_y = Math.min(y1, y2, y3, roots.y[1] || Infinity, roots.x[1] || Infinity);
+            var max_x = Math.max(x1, x2, x3, roots.y[0] || -Infinity, roots.x[0] || -Infinity);
+            var max_y = Math.max(y1, y2, y3, roots.y[1] || -Infinity, roots.x[1] || -Infinity);
+    
+            return {
+                min: {
+                    x: min_x,
+                    y: min_y
+                },
+                max: {
+                    x: max_x,
+                    y: max_y
+                }
+            };
+        }
+    */
     rotate(angle, offset) {
         angle = (angle / 180) * Math.PI;
 
         var new_curve = this.toArray();
 
         for (var i = 0; i < 6; i += 2) {
-            var x = curve[i] - offset.x;
-            var y = curve[i + 1] - offset.y;
+            var x = this[i] - offset.x;
+            var y = this[i + 1] - offset.y;
             new_curve[i] = ((x * Math.cos(angle) - y * Math.sin(angle))) + offset.x;
             new_curve[i + 1] = ((x * Math.sin(angle) + y * Math.cos(angle))) + offset.y;
         }
