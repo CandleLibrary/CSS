@@ -147,7 +147,7 @@ function ParseString(string, transform) {
 export default class CSS_Transform2D extends Float64Array {
 
 
-    static ToString(pos = [0, 0], scl = [1, 1], rot = 0) {
+    static ToString(pos: number[] | CSS_Transform2D = [0, 0], scl = [1, 1], rot = 0) {
         var px = 0,
             py = 0,
             sx = 1,
