@@ -1,7 +1,10 @@
-import wind from "@candlefw/wind";
+import wind, { Lexer } from "@candlefw/wind";
 
 export default class CSS_Percentage extends Number {
-    static parse(l, rule, r) {
+
+    static label_name: string;
+
+    static parse(l: Lexer) {
         let tx = l.tx,
             pky = l.pk.ty;
 
@@ -44,7 +47,7 @@ export default class CSS_Percentage extends Number {
         return super.toString() + "%";
     }
 
-    toString(radix) {
+    toString(radix = 10) {
         return super.toString(radix) + "%";
     }
 
@@ -53,7 +56,7 @@ export default class CSS_Percentage extends Number {
     }
 
     lerp(to, t) {
-        return new CSS_Percentage(this + (to - this) * t);
+        return new CSS_Percentage(Number(this) + (to - Number(this)) * t);
     }
 
     copy(other) {

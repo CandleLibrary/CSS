@@ -1,6 +1,8 @@
 import wind from "@candlefw/wind";
 
 import CSS_Percentage from "./percentage.js";
+import CSS_Number from "./number.js";
+import { t } from "@candlefw/wind/build/types/ascii_code_points";
 
 export default class CSS_Length extends Number {
 
@@ -18,6 +20,12 @@ export default class CSS_Length extends Number {
                 let id = l.sync().tx;
                 l.next();
                 return new CSS_Length(parseFloat(tx) * sign, id);
+            } else if (l.p.ch == "%") {
+                l.sync().next();
+                return new CSS_Percentage(parseFloat(tx) * sign);
+            } else {
+                l.next();
+                return new CSS_Number(parseFloat(tx) * sign);
             }
         }
         return null;
@@ -38,6 +46,8 @@ export default class CSS_Length extends Number {
 
         if (u) {
             switch (u) {
+                //Flex 
+                case "fr": return new FlexLength(v);
                 //Absolute
                 case "px": return new PXLength(v);
                 case "mm": return new MMLength(v);
@@ -61,7 +71,11 @@ export default class CSS_Length extends Number {
                 //Deg
                 case "deg": return new DEGLength(v);
 
-                case "%": return new CSS_Percentage(v);
+                //Temporal
+                case "s": return new SecondsLength(v);
+                case "ms": return new MillisecondsLength(v);
+
+                case "%": return <CSS_Length><any>new CSS_Percentage(v);
             }
         }
 
@@ -71,12 +85,12 @@ export default class CSS_Length extends Number {
     get milliseconds() {
         switch (this.unit) {
             case ("s"):
-                return parseFloat(this) * 1000;
+                return Number(this) * 1000;
         }
-        return parseFloat(this);
+        return Number(this);
     }
 
-    toString(radix) {
+    toString(radix = 10) {
         return super.toString(radix) + "" + this.unit;
     }
 
@@ -89,7 +103,7 @@ export default class CSS_Length extends Number {
     }
 
     lerp(to, t) {
-        return new CSS_Length(this + (to - this) * t, this.unit);
+        return new CSS_Length(Number(this) + (to - Number(this)) * t, this.unit);
     }
 
     copy(other) {
@@ -144,4 +158,14 @@ export class VMAXLength extends CSS_Length {
 }
 export class DEGLength extends CSS_Length {
     get unit() { return "deg"; }
+}
+export class SecondsLength extends CSS_Length {
+    get unit() { return "s"; }
+}
+export class MillisecondsLength extends CSS_Length {
+    get unit() { return "ms"; }
+}
+
+export class FlexLength extends CSS_Length {
+    get unit() { return "fr"; }
 }

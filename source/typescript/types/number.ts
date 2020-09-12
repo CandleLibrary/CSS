@@ -13,7 +13,7 @@ export default class CSS_Number extends Number {
         if (l.ty == l.types.num) {
             let tx = l.tx;
             l.next();
-            return new CSS_Number(sign * (new Number(tx)));
+            return new CSS_Number(sign * parseFloat(tx));
         }
         return null;
     }
