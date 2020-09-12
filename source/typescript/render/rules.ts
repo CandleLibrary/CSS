@@ -66,7 +66,7 @@ export const CSSNodeDefinitions = [
     },
     {
         type: CSSNodeType.MediaQueries,
-        template_pattern: "@... ",
+        template_pattern: "@...,",
     },
     {
         type: CSSNodeType.Media,
