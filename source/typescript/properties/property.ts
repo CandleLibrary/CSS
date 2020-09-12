@@ -15,6 +15,8 @@ export class CSSProperty {
 
 	pos?: Lexer;
 
+	VALID: boolean;
+
 
 	constructor(name, original_value, val, IMP, pos = new Lexer(original_value)) {
 		this.val = val;
@@ -22,6 +24,7 @@ export class CSSProperty {
 		this.rule = null;
 		this.precedence = +(!!IMP) << PrecedenceFlags.IMPORTANT_BIT_SHIFT;
 		this.pos = pos;
+		this.VALID = true;
 	}
 	destroy() {
 		this.name = "";
@@ -31,7 +34,8 @@ export class CSSProperty {
 	}
 
 	toString(offset = 0) {
-		const str = [], off = ("    ").repeat(offset);
+		const off = ("    ").repeat(offset);
+		if (!this.VALID) return `${off + this.name.replace(/\_/g, "-")}:undefined`;
 		return `${off + this.name.replace(/\_/g, "-")}:${this.value_string}`;
 	}
 
@@ -95,6 +99,7 @@ export class CSSProperty {
 	}
 
 	get value_string() {
+		if (!this.VALID) return "";
 		return this.val.join(" ");
 	}
 	/**
@@ -102,6 +107,7 @@ export class CSSProperty {
 	 * @param str - A string to convert to camel case.
 	 */
 	static camelName(str: string): string {
+
 		return str
 			.replace(/\-/g, "_")
 			.split("_")
