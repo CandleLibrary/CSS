@@ -122,7 +122,7 @@ export const property_definitions = {
 	opacity: `<alphavalue>`,
 
 	/* https://www.w3.org/TR/css-backgrounds-3/ */
-	background_color: `<color>|red`,
+	background_color: `<color>`,
 	background_image: `<bg_image>#`,
 	background_repeat: `<repeat_style>#`,
 	background_attachment: `scroll|fixed|local`,
@@ -160,7 +160,7 @@ export const property_definitions = {
 	border_bottom_right_radius: `<length_percentage>{1,2}`,
 	border_bottom_left_radius: `<length_percentage>{1,2}`,
 
-	border: `<line_width>||<line_style>||<color>`,
+	border: `<line_width>||<line_style>||<color>|none`,
 
 	border_image: `<border_image_source>||<border_image_slice>[/<border_image_width>|/<border_image_width>?/<border_image_outset>]?||<border_image_repeat>`,
 	border_image_source: `none|<image>`,
@@ -170,6 +170,8 @@ export const property_definitions = {
 	border_image_repeat: `[stretch|repeat|round|space]{1,2}`,
 	box_shadow: `none|<shadow>#`,
 	line_height: `normal|<percentage>|<length>|<number>`,
+	overflow_x: 'visible|hidden|scroll|auto',
+	overflow_y: 'visible|hidden|scroll|auto',
 	overflow: 'visible|hidden|scroll|auto',
 
 	/* https://www.w3.org/TR/css-fonts-4 */
@@ -268,6 +270,8 @@ export const property_definitions = {
 
 	/* https://svgwg.org/svg2-draft/interact.html#PointerEventsProperty */
 	pointer_events: `visiblePainted|visibleFill|visibleStroke|visible|painted|fill|stroke|all|none|auto`,
+	//https://developer.mozilla.org/en-US/docs/Web/CSS/user-select
+	user_select: "none|auto|text|contain|all",
 
 	/* https://drafts.csswg.org/css-ui-3 */
 	caret_color: "auto|<color>",
@@ -319,6 +323,23 @@ export const property_definitions = {
 	quotas: `[<string><string>]+|none`,
 	counter_reset: `[<identifier><integer>?]+|none`,
 	counter_increment: `[<identifier><integer>?]+|none`,
+
+	/* https://drafts.csswg.org/css-grid-2/ */
+	grid: "<grid-template>|<grid-template-rows>/[auto-flow && dense?]<grd-auto-columns>?|[auto-flow && dense?]<grid-auto-rows>?/<grid-template-columns>",
+	grid_area: "<grid-line>[/<grid-line>]{0,3}",
+	grid_auto_columns: "<track-size>+",
+	grid_auto_rows: "<track-size>+",
+	grid_auto_flow: "[row|column]||dense",
+	grid_column: "<grid-line>[/<grid-line>]?",
+	grid_column_end: "<grid-line>",
+	grid_column_start: "<grid-line>",
+	grid_row: "<grid-line>[/<grid-line>]?",
+	grid_row_end: "<grid-line>",
+	grid_row_start: "<grid-line>",
+	grid_template: "none | [ <'grid-template-rows'> / <'grid-template-columns'> ] | [ <line-names>? <string> <track-size>? <line-names>? ]+ [ / <explicit-track-list> ]?",
+	grid_template_areas: "none | <string>+",
+	grid_template_columns: "none|<track-list>|<auto-track-list>|subgrid <line-name-list>?",
+	grid_template_rows: "none | <track-list> | <auto-track-list> | subgrid <line-name-list>?"
 };
 
 /* Properties that are not directly accessible by CSS prop creator */
@@ -334,6 +355,23 @@ export const virtual_property_definitions = {
 	fallback:`<counter-style-name>`
 	symbols:`<symbol>+`,*/
 
+	/* https://drafts.csswg.org/css-grid-2/ */
+	grid_line: "auto|<custom-ident>|[<integer>&&<custom-ident>?]|[span&&[<integer>||<custom-ident>]]",
+	track_list: "[<line-names>?[<track-size>|<track-repeat>]]+<line-names>?",
+	auto_track_list: "[<line-names>?[<fixed-size>|<fixed-repeat>]]*<line-names>?<auto-repeat>",
+	explicit_track_list: "[<line-names>?<track-size>]+<line-names>?",
+	line_name_list: "[<line-names>|<name-repeat>]+",
+	track_size: "<track-breadth>|minmax(<inflexible-breadth>,<track-breadth>)|fit-content(<length-percentage>)",
+	fixed_size: "<fixed-breadth>|minmax(<fixed-breadth>,<track-breadth>)|minmax(<inflexible-breadth>,<fixed-breadth>)",
+	track_breadth: " <length-percentage> | <flex> | min-content | max-content | auto",
+	inflexible_breadth: "<length-percentage> | min-content | max-content | auto",
+	fixed_breadth: "<length-percentage>",
+	line_names: "[<custom-ident>*]",
+	track_repeat: "repeat",//( [ <integer [1,∞]> ] , [ <line-names>? <track-size> ]+ <line-names>? )",
+	auto_repeat: "repeat",//( [ auto-fill | auto-fit ] , [ <line-names>? <fixed-size> ]+ <line-names>? )",
+	fixed_repeat: "repeat",//( [ <integer [1,∞]> ] , [ <line-names>? <fixed-size> ]+ <line-names>? )",
+	name_repeat: "repeat",//( [ <integer [1,∞]> | auto-fill ], <line-names>+)",
+
 	counter_style: `<numeric_counter_style>|<alphabetic_counter_style>|<symbolic_counter_style>|<japanese_counter_style>|<korean_counter_style>|<chinese_counter_style>|ethiopic-numeric`,
 	numeric_counter_style: `decimal|decimal-leading-zero|arabic-indic|armenian|upper-armenian|lower-armenian|bengali|cambodian|khmer|cjk-decimal|devanagari|georgian|gujarati|gurmukhi|hebrew|kannada|lao|malayalam|mongolian|myanmar|oriya|persian|lower-roman|upper-roman|tamil|telugu|thai|tibetan`,
 	symbolic_counter_style: `disc|circle|square|disclosure-open|disclosure-closed`,
@@ -347,7 +385,6 @@ export const virtual_property_definitions = {
 	content_replacement: "<image>",
 
 	/* https://drafts.csswg.org/css-values-4 */
-	custom_ident: "<identifier>",
 	position: "[[left|center|right]||[top|center|bottom]|[left|center|right|<length-percentage>][top|center|bottom|<length-percentage>]?|[[left|right]<length-percentage>]&&[[top|bottom]<length-percentage>]]",
 
 	/* https://drafts.csswg.org/css-lists-3 */
@@ -407,6 +444,8 @@ export const virtual_property_definitions = {
 	single_animation: `<time>||<timing_function>||<time>||<single_animation_iteration_count>||<single_animation_direction>||<single_animation_fill_mode>||<single_animation_play_state>||[none|<keyframes_name>]`,
 	keyframes_name: `<string>`,
 
+
+
 	/* CSS3 Stuff */
 	length_percentage: `<length>|<percentage>`,
 	frequency_percentage: `<frequency>|<percentage>`,
@@ -435,6 +474,9 @@ export const virtual_property_definitions = {
 	display_internal: `table-row-group | table-header-group | table-footer-group | table-row | table-cell | table-column-group | table-column | table-caption | ruby-base | ruby-text | ruby-base-container | ruby-text-container`,
 	display_box: `contents | none`,
 	display_legacy: `inline-block | inline-table | inline-flex | inline-grid`,
+
+
+
 };
 
 export const media_feature_definitions = {
