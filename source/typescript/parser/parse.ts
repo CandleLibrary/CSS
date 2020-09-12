@@ -4,7 +4,7 @@ import parser_data from "./css.js";
 import { CSSNode, CSSRuleNode } from "../types/node";
 import { CSSProperty } from "../properties/property.js";
 import { renderWithFormatting } from "../render/render.js";
-import { env } from "./env.js";
+import env from "./env.js";
 
 export const parse = function (string_data): CSSNode {
 

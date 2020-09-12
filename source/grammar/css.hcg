@@ -2,7 +2,7 @@
 
 @IGNORE θnl θws
 
-@IMPORT ../../node_modules/@candlefw/hydrocarbon/source/grammars/misc/default-productions.hcg as def 
+@IMPORT default-productions as def 
 
 ##############################################################################################
 ##############################################################################################
@@ -16,7 +16,7 @@
                                                                                     ↦r { {type:env.typ.Stylesheet, imports:$$sym1, nodes:$$sym2, pos} }
 
     <> STYLE_RULE → COMPLEX_SELECTOR(+,) { declaration_list? ;? }                    
-                                                                                    ↦r { {type:env.typ.Rule, selectors:$$sym1, props: new Map($$sym3.map(s=>[s.name, s])), pos, precedence: 0} }
+                                                                                    ↦r { {type:env.typ.Rule, selectors:$$sym1, props: new Map(($$sym3||[]).map(s=>[s.name, s])), pos, precedence: 0} }
 
     <> GROUP_RULE_BODY → STYLE_RULE(*)
 
@@ -41,7 +41,7 @@
     <> keyframes → \@ (ERR g:ws) τkeyframes keyframes_name { keyframes_blocks(+) }         
                                                                                     ↦r { { keyframes:"@keyframes", type:env.typ.Keyframes, name:$sym3, nodes:[$$sym5], pos } }
 
-    <> keyframes_name → τid │ string
+    <> keyframes_name → g:id │ string
 
     <> keyframes_blocks → keyframe_selector(+,) { declaration_list ;? }             
                                                                                     ↦r { { type:env.typ.KeyframeBlock, nodes:[
@@ -86,7 +86,7 @@
 
 # adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@media#Formal_syntax
 
-    <> media →  \@ (ERR g:ws) τmedia media_queries { GROUP_RULE_BODY }       
+    <> media →  \@ (ERR g:ws) τmedia media_queries { GROUP_RULE_BODY? }       
                                                                                     ↦r { { media:"@media",  type:env.typ.Media, nodes:[$sym3, ...$sym5], pos } }
     <> media_queries → ( media_query(+,) )                                          
                                                                                     ↦r { { queries:true, type:env.typ.MediaQueries, nodes:$$sym1, pos } }
@@ -213,11 +213,11 @@
     
     <> CLASS_SELECTOR →  \. (ERR g:ws) identifier                                   ↦r { {type:env.typ.ClassSelector, val:$sym2, pos,precedence: env.typ.C_SPECIFIER } } 
 
-    <> PSEUDO_CLASS_SELECTOR →  \: (ERR g:ws) identifier ( \(   declaration_values \) ↦r {$sym2} )?        
+    <> PSEUDO_CLASS_SELECTOR →  \: (ERR g:ws) identifier ( \( def::string_value \) ↦r {$sym2} )?        
                                                                                     ↦r { {type:env.typ.PseudoClassSelector, id:$sym2, val:$sym3, pos, precedence: env.typ.C_SPECIFIER } }
 
     <> ATTRIBUTE_SELECTOR →  \[ WQ_NAME \]                                          ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], pos, precedence: env.typ.C_SPECIFIER } } 
-        │ \[ WQ_NAME ATTR_MATCHER ( identifier │ \" declaration_values \" ↦r { "\"" + $sym2 + "\"" }   ) ATTR_MODIFIER? \]           
+        │ \[ WQ_NAME ATTR_MATCHER ( identifier │ \" def::string_value \" ↦r { "\"" + $sym2 + "\"" }   ) ATTR_MODIFIER? \]           
                                         ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], match_type:$sym3, match_val:$sym4, mod:$sym5, pos, precedence: env.typ.C_SPECIFIER } } 
 
     <> ATTR_MATCHER → ~=                                                
@@ -242,16 +242,15 @@
 ##############################################################################################
 
     <> declaration_list → (declaration)(+\;) \;?                                    ↦r { $$sym1 }
-        │ AT_RULE                                                                   ↦r { $$sym1 }
-        │ declaration_list AT_RULE                                                  ↦r { $$sym1.push($$sym2), $$sym1 }
-        │ declaration_list (declaration)(+;) ;?                                     ↦r { $$sym1.push(...$$sym2), $$sym1 }
+        │ AT_RULE                                                                  ↦r { $$sym1 }
+        │ declaration_list AT_RULE                                                 ↦r { $$sym1.push($$sym2), $$sym1 }
+        │ declaration_list (declaration)(+\;) \;?                                   ↦r { $$sym1.push(...$$sym2), $$sym1 }
         
 
-    <> declaration → identifier \: declaration_values ( \! τimportant )?            ↦r ^parseDeclaration
+    <> declaration → declaration_id \: declaration_values ( \! τimportant )?            ↦r ^parseDeclaration
 
-    <> declaration_values → ( θws │ θany │ θid)(+")
+    <> declaration_values → ( def::string_value  )(+")
         │\( declaration_values \)                                                   ↦r { $$sym1 + $$sym2 + $$sym3 }
-        │ declaration_values declaration_values                                     ↦r { $$sym1 + $$sym2 }
 
     <> identifier → (RED θws)  css_id_symbols                
 
@@ -264,7 +263,11 @@
         │ css_id_symbols θhex                        ↦r { $sym1 + $sym2 }
         │ css_id_symbols θbin                        ↦r { $sym1 + $sym2 }
         │ css_id_symbols θoct                        ↦r { $sym1 + $sym2 }
-        │ \_ 
         │ \$ 
         │ θid
+        | θkeyword
+        | \-
+
+    <> declaration_id > css_id_symbols
+        | \- declaration_id                          ↦r { $sym1 + $sym2 }
 

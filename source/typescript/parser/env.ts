@@ -5,7 +5,7 @@ import CSS_Percentage from "../types/percentage.js";
 import parseDeclaration from "../properties/parse_declaration.js";
 import { CSSNodeTypeLU } from "../types/node_type_lu.js";
 type CSSParserEnvironment = ParserEnvironment & {};
-export const env = <CSSParserEnvironment>{
+export default <CSSParserEnvironment>{
     typ: CSSNodeTypeLU,
     functions: {
         parseDeclaration,
