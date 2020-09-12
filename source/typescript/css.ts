@@ -1,4 +1,4 @@
-import { addModuleToCFW } from "@candlefw/candle";
+import { addModuleToCFW } from "@candlefw/cfw";
 import { property_definitions, media_feature_definitions } from "./properties/property_and_type_definitions.js";
 import { getPropertyParser } from "./properties/parser.js";
 import parsePropertyDefinitionFromHydrocarbon, { parseProperty } from "./properties/parse_declaration.js";
