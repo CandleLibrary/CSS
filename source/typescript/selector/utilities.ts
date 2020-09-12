@@ -41,7 +41,7 @@ export const DOMHelpers: SelectionHelpers<HTMLElement> = {
         return ele.id == id;
     },
 
-    WQmatch: (ele, wq_selector) => wq_selector.val,
+    WQmatch: (ele, wq_selector: CSSSelectorNode) => wq_selector.val,
 
     getParent(ele) {
         return ele.parentElement;
@@ -70,7 +70,7 @@ export const DOMHelpers: SelectionHelpers<HTMLElement> = {
     }
 };
 
-export function matchElement<Element>(ele, selector: CSSNode, helpers: SelectionHelpers<Element>, meta?: any): boolean {
+export function matchElement<Element>(ele, selector: CSSSelectorNode, helpers: SelectionHelpers<Element>, meta?: any): boolean {
 
 
 
@@ -102,7 +102,7 @@ export function matchElement<Element>(ele, selector: CSSNode, helpers: Selection
             break;
 
         case CSSNodeType.TypeSelector: {
-            const { ns, val } = selector.nodes[0];
+            const { ns, val } = <CSSSelectorNode>selector.nodes[0];
             //const { tag_index, ele_index } = helpers.getIndexFigures(ele, val);
             //meta.tag_index = tag_index;
             //meta.ele_index = val;
@@ -113,7 +113,7 @@ export function matchElement<Element>(ele, selector: CSSNode, helpers: Selection
             return true;
 
         case CSSNodeType.AttributeSelector: {
-            const { ns, val } = selector.nodes[0];
+            const { ns, val } = <CSSSelectorNode>selector.nodes[0];
             return helpers.hasAttribute(ele, ns, val, selector.match_type, selector.match_val, selector.mod);
         }
 
@@ -151,7 +151,7 @@ export function getSelectorPrecedence(selector: CSSNode): PrecedenceFlags {
     return val;
 }
 
-export function isSelectorEqual(a: CSSRuleNode, b: CSSRuleNode) {
+export function isSelectorEqual(a: CSSSelectorNode, b: CSSSelectorNode) {
     if (b.type == a.type) {
         switch (b.type) {
 
