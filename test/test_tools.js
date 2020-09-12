@@ -1,7 +1,8 @@
-import * as css from "../source/css.js";
+import * as css from "@candlefw/css";
+
 import chai from "chai";
+
 chai.should();
-import whind from "@candlefw/wind";
 
 function checkF(f) {
     if (typeof (f) == "string")
@@ -116,7 +117,7 @@ export const test = {
     set value(v) {
         this.ONLY = false;
         this.v = v;
-        this.prop_name = (new whind(v)).useExtendedId().tx.replace(/\-/g, "_");
+        this.prop_name = v.split(":").shift().replace(/\-/g, "_");
     },
     set check(f) {
         if (!this.v)
@@ -127,22 +128,23 @@ export const test = {
         f = checkF(f);
 
 
-        (this.ONLY ? itOnly : it)(`Parses property {${v}}`, async () => {
-            let sheet = css.parse(`a{${v}}`);
-            /*
-            try{
-            	await body.parse(whind(`{${v}}`));
-            }catch(e){
-            	throw "expected error"
-            }
-            */
+        // (this.ONLY ? itOnly : it)(`Parses property {${v}}`, async () => {
+        let sheet = css.rule(`a{${v}}`);
+        /*
+        try{
+            await body.parse(whind(`{${v}}`));
+        }catch(e){
+            throw "expected error"
+        }
+        */
+        //console.log(sheet, sheet.props.get(prop_name), v);
 
-            sheet.ruleset.rules[0].props[prop_name].should.not.be.undefined;
-            sheet.ruleset.rules[0].props[prop_name].should.not.be.null;
-            const prop = sheet.ruleset.rules[0].props[prop_name];
+        const test_prop = sheet.props.get(prop_name);
+        test_prop.should.not.be.undefined;
+        test_prop.should.not.be.null;
 
-            f(prop.value);
-        });
+        f(test_prop.value);
+        //});
         this.prop_name = "";
         this.v = "";
     }

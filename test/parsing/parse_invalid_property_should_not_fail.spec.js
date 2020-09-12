@@ -11,9 +11,10 @@ const parsed_rule = rule(`
         position:relative;
         position:block;
         invalid:name 22;
-        --new-property: 22px;
+        --new-property: id-di 22px;
     }
 `);
-
-assert(parsed_rule.selectors[0].type == CSSNodeTypeLU.IdSelector);
-assert(parsed_rule.props.size == 0);
+assert_group(".invalid-prop-name {position:relative; position:block;invalid:name 22;--new-property: id-di 22px;}", () => {
+    assert(parsed_rule.selectors[0].type == CSSNodeTypeLU.ClassSelector);
+    assert(parsed_rule.props.size == 3);
+});
