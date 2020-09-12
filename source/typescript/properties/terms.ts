@@ -102,7 +102,7 @@ class ValueTerm extends LiteralTerm {
     constructor(value, getPropertyParser, definitions, productions) {
 
         if (value instanceof JUX)
-            return value;
+            return <ValueTerm><any>value;
 
         super(wind(value));
 
@@ -124,7 +124,7 @@ class ValueTerm extends LiteralTerm {
             if (IS_VIRTUAL.is)
                 this.value.virtual = true;
 
-            return this.value;
+            return <ValueTerm><any>this.value;
         }
     }
 
