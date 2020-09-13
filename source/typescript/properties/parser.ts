@@ -85,16 +85,17 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 
 function CreatePropertyParser(notation, name, definitions, productions) {
 
-    const
-        l = wind(notation),
-        important = { is: false };
+    const important = { is: false };
 
-    let n = d(l, definitions, productions);
+    let n = d(wind(notation), definitions, productions);
 
-    n.seal();
+    if (n) {
 
-    n.HAS_PROP = true;
-    n.IMP = important.is;
+        n.seal();
+
+        n.HAS_PROP = true;
+        n.IMP = important.is;
+    }
 
     return n;
 }
@@ -114,6 +115,17 @@ function d(
     const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
 
     while (!l.END) {
+
+        if (l.ty == l.types.id && l.pk.ch == "(") {
+
+            // const cp = l.copy();
+
+            while (l.ch != ")" && !l.END) l.next();
+
+            l.next();
+
+            continue;
+        }
 
         switch (l.ch) {
             case "]":
