@@ -43,6 +43,9 @@ const s = stylesheet.toString();
 
 
 
+assert(renderWithFormatting(rule(".div{margin: 2px 2px 2px}")) == ".div{margin:2px 2px 2px}");
+assert(renderWithFormatting(rule(".div{border: 2px solid green}")) == ".div{border:2px solid #008000}");
+
 
 assert(renderWithFormatting(selector(".div")) == ".div");
 assert(renderWithFormatting(selector("#div")) == "#div");
