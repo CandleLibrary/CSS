@@ -9,8 +9,11 @@ export default class CSS_Length extends Number {
     static parse(l) {
         let tx = l.tx,
             pky = l.pk.ty;
+
         if (l.ty == l.types.num || tx == "-" && pky == l.types.num) {
+
             let sign = 1;
+
             if (l.ch == "-") {
                 sign = -1;
                 tx = l.p.tx;
@@ -41,6 +44,7 @@ export default class CSS_Length extends Number {
         if (typeof (v) == "string") {
             let lex = wind(v);
             let val = CSS_Length.parse(lex);
+            //@ts-ignore
             if (val) return val;
         }
 
@@ -94,8 +98,8 @@ export default class CSS_Length extends Number {
         return super.toString(radix) + "" + this.unit;
     }
 
-    toJSON() {
-        return super.toString() + "" + this.unit;
+    toJSON(radix = 10) {
+        return super.toString(radix) + "" + this.unit;
     }
 
     get str() {
