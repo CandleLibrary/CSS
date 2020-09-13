@@ -42,7 +42,7 @@ const s = stylesheet.toString();
 //assert(s == result);
 
 
-
+assert(renderWithFormatting(rule(".div{color: rgb(22, 22, 22)}")) == ".div{color:#161616}");
 assert(renderWithFormatting(rule(".div{margin: 2px 2px 2px}")) == ".div{margin:2px 2px 2px}");
 assert(renderWithFormatting(rule(".div{border: 2px solid green}")) == ".div{border:2px solid #008000}");
 
