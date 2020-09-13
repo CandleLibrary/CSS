@@ -49,10 +49,12 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 
     if (parser_val) {
 
-        if (typeof (parser_val) == "string") {
+        if (typeof (parser_val) == "string")
             parser_val = definitions[property_name] = CreatePropertyParser(parser_val, property_name, definitions, productions);
-        }
-        parser_val.name = property_name;
+
+        if (parser_val)
+            parser_val.name = property_name;
+
         return parser_val;
     }
 
@@ -67,8 +69,11 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 
         if (typeof (parser_val) == "string") {
             parser_val = definitions.__virtual[property_name] = CreatePropertyParser(parser_val, "", definitions, productions);
-            parser_val.virtual = true;
-            parser_val.name = property_name;
+
+            if (parser_val) {
+                parser_val.virtual = true;
+                parser_val.name = property_name;
+            }
         }
 
         return parser_val;
