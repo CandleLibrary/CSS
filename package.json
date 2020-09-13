@@ -1,17 +1,17 @@
 {
     "name": "@candlefw/css",
-    "version": "0.2.4",
+    "version": "0.2.5",
     "type": "module",
     "description": "CSS Management Tools",
     "main": "./build/library/css.js",
     "types": "./build/types/css.d.ts",
     "scripts": {
-        "test": "cfw.test ./test/candlefw.css.spec.js",
-        "test.watch": "cfw.test -w ./test/candlefw.css.spec.js",
-        "build": "rollup --config ./source/config/rollup.config.js",
-        "build.watch": "rollup --config  ./source/config/rollup.config.js --watch",
+        "prepublishOnly": "tsc -p ./tsconfig.json && yarn test",
+        "test": "cfw.test ./test/**",
+        "test.watch": "cfw.test -w ./test/**",
         "compile": "hydrocarbon compile --parser glalr  -u -o ./source/typescript/parser -t module ./source/grammar/css.hcg",
-        "compile.mount": "hydrocarbon compile --parser glalr -d -m ./source/grammar/css.hcg"
+        "compile.mount": "hydrocarbon compile --parser glalr -d -e ./build/library/parser/env.js -m ./source/grammar/css.hcg ",
+        "compile.test": "hydrocarbon compile --parser glalr -d  ./source/grammar/css.hcg"
     },
     "repository": {
         "type": "git",
@@ -28,15 +28,12 @@
     },
     "homepage": "https://github.com/candlefw/css#readme",
     "dependencies": {
-        "@candlefw/conflagrate": "^0.1.0",
-        "@candlefw/hydrocarbon": "^0.4.0-dev"
+        "@candlefw/conflagrate": "*",
+        "@candlefw/hydrocarbon": "*"
     },
     "devDependencies": {
-        "@candlefw/test": "0.1.0-alpha",
-        "rollup": "latest",
-        "rollup-plugin-commonjs": "latest",
-        "rollup-plugin-node-resolve": "latest",
-        "rollup-plugin-resolve": "latest"
+        "@candlefw/test": "*",
+        "chai": "4.2.0"
     },
     "jshintConfig": {
         "esversion": 6,
