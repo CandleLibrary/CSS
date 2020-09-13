@@ -241,15 +241,11 @@
 #### Body
 ##############################################################################################
 
-    <> declaration_list → (declaration)(+\;) \;?                                    ↦r { $$sym1 }
-        │ AT_RULE                                                                  ↦r { $$sym1 }
-        │ declaration_list AT_RULE                                                 ↦r { $$sym1.push($$sym2), $$sym1 }
-        │ declaration_list (declaration)(+\;) \;?                                   ↦r { $$sym1.push(...$$sym2), $$sym1 }
+    <> declaration_list → ( declaration | AT_RULE )(+\;)                           ↦r { $$sym1 }
         
+    <> declaration → declaration_id \: declaration_values ( \! τimportant )?       ↦r ^parseDeclaration
 
-    <> declaration → declaration_id \: declaration_values ( \! τimportant )?            ↦r ^parseDeclaration
-
-    <> declaration_values → ( def::string_value  )(+")
+    <> declaration_values → ( def::string_value | θws )(+")
         │\( declaration_values \)                                                   ↦r { $$sym1 + $$sym2 + $$sym3 }
 
     <> identifier → (RED θws)  css_id_symbols                
