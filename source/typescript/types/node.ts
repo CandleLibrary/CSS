@@ -23,4 +23,12 @@ export interface CSSRuleNode extends CSSNode {
 export interface CSSSelectorNode extends CSSNode {
     val?: string,
     id?: string,
+
+    ns?: string;
+
+    match_type?: string;
+
+    match_val?: string;
+
+    mod?: string;
 }
