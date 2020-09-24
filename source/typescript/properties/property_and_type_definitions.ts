@@ -64,7 +64,7 @@ export const property_definitions = {
 	unicode_bidi: "normal|embed|isolate|bidi-override|isolate-override|plaintext",
 	writing_mode: "horizontal-tb|vertical-rl|vertical-lr",
 	text_orientation: "mixed|upright|sideways",
-	glyph_orientation_vertical: `auto|0deg|90deg|"0"|"90"`,
+	glyph_orientation_vertical: `auto|0deg|90deg|0|90`,
 	text_combine_upright: "none|all",
 
 	/* https://www.w3.org/TR/css-position-3 */

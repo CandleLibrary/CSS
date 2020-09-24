@@ -1,9 +1,5 @@
 import * as css from "@candlefw/css";
 
-import chai from "chai";
-
-chai.should();
-
 function checkF(f) {
     if (typeof (f) == "string")
         return checkText(f);
@@ -19,30 +15,25 @@ function checkF(f) {
     return f;
 }
 
-export function message(string) {
-    it.skip(string);
-}
-
 export function checkURL(url) {
     const URL = new css.CSS_URL(url);
     return function (prop) {
-        prop.should.have.property("host", URL.host);
-        prop.should.have.property("port", URL.port);
+        harness.shouldHaveProperty(URL, "host");
+        harness.shouldEqual(prop.host, URL.host);
+        harness.shouldHaveProperty(URL, "port");
+        harness.shouldEqual(prop.port, URL.port);
     };
 }
 
 export function checkColor(r = 0, g = 0, b = 0, a = 1) {
     return function (prop) {
-        prop.should.have.property("r", r);
-        prop.should.have.property("g", g);
-        prop.should.have.property("b", b);
-        prop.should.have.property("a", a);
+        harness.shouldHaveProperty(prop, "r", "g", "b", "a");
     };
 }
 
 export function checkNumber(val) {
     return function (prop) {
-        prop.should.equal(val);
+        harness.shouldEqual(prop, val);
     };
 }
 
@@ -51,22 +42,22 @@ export function checkLength(val, type) {
         if (typeof (val) == "object" && val.unit) {
             type = val.unit;
         }
-        prop.should.equal(parseFloat(val));
-        typeof (prop.unit).should.not.equal("undefined");
-        prop.unit.should.equal(type);
+        harness.shouldEqual(prop, parseFloat(val));
+        harness.shouldNotEqual(typeof prop.unit, "undefined");
+        harness.shouldEqual(prop.unit, type);
     };
 }
 
 export function checkPercentage(val) {
     return function (prop) {
-        prop.should.equal(val);
-        prop.toString().should.equal(val + "%");
+        harness.shouldEqual(prop, val);
+        harness.shouldEqual(prop.toString(), val + "%");
     };
 }
 
 export function checkText(val) {
     return function (prop) {
-        prop.should.equal(val);
+        harness.shouldEqual(prop, val);
     };
 }
 
@@ -76,8 +67,7 @@ export function checkArray(...rest) {
             throw new Error("Property note created");
 
         const array = prop;
-
-        array.should.have.property("length", rest.length);
+        harness.shouldEqual(array.length, rest.length);
 
         for (let i = 0; i < rest.length; i++) {
             let func = rest[i];
@@ -95,11 +85,12 @@ export function textSpread(name, ...rest) {
     const ONLY = test.ONLY;
 
     let prop_name = name.replace(/\-/g, "_");
+
     for (let i = 0; i < rest.length; i++) {
         let text = rest[i];
-        test.value = `${name}:${text}`;
+        test.value(`${name}:${text}`);
         test.ONLY = ONLY;
-        test.check = checkText(text);
+        test.check(checkText(text));
     }
 
     test.ONLY = false;
@@ -114,14 +105,15 @@ export const test = {
             itOnly = it.only.bind(it);
         this.ONLY = true;
     },
-    set value(v) {
+    value(v) {
         this.ONLY = false;
         this.v = v;
         this.prop_name = v.split(":").shift().replace(/\-/g, "_");
+        return this;
     },
-    set check(f) {
+    check(f) {
         if (!this.v)
-            throw new Error("Please provide css.CSS property value before defining a check funcition.");
+            throw new Error("Please provide css.CSS property value before defining a check function.");
         const v = this.v;
         const prop_name = this.prop_name;
 
@@ -137,16 +129,19 @@ export const test = {
             throw "expected error"
         }
         */
-        //console.log(sheet, sheet.props.get(prop_name), v);
 
         const test_prop = sheet.props.get(prop_name);
-        test_prop.should.not.be.undefined;
-        test_prop.should.not.be.null;
+
+        //    / console.log(test_prop);
+
+        harness.shouldNotEqual(typeof test_prop, "undefined");
+        harness.shouldNotEqual(typeof test_prop, null, true);
 
         f(test_prop.value);
         //});
         this.prop_name = "";
         this.v = "";
+        return this;
     }
 };
 

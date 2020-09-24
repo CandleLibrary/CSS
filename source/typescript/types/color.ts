@@ -155,6 +155,9 @@ const color_list = {
     "white": [255, 255, 255],
     "yellowgreen": [154, 205, 50],
     "yellow": [255, 255],
+    /**
+     * test
+     */
     "rebeccapurple": [102, 81, 153]
 };
 type ColorList = { [i in keyof typeof color_list]: CSS_Color };

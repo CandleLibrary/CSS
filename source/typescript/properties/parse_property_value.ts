@@ -40,7 +40,11 @@ export default function parsePropertyDefinitionFromHydrocarbon(sym: { 0: string,
 
 
     if (parser && !IS_VIRTUAL.is) {
-        if (body_string == "unset" || body_string == "inherit" || body_string == "initial")
+        //https://drafts.csswg.org/css-cascade/#valdef-all-unset
+        //https://drafts.csswg.org/css-cascade/#valdef-all-inherit
+        //https://drafts.csswg.org/css-cascade/#valdef-all-initial
+        //https://drafts.csswg.org/css-cascade/#valdef-all-revert
+        if (body_string == "unset" || body_string == "inherit" || body_string == "initial" || body_string == "revert")
             return new CSSProperty(rule_name, body_string, [new CSS_String(body_string)], important, pos);
 
         const lex = wind(body_string);

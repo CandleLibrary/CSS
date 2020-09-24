@@ -1,6 +1,6 @@
 {
     "name": "@candlefw/css",
-    "version": "0.2.6",
+    "version": "0.2.7",
     "type": "module",
     "description": "CSS Management Tools",
     "main": "./build/library/css.js",
