@@ -1,6 +1,6 @@
 import wind, { Lexer } from "@candlefw/wind";
 import { JUX, AND, OR, ONE_OF } from "./productions.js";
-import { LiteralTerm, ValueTerm, SymbolTerm } from "./terms.js";
+import { LiteralTerm, ValueTerm, SymbolTerm, FunctionTerm } from "./terms.js";
 import { virtual_property_definitions } from "./property_and_type_definitions.js";
 //import util from "util"
 const standard_productions = {
@@ -10,7 +10,8 @@ const standard_productions = {
     ONE_OF,
     LiteralTerm,
     ValueTerm,
-    SymbolTerm
+    SymbolTerm,
+    FunctionTerm
 };
 
 function getExtendedIdentifier(l) {
@@ -50,7 +51,7 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
     if (parser_val) {
 
         if (typeof (parser_val) == "string")
-            parser_val = definitions[property_name] = CreatePropertyParser(parser_val, property_name, definitions, productions);
+            parser_val = definitions[property_name] = ConstructPropertyParser(parser_val, property_name, definitions, productions);
 
         if (parser_val)
             parser_val.name = property_name;
@@ -68,10 +69,9 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
         IS_VIRTUAL.is = true;
 
         if (typeof (parser_val) == "string") {
-            parser_val = definitions.__virtual[property_name] = CreatePropertyParser(parser_val, "", definitions, productions);
+            parser_val = definitions.__virtual[property_name] = ConstructPropertyParser(parser_val, "", definitions, productions);
 
             if (parser_val) {
-                parser_val.virtual = true;
                 parser_val.name = property_name;
             }
         }
@@ -83,24 +83,19 @@ export function getPropertyParser(property_name, IS_VIRTUAL = { is: false }, def
 }
 
 
-function CreatePropertyParser(notation, name, definitions, productions) {
+function ConstructPropertyParser(notation, name, definitions, productions) {
 
-    const important = { is: false };
+    const lex = wind(notation);
+    lex.USE_EXTENDED_ID = true;
+    lex.tl = 0;
+    lex.next();
 
-    let n = d(wind(notation), definitions, productions);
-
-    if (n) {
-
-        n.seal();
-
-        n.HAS_PROP = true;
-        n.IMP = important.is;
-    }
+    let n = define(lex, definitions, productions);
 
     return n;
 }
 
-function d(
+function define(
     l: Lexer,
     definitions,
     productions,
@@ -112,20 +107,9 @@ function d(
 ) {
     let term, nt, v;
 
-    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm } = productions;
+    const { JUX, AND, OR, ONE_OF, LiteralTerm, ValueTerm, SymbolTerm, FunctionTerm } = productions;
 
     while (!l.END) {
-
-        if (l.ty == l.types.id && l.pk.ch == "(") {
-
-            // const cp = l.copy();
-
-            while (l.ch != ")" && !l.END) l.next();
-
-            l.next();
-
-            continue;
-        }
 
         switch (l.ch) {
             case "]":
@@ -133,11 +117,11 @@ function d(
 
             case "[":
 
-                v = d(l.next(), definitions, productions, true);
+                v = define(l.next(), definitions, productions, true);
 
                 l.assert("]");
 
-                v = checkExtensions(l, v, productions);
+                v = checkForExtensions(l, v, productions);
 
                 if (term) {
                     if (term instanceof JUX && term.isRepeating())
@@ -155,7 +139,7 @@ function d(
 
                 l.next().assert(">");
 
-                v = checkExtensions(l, v, productions);
+                v = checkForExtensions(l, v, productions);
 
                 if (term) {
 
@@ -184,7 +168,7 @@ function d(
                     l.sync().next();
 
                     while (!l.END) {
-                        nt.terms.push(d(l, definitions, productions, super_term, oneof_group, or_group, true, important));
+                        nt.terms.push(define(l, definitions, productions, super_term, oneof_group, or_group, true, important));
                         if (l.ch !== "&" || l.pk.ch !== "&") break;
                         l.a("&").a("&");
                     }
@@ -208,7 +192,7 @@ function d(
                         l.sync().next();
 
                         while (!l.END) {
-                            nt.terms.push(d(l, definitions, productions, super_term, oneof_group, true, and_group, important));
+                            nt.terms.push(define(l, definitions, productions, super_term, oneof_group, true, and_group, important));
                             if (l.ch !== "|" || l.pk.ch !== "|") break;
                             l.a("|").a("|");
                         }
@@ -227,7 +211,7 @@ function d(
                         l.next();
 
                         while (!l.END) {
-                            nt.terms.push(d(l, definitions, productions, super_term, true, or_group, and_group, important));
+                            nt.terms.push(define(l, definitions, productions, super_term, true, or_group, and_group, important));
                             if (l.ch !== "|") break;
                             l.a("|");
                         }
@@ -238,11 +222,14 @@ function d(
 
             default:
 
-                v = (l.ty == l.types.symbol) ? new SymbolTerm(l) : new LiteralTerm(l);
+                if (l.pk.ch == "(") {
+                    v = new FunctionTerm(l, (lex) => define(lex, definitions, productions));
+                } else
+                    v = (l.ty == l.types.symbol) ? new SymbolTerm(l) : new LiteralTerm(l);
 
                 l.next();
 
-                v = checkExtensions(l, v, productions);
+                v = checkForExtensions(l, v, productions);
 
                 if (term) {
                     if (term instanceof JUX /*&& (term.isRepeating() || term instanceof ONE_OF)*/) term = foldIntoProduction(productions, new JUX, term);
@@ -256,17 +243,17 @@ function d(
     return term;
 }
 
-function checkExtensions(l, term, productions) {
+function checkForExtensions(l, term, productions) {
 
     outer: while (true) {
 
         switch (l.ch) {
 
-            case "!":
-                /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
-                term.IMPORTANT = true;
-                l.next();
-                continue outer;
+            // case "!": WTF - why is this here!?
+            //     /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
+            //     term.IMPORTANT = true;
+            //     l.next();
+            //     continue outer;
 
             case "{":
                 term = foldIntoProduction(productions, term);
@@ -333,10 +320,9 @@ function foldIntoProduction(productions, term, new_term = null) {
             nr.terms.push(term);
             term = nr;
         }
-        if (new_term) {
-            term.seal();
-            term.terms.push(new_term);
-        }
+
+        if (new_term) term.terms.push(new_term);
+
         return term;
     }
     return new_term;

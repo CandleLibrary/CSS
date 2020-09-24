@@ -1,4 +1,4 @@
-import parsePropertyDefinitionFromHydrocarbon from "./parse_declaration.js";
+import parsePropertyDefinitionFromHydrocarbon from "./parse_property_value.js";
 import { CSSNode } from "../css.js";
 import { Lexer } from "@candlefw/wind";
 import { PrecedenceFlags } from "../types/precedence_flags.js";
@@ -10,7 +10,7 @@ export class CSSProperty {
 
 	name: string;
 
-	rule: any;
+	//rule: any;
 	precedence: PrecedenceFlags;
 
 	pos?: Lexer;
@@ -21,7 +21,7 @@ export class CSSProperty {
 	constructor(name, original_value, val, IMP, pos = new Lexer(original_value)) {
 		this.val = val;
 		this.name = name.replace(/\-/g, "_");
-		this.rule = null;
+		//this.rule = null;
 		this.precedence = +(!!IMP) << PrecedenceFlags.IMPORTANT_BIT_SHIFT;
 		this.pos = pos;
 		this.VALID = true;
@@ -29,13 +29,13 @@ export class CSSProperty {
 	destroy() {
 		this.name = "";
 		this.val = null;
-		this.rule = null;
+		//this.rule = null;
 		this.pos = null;
 	}
 
 	toString(offset = 0) {
 		const off = ("    ").repeat(offset);
-		if (!this.VALID) return `${off + this.name.replace(/\_/g, "-")}:undefined`;
+		if (!this.VALID) return `${off + this.name.replace(/\_/g, "-")}:unset`;
 		return `${off + this.name.replace(/\_/g, "-")}:${this.value_string}`;
 	}
 
@@ -100,7 +100,7 @@ export class CSSProperty {
 
 	get value_string() {
 		if (!this.VALID) return "";
-		return this.val.join(" ");
+		return this.val.map(v => v.toString()).join(" ");
 	}
 	/**
 	 * Converts underscore_identifiers and hyphen-identifiers to camelCaseIdentifiers

@@ -18,21 +18,22 @@ import CSS_FontName from "../types/font_name.js";
  */
 export const types = {
 	color: CSS_Color,
-	length: CSS_Length,
-	time: CSS_Length,
 	flex: CSS_Length,
-	angle: CSS_Length,
-	frequency: CSS_Length,
+	length_: CSS_Length,
+	time_: CSS_Length,
+	angle_: CSS_Length,
+	frequency_: CSS_Length,
+	percentage_: CSS_Percentage,
+	number_: CSS_Number,
+	integer_: CSS_Number,
 	resolution: CSS_Length,
-	percentage: CSS_Percentage,
 	url: CSS_URL,
 	uri: CSS_URL,
-	number: CSS_Number,
+	image: CSS_URL,
 	id: CSS_Id,
 	string: CSS_String,
 	shape: CSS_Shape,
 	cubic_bezier: CSS_Bezier,
-	integer: CSS_Number,
 	gradient: CSS_Gradient,
 	transform2D: CSS_Transform2D,
 	path: CSS_Path,
@@ -126,7 +127,9 @@ export const property_definitions = {
 	background_image: `<bg_image>#`,
 	background_repeat: `<repeat_style>#`,
 	background_attachment: `scroll|fixed|local`,
-	background_position: `[<percentage>|<length>]{1,2}|[top|center|bottom]||[left|center|right]`,
+	background_position: `<background_position_x>||<background_position_y>`,
+	background_position_x: `<length_percentage>|left|center|right`,
+	background_position_y: `<length_percentage>|top|center|bottom`,
 	background_clip: `<box>#`,
 	background_origin: `<box>#`,
 	background_size: `<bg_size>#`,
@@ -154,7 +157,7 @@ export const property_definitions = {
 	border_bottom: `<line_width>||<line_style>||<color>`,
 	border_left: `<line_width>||<line_style>||<color>`,
 
-	border_radius: `<length_percentage>{1,4}[ / <length_percentage>{1,4}]?`,
+	border_radius: `<length_percentage>{1,4}`,
 	border_top_left_radius: `<length_percentage>{1,2}`,
 	border_top_right_radius: `<length_percentage>{1,2}`,
 	border_bottom_right_radius: `<length_percentage>{1,2}`,
@@ -247,7 +250,8 @@ export const property_definitions = {
 	flex_grow: `<number>`,
 	flex_shrink: `<number>`,
 	flex_wrap: `nowrap|wrap|wrap-reverse`,
-	justify_content: "flex-start | flex-end | center | space-between | space-around",
+	justify_content: "flex-start | flex-end | center | space-between | space-around | space-evenly",
+	justify_items: "auto|normal | stretch | flex-start | flex-end | center | self-start | self-end | left | right | end | start",
 	order: `<integer>`,
 
 	/* https://drafts.csswg.org/css-transitions-1/ */
@@ -317,9 +321,8 @@ export const property_definitions = {
 	vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>`,
 
 	/* Visual Effects */
-	clip: '<shape>|auto',
 	visibility: `visible|hidden|collapse`,
-	content: `normal|none|[<string>|<uri>|<counter>|attr(<identifier>)|open-quote|close-quote|no-open-quote|no-close-quote]+`,
+	content: `normal|none|[<string>|<uri>|<counter>|attr(<id>)|open-quote|close-quote|no-open-quote|no-close-quote]+`,
 	quotas: `[<string><string>]+|none`,
 	counter_reset: `[<identifier><integer>?]+|none`,
 	counter_increment: `[<identifier><integer>?]+|none`,
@@ -339,12 +342,22 @@ export const property_definitions = {
 	grid_template: "none | [ <'grid-template-rows'> / <'grid-template-columns'> ] | [ <line-names>? <string> <track-size>? <line-names>? ]+ [ / <explicit-track-list> ]?",
 	grid_template_areas: "none | <string>+",
 	grid_template_columns: "none|<track-list>|<auto-track-list>|subgrid <line-name-list>?",
-	grid_template_rows: "none | <track-list> | <auto-track-list> | subgrid <line-name-list>?"
+	grid_template_rows: "none | <track-list> | <auto-track-list> | subgrid <line-name-list>?",
+
+	/* 
+		CSS Masking Module Level 1 
+		https://drafts.fxtf.org/css-masking-1/
+	*/
+	clip: '<shape>|auto',
+
+
 };
 
 /* Properties that are not directly accessible by CSS prop creator */
 
 export const virtual_property_definitions = {
+
+	calc: "calc(<calc_sum>)",
 	/* https://drafts.csswg.org/css-counter-styles-3 */
 	/*system:`cyclic|numeric|alphabetic|symbolic|additive|[fixed<integer>?]|[extends<counter-style-name>]`,
 	negative:`<symbol><symbol>?`,
@@ -402,12 +415,12 @@ export const virtual_property_definitions = {
 	/*https://www.w3.org/TR/css-backgrounds-3/#property-index*/
 
 	bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
-	final_bg_layer: `<background_color>||<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
+	final_bg_layer: `<background_color>||<bg_image>||<bg_position>[ / <bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
 	bg_image: `<url>|<gradient>|none`,
 	repeat_style: `repeat-x|repeat-y|[repeat|space|round|no-repeat]{1,2}`,
 	background_attachment: `<attachment>#`,
 	bg_size: `[<length_percentage>|auto]{1,2}|cover|contain`,
-	bg_position: `[[left|center|right|top|bottom|<length_percentage>]|[left|center|right|<length_percentage>][top|center|bottom|<length_percentage>]|[center|[left|right]<length_percentage>?]&&[center|[top|bottom]<length_percentage>?]]`,
+	bg_position: `[top|center|bottom|<percentage>|<length>]||[left|center|right|<percentage>|<length>]`,
 	attachment: `scroll|fixed|local`,
 	line_style: `none|hidden|dotted|dashed|solid|double|groove|ridge|inset|outset`,
 	line_width: `thin|medium|thick|<length>`,
@@ -447,6 +460,13 @@ export const virtual_property_definitions = {
 
 
 	/* CSS3 Stuff */
+	time: "<time_>|<calc>",
+	angle: "<angle_>|<calc>",
+	frequency: "<frequency_>|<calc>",
+	length: "<length_>|<calc>",
+	percentage: "<percentage_>|<calc>",
+	number: "<number_>|<calc>",
+	integer: "<integer_>|<calc>",
 	length_percentage: `<length>|<percentage>`,
 	frequency_percentage: `<frequency>|<percentage>`,
 	angle_percentage: `<angle>|<percentage>`,

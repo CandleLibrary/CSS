@@ -1,4 +1,4 @@
-@SYMBOL || ^= $= *= <= >= . # !important
+@SYMBOL || ^= $= *= <= >= . # 
 
 @IGNORE θnl θws
 
@@ -243,9 +243,9 @@
 #### Body
 ##############################################################################################
 
-    <> declaration_list > rule_declaration(+;)                           ↦r { $$sym1 }
+    <> declaration_list > ( ;(*)  rule_declaration )(+;)  ;(*)                          ↦r { $$sym1 }
 
-    <> rule_declaration  > declaration
+    <> rule_declaration  > declaration 
         
     <> declaration > declaration_id \: declaration_values ( \! t:important )?              ↦r ^parseDeclaration
 
@@ -267,10 +267,10 @@
         │ css_id_symbols θoct                        ↦r { $sym1 + $sym2 }
         │ \$ 
         │ θid
-        | θkeyword
+        #| θkeyword
         | \-
 
     <> declaration_id > css_id_symbols
-        | \- declaration_id                          ↦r { $sym1 + $sym2 }
+        #| \- declaration_id                          ↦r { $sym1 + $sym2 }
 
-<> string_value >  ( \- | \_ | θany | θnum | θid | θsym | \\ θany ) (+")
+<> string_value >  ( \- | \_ | θany | θnum | θid | θsym | θob | θcb | θop | \\ θany ) (+")

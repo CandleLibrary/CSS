@@ -2,7 +2,7 @@ import wind from "@candlefw/wind";
 import {
     property_definitions
 } from "./property_and_type_definitions.js";
-import { getPropertyParser } from "./parser.js";
+import { getPropertyParser } from "./construct_property_parser.js";
 import { CSSProperty } from "./property.js";
 import { CSS_String } from "../css.js";
 
@@ -23,7 +23,6 @@ import { CSS_String } from "../css.js";
 
 export default function parsePropertyDefinitionFromHydrocarbon(sym: { 0: string, 2: string, 3: boolean; length: number; }, a, b, pos): CSSProperty {
 
-
     if (sym.length == 0)
         return null;
 
@@ -38,12 +37,17 @@ export default function parsePropertyDefinitionFromHydrocarbon(sym: { 0: string,
 
     const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
 
+
+
     if (parser && !IS_VIRTUAL.is) {
         if (body_string == "unset" || body_string == "inherit" || body_string == "initial")
             return new CSSProperty(rule_name, body_string, [new CSS_String(body_string)], important, pos);
 
-
-        prop = parser.parse(wind(body_string));
+        const lex = wind(body_string);
+        lex.USE_EXTENDED_ID = true;
+        lex.tl = 0;
+        lex.next();
+        prop = parser.parse(lex);
         return new CSSProperty(rule_name, body_string, prop, important, pos);
     } else {
 

@@ -42,6 +42,8 @@ class LiteralTerm {
     get type() { return "term"; }
 
     constructor(lex: Lexer) {
+        if (typeof lex == "string")
+            lex = new Lexer(lex);
 
         let value = getExtendedIdentifier(lex);
 
@@ -64,7 +66,7 @@ class LiteralTerm {
         return prop_data;
     }
 
-    parseLVL1(l: Lexer, r, root = true) {
+    parseLVL1(l: Lexer, r: any[], root = true) {
 
         if (typeof (l) == "string")
             l = wind(l);
@@ -116,21 +118,21 @@ class ValueTerm extends LiteralTerm {
         if (!(this.value = types[u_value]))
             this.value = getPropertyParser(u_value, IS_VIRTUAL, definitions, productions);
 
-        if (!this.value)
-            return new LiteralTerm(value);
+        if (!this.value) return new LiteralTerm(value);
 
         if (this.value instanceof JUX) {
-
-            if (IS_VIRTUAL.is)
-                this.value.virtual = true;
-
             return <ValueTerm><any>this.value;
         }
+        //Already a Term, DO NOT wrap T in another T
+        if (this.value instanceof LiteralTerm)
+            return this.value;
     }
 
     parseLVL1(l, r, ROOT = true) {
+
         if (typeof (l) == "string")
             l = wind(l);
+
 
         if (ROOT) {
             switch (checkDefaults(l)) {
@@ -143,7 +145,6 @@ class ValueTerm extends LiteralTerm {
         }
 
         const v = this.value.parse(l);
-
         if (v) {
 
             if (Array.isArray(v))
@@ -157,6 +158,41 @@ class ValueTerm extends LiteralTerm {
     }
 }
 
+class FunctionTerm extends LiteralTerm {
+
+    constructor(lex: Lexer) {
+        super(lex);
+
+        while (lex.ch != ")" && !lex.END)
+            lex.next();
+    }
+
+    parseLVL1(l, rule: any[], root = true) {
+
+        //return false;
+        if (typeof (l) == "string")
+            l = wind(l);
+
+        const r = [];
+
+        if (super.parseLVL1(l, r, root)) {
+            const cp = l.copy();
+
+            while (cp.ch != ")" && !cp.END)
+                cp.next();
+
+            cp.next();
+
+            rule.push(r[0] + cp.slice(l).trim());
+
+            l.sync(cp);
+
+            return true;
+        }
+
+        return false;
+    }
+};
 
 
 class SymbolTerm extends LiteralTerm {
@@ -174,4 +210,4 @@ class SymbolTerm extends LiteralTerm {
     }
 };
 
-export { LiteralTerm, ValueTerm, SymbolTerm };
+export { LiteralTerm, ValueTerm, SymbolTerm, FunctionTerm };

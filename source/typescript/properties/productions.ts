@@ -34,7 +34,6 @@ class JUX { /* Juxtaposition */
         this.terms = [];
         this.HAS_PROP = false;
         this.name = "";
-        this.virtual = false;
         this.REQUIRE_COMMA = false;
     }
     mergeValues(existing_v, new_v) {
@@ -47,10 +46,6 @@ class JUX { /* Juxtaposition */
                 }
             } else
                 existing_v.v = new_v.v;
-    }
-
-    seal() {
-
     }
 
     sp(value, out_val) { /* Set Property */
@@ -311,18 +306,17 @@ class ONE_OF extends JUX {
 
             let temp_val = [];
 
-            for (let i = 0, l = this.terms.length; i < l; i++) {
+            for (const term of this.terms) {
 
                 temp_val.length = 0;
 
-                if (this.terms[i].parseLVL1(copy, temp_val, false)) {
+                if (term.parseLVL1(copy, temp_val, false)) {
                     bool = true;
                     break;
                 }
             }
 
-            if (!bool)
-                break;
+            if (!bool) break;
 
             lx.sync(copy);
 

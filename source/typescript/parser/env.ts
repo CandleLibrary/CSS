@@ -2,7 +2,7 @@ import { ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.j
 import CSS_Length from "../types/length.js";
 import CSS_URL from "../types/url.js";
 import CSS_Percentage from "../types/percentage.js";
-import parseDeclaration from "../properties/parse_declaration.js";
+import parseDeclaration from "../properties/parse_property_value.js";
 import { CSSNodeTypeLU } from "../types/node_type_lu.js";
 type CSSParserEnvironment = ParserEnvironment & {};
 export default <CSSParserEnvironment>{
