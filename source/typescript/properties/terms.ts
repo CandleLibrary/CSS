@@ -145,7 +145,7 @@ class ValueTerm extends LiteralTerm {
         }
 
         const v = this.value.parse(l);
-        if (v) {
+        if (v || v === 0) {
 
             if (Array.isArray(v))
                 r.push(...v);
