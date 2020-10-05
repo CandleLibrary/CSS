@@ -1,4 +1,4 @@
-import { PrecedenceFlags } from "../css";
+import { PrecedenceFlags } from "./precedence_flags";
 
 
 export const enum CSSNodeFlags {

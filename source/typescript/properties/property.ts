@@ -1,7 +1,7 @@
-import parsePropertyDefinitionFromHydrocarbon from "./parse_property_value.js";
-import { CSSNode } from "../css.js";
+
 import { Lexer } from "@candlefw/wind";
 import { PrecedenceFlags } from "../types/precedence_flags.js";
+import { CSSNode } from "../types/node.js";
 export class CSSProperty {
 
 	parent: CSSNode;

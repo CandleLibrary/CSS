@@ -2,7 +2,6 @@ import wind from "@candlefw/wind";
 
 import CSS_Percentage from "./percentage.js";
 import CSS_Number from "./number.js";
-import { t } from "@candlefw/wind/build/types/ascii_code_points";
 
 export default class CSS_Length extends Number {
 

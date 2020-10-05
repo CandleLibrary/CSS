@@ -4,8 +4,7 @@ import {
 } from "./property_and_type_definitions.js";
 import { getPropertyParser } from "./construct_property_parser.js";
 import { CSSProperty } from "./property.js";
-import { CSS_String } from "../css.js";
-
+import CSS_String from "../types/string.js";
 /* 
     Parses a string value of a css property. Returns result of parse or null.
 

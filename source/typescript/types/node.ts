@@ -1,7 +1,7 @@
 import { Lexer } from "@candlefw/wind";
 import { CSSProperty } from "../properties/property.js";
 import { CSSNodeType } from "./node_type.js";
-import { PrecedenceFlags } from "../css.js";
+import { PrecedenceFlags } from "./precedence_flags.js";
 
 export interface CSSNode {
     type: CSSNodeType;
