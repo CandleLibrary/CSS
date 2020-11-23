@@ -1,40 +1,16 @@
 /*** 
 
-	Tests for parsing of CSS level 3 text properties https://www.w3.org/TR/2018/WD-css-text-3-20181212/
+    Tests for parsing of CSS level 3 text properties https://www.w3.org/TR/2018/WD-css-text-3-20181212/
 
 ***/
 
 import {
     textSpread,
-    checkText,
-    checkArray,
-    checkColor,
-    checkLength,
     checkPercentage,
-    checkNumber,
-    checkURL,
     test,
     px,
-    mm,
-    cm,
-    _in,
-    pc,
-    pt,
-    ch,
-    em,
-    ex,
-    rem,
-    vh,
-    vw,
-    vmin,
-    vmax,
-    deg,
     inherit
 } from "./test_tools.js";
-
-const color = checkColor;
-const text = checkText;
-const url = checkURL;
 
 assert_group("CSS Level 3 Text Properties https://www.w3.org/TR/2018/WD-css-text-3-20181212/", () => {
 

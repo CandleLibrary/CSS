@@ -5,8 +5,12 @@ import { CSSNode, CSSRuleNode } from "../types/node";
 import { CSSProperty } from "../properties/property.js";
 import { renderWithFormatting } from "../render/render.js";
 import env from "./env.js";
+import parser_loader from "./parser.js";
 
+const parser = await parser_loader();
 export const parse = function (string_data): CSSNode {
+    /*
+
 
     let lex: Lexer = null;
 
@@ -25,6 +29,18 @@ export const parse = function (string_data): CSSNode {
     node.toString = () => renderWithFormatting(node);
 
     return parse_result.value;
+    /*/
+    const parse_result = parser(string_data, env);
+
+    if (parse_result.FAILED)
+        throw new SyntaxError(parse_result.FAILED);
+
+    const node = parse_result.result[0];
+
+    node.toString = () => renderWithFormatting(node);
+
+    return parse_result.result[0];
+    //*/
 };
 
 export const properties = function (props): Map<string, CSSProperty> {
@@ -38,7 +54,7 @@ export const property = function (prop): CSSProperty {
 };
 
 export const selector = function (selector): CSSNode {
-    const css = parse(`${selector}{top:0}`);
+    const css = parse(`${selector} {top:0}`);
     return (<CSSRuleNode>css.nodes[0]).selectors[0];
 };
 

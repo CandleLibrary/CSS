@@ -155,8 +155,8 @@ export function mm(n) {
 export function cm(n) {
     return checkLength(new css.CSS_Length(n, "cm"));
 }
-export function _in(n) {
-    return checkLength(new css.CSS_Length(n, "_in"));
+export function inch(n) {
+    return checkLength(new css.CSS_Length(n, "in"));
 }
 export function pc(n) {
     return checkLength(new css.CSS_Length(n, "pc"));

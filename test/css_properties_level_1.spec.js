@@ -1,6 +1,6 @@
 /*** 
 
-	Tests for parsing of CSS level 1 properties https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#box-properties 
+    Tests for parsing of CSS level 1 properties https://www.w3.org/TR/REC-CSS1/?utm_source=www.uoota.com#box-properties 
 
 ***/
 
@@ -8,7 +8,7 @@ import {
     textSpread, checkText, checkArray, checkColor, checkLength, checkPercentage, checkNumber, checkURL, test, px,
     mm,
     cm,
-    _in,
+    nch,
     pc,
     pt,
     ch,

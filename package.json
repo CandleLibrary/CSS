@@ -9,7 +9,7 @@
         "prepublishOnly": "tsc -p ./tsconfig.json && yarn test",
         "test": "cfw.test ./test/**",
         "test.watch": "cfw.test -w ./test/**",
-        "compile": "hydrocarbon compile --parser glalr  -u -o ./source/typescript/parser -t module ./source/grammar/css.hcg",
+        "compile": "hydrocarbon compile-hybrid --ts_dir ./source/typescript/parser/ --wasm_dir ./build/wasm/  -o -a  ./source/grammar/css.hcg",
         "compile.mount": "hydrocarbon compile --parser glalr -d -e ./build/library/parser/env.js -m ./source/grammar/css.hcg ",
         "compile.test": "hydrocarbon compile --parser glalr -d  ./source/grammar/css.hcg"
     },
@@ -28,6 +28,7 @@
     },
     "homepage": "https://github.com/candlefw/css#readme",
     "dependencies": {
+        "@assemblyscript/loader": "^0.17.2",
         "@candlefw/conflagrate": "*",
         "@candlefw/hydrocarbon": "*"
     },
