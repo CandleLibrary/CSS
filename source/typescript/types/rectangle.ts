@@ -13,23 +13,23 @@ export default class CSS_Rectangle {
 
     static parse(lex: Lexer) {
         let t, l, b, r;
-
+        //@ts-ignore
         if (lex.tx == "rect" && lex.next().tx == "(") {
 
             lex.next();
 
-            t = (lex.tx == "auto") ? new CSS_Length(0, "%") : CSS_Length.parse(lex);
+            t = (lex.text == "auto") ? new CSS_Length(0, "%") : CSS_Length.parse(lex);
             if (t) {
                 if (lex.next().tx == ",") lex.next();
-                r = (lex.tx == "auto") ? new CSS_Length(100, "%") : CSS_Length.parse(lex);
+                r = (lex.text == "auto") ? new CSS_Length(100, "%") : CSS_Length.parse(lex);
                 if (r) {
                     if (lex.next().tx == ",") lex.next();
-                    b = (lex.tx == "auto") ? new CSS_Length(100, "%") : CSS_Length.parse(lex);
+                    b = (lex.text == "auto") ? new CSS_Length(100, "%") : CSS_Length.parse(lex);
                     if (b) {
                         if (lex.next().tx == ",") lex.next();
-                        l = (lex.tx == "auto") ? new CSS_Length(0, "%") : CSS_Length.parse(lex);
+                        l = (lex.text == "auto") ? new CSS_Length(0, "%") : CSS_Length.parse(lex);
 
-                        if (lex.tx == ")") {
+                        if (lex.text == ")") {
                             lex.next();
                             return new CSS_Rectangle(t, r, b, l);
                         }
