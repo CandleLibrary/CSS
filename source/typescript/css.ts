@@ -19,6 +19,7 @@ import CSS_Gradient from "./types/gradient.js";
 import CSS_Transform2D from "./types/transform.js";
 import CSS_Path from "./types/path.js";
 import CSS_FontName from "./types/font_name.js";
+import CSS_Rectangle from "./types/rectangle.js";
 
 import { CSSProperty } from "./properties/property.js";
 import { CSSNodeType } from "./types/node_type.js";
@@ -84,7 +85,7 @@ export function matchAll<Element>(selector_string, ele, helpers: SelectionHelper
 }
 
 /**
- * Merges properties and selectors from an array of rules into  a single,propert
+ * Merges properties and selectors from an array of rules into a single,
  * monolithic rule. Property collisions are resolved in a first-come::only-set
  * basis, unless **!important** has been set on a following property.
  * 
@@ -147,6 +148,7 @@ export {
     CSS_Gradient,
     CSS_Path,
     CSS_FontName,
+    CSS_Rectangle,
     CSS_Number,
     CSS_Transform2D,
     terms,
@@ -226,6 +228,8 @@ addModuleToCFW(Object.assign({
     CSS_Gradient,
     CSS_Transform2D,
     CSS_Path,
-    CSS_FontName
+    CSS_FontName,
+    CSS_Rectangle
 },
     utilities), "css");
+

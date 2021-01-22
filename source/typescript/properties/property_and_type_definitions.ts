@@ -12,6 +12,7 @@ import CSS_Media_handle from "../types/media.js";
 import CSS_Transform2D from "../types/transform.js";
 import CSS_Path from "../types/path.js";
 import CSS_FontName from "../types/font_name.js";
+import CSS_Rectangle from "../types/rectangle.js";
 
 /**
  * CSS Type constructors
@@ -37,6 +38,7 @@ export const types = {
 	gradient: CSS_Gradient,
 	transform2D: CSS_Transform2D,
 	path: CSS_Path,
+	rect: CSS_Rectangle,
 	fontname: CSS_FontName,
 
 	/* Media parsers */
@@ -348,7 +350,7 @@ export const property_definitions = {
 		CSS Masking Module Level 1 
 		https://drafts.fxtf.org/css-masking-1/
 	*/
-	clip: '<shape>|auto',
+	clip: '<rect>|auto',
 
 
 };
