@@ -1,14 +1,11 @@
-import { Lexer } from "@candlefw/wind";
-import { lrParse, ParserData } from "@candlefw/hydrocarbon/build/library/runtime.js";
-import parser_data from "./css.js";
 import { CSSNode, CSSRuleNode } from "../types/node";
 import { CSSProperty } from "../properties/property.js";
 import { renderWithFormatting } from "../render/render.js";
 import env from "./env.js";
-import parser_loader from "./parser.js";
+import parser from "./parser.js";
 
-const parser = await parser_loader();
 export const parse = function (string_data): CSSNode {
+
     /*
 
 
@@ -30,16 +27,16 @@ export const parse = function (string_data): CSSNode {
 
     return parse_result.value;
     /*/
-    const parse_result = parser(string_data, env);
+    const { FAILED, result, error_message } = parser(string_data, env);
 
-    if (parse_result.FAILED)
-        throw new SyntaxError(parse_result.FAILED);
+    if (FAILED)
+        throw new SyntaxError(error_message);
 
-    const node = parse_result.result[0];
+    const node = result[0];
 
     node.toString = () => renderWithFormatting(node);
 
-    return parse_result.result[0];
+    return node;
     //*/
 };
 

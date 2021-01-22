@@ -1,17 +1,16 @@
 {
     "name": "@candlefw/css",
-    "version": "0.2.7",
+    "version": "0.2.8",
     "type": "module",
     "description": "CSS Management Tools",
     "main": "./build/library/css.js",
     "types": "./build/types/css.d.ts",
     "scripts": {
         "prepublishOnly": "tsc -p ./tsconfig.json && yarn test",
-        "test": "cfw.test ./test/**",
+        "test": "cfw.test ./test/",
         "test.watch": "cfw.test -w ./test/**",
-        "compile": "hydrocarbon compile-hybrid --ts_dir ./source/typescript/parser/ --wasm_dir ./build/wasm/  -o -a  ./source/grammar/css.hcg",
-        "compile.mount": "hydrocarbon compile --parser glalr -d -e ./build/library/parser/env.js -m ./source/grammar/css.hcg ",
-        "compile.test": "hydrocarbon compile --parser glalr -d  ./source/grammar/css.hcg"
+        "compile.debug": "hydrocarbon compile --workers 10 --output_dir ./source/typescript/parser/ --recognizer_type js --annotations --debug ./source/grammar/css.hcg",
+        "compile.release": "hydrocarbon compile --workers 10 --output_dir ./source/typescript/parser/ --recognizer_type wasm ./source/grammar/css.hcg"
     },
     "repository": {
         "type": "git",
