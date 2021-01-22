@@ -67,14 +67,16 @@ export function checkArray(...rest) {
             throw new Error("Property note created");
 
         const array = prop;
-        harness.shouldEqual(array.length, rest.length);
+
+        harness.shouldEqual(Array.isArray(array) ? array.length : 1, rest.length);
 
         for (let i = 0; i < rest.length; i++) {
             let func = rest[i];
 
             func = checkF(func);
 
-            let prop = array[i];
+
+            let prop = (Array.isArray(array)) ? array[i] : array;
 
             func(prop);
         }
@@ -111,34 +113,29 @@ export const test = {
         this.prop_name = v.split(":").shift().replace(/\-/g, "_");
         return this;
     },
+    prop() {
+        if (!this.v)
+            throw new Error("Please provide css.CSS property value before defining a check function.");
+        return css.rule(`a{${this.v}}`).props;
+    },
     check(f) {
         if (!this.v)
             throw new Error("Please provide css.CSS property value before defining a check function.");
+
         const v = this.v;
         const prop_name = this.prop_name;
 
         f = checkF(f);
 
-
-        // (this.ONLY ? itOnly : it)(`Parses property {${v}}`, async () => {
         let sheet = css.rule(`a{${v}}`);
-        /*
-        try{
-            await body.parse(whind(`{${v}}`));
-        }catch(e){
-            throw "expected error"
-        }
-        */
 
         const test_prop = sheet.props.get(prop_name);
-
-        //    / console.log(test_prop);
 
         harness.shouldNotEqual(typeof test_prop, "undefined");
         harness.shouldNotEqual(typeof test_prop, null, true);
 
         f(test_prop.value);
-        //});
+
         this.prop_name = "";
         this.v = "";
         return this;

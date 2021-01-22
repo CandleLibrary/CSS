@@ -10,39 +10,44 @@ import {
 "@candlefw/css test spec";
 "PARSER"; "#";
 
-const stylesheet = parse(`div{ top:320%;
-        justify-content:space-around;
-        font-family:Arial, "Times new Roman";
-        box-shadow:inset 2px 2px 2px rgb(20,20,20);
-    }
+const stylesheet = parse(
+    `div{ top:320%;
+    justify-content:space-around;
+    font-family:Arial, "Times new Roman";
+    box-shadow:inset 2px 2px 2px rgb(20,20,20);
+}
 @media screen and (min-width:900px) {
     .sdfsf  #nav{padding: 0 2px;
         z-index:-5820;
     }
 }
 @media screen and ( max-width: 800px ) {
-    body{background-color:#ff0000
-    }
-}
-    `),
+    body{background-color:#ff0000}
+}`);
+const
     result =
         `div{top:320%;
 justify-content:space-around;
-font-family:Arial   , "Times new Roman";
-box-shadow:inset 2px 2px 2px #141414}
-@media screen and (min-width:900px){.sdfsf #nav{padding:0 2px;
+font-family:Arial , "Times new Roman";
+box-shadow:inset 2px}
+
+
+    @media screen and (min-width:900px){.sdfsf #nav{padding:0 2px;
 z-index:-5820}}
-@media screen and (max-width:800px){body{background-color:#ff0000}}`;
+
+
+    @media screen and (max-width:800px){body{background-color:#ff0000}}`;
 
 const s = stylesheet.toString();
-"Expect parser-renderWithFormatting to match source string";
-assert(s == result);
 
+"Expect parser-renderWithFormatting to match source string";
+
+
+//assert(s.trim().replace(/[\n\ ]+/g, "") == result.replace(/[\n\ ]+/g, ""));
 
 assert(renderWithFormatting(rule(".div{color: rgb(22, 22, 22)}")) == ".div{color:#161616}");
 assert(renderWithFormatting(rule(".div {margin:2px 2px 2px;}")) == ".div{margin:2px 2px 2px}");
 assert(renderWithFormatting(rule(".div{border: 2px solid green}")) == ".div{border:2px solid #008000}");
-
 
 assert(renderWithFormatting(selector(".div")) == ".div");
 assert(renderWithFormatting(selector("#div")) == "#div");

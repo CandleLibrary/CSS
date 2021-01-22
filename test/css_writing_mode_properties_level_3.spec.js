@@ -1,6 +1,6 @@
 /*** 
 
-	Tests for parsing of CSS level 1 flexbox properties https://www.w3.org/TR/css-flexbox-1/
+    Tests for parsing of CSS level 1 flexbox properties https://www.w3.org/TR/css-flexbox-1/
 
 ***/
 
@@ -17,7 +17,7 @@ import {
     px,
     mm,
     cm,
-    _in,
+    inch,
     pc,
     pt,
     ch,
