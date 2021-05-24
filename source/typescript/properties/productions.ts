@@ -281,6 +281,8 @@ class OR extends JUX {
 
             bool = true;
 
+            lx.sync(copy);
+
             if (!this.checkForComma(copy, out_val, temp_val, j))
                 break;
         }
