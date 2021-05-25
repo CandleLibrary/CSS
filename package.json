@@ -1,5 +1,5 @@
 {
-    "name": "@candlefw/css",
+    "name": "@candlelib/css",
     "version": "0.2.8",
     "type": "module",
     "description": "CSS Management Tools",
@@ -28,8 +28,8 @@
     "homepage": "https://github.com/candlefw/css#readme",
     "dependencies": {
         "@assemblyscript/loader": "^0.17.2",
-        "@candlefw/conflagrate": "0.1.1",
-        "@candlefw/hydrocarbon": "0.8.1-alpha-2"
+        "@candlelib/conflagrate": "0.1.1",
+        "@candlelib/hydrocarbon": "0.8.1-alpha-2"
     },
     "devDependencies": {
         "@candlelib/cure": "0.5.0",
