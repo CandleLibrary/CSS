@@ -137,7 +137,12 @@ export const property_definitions = {
 	background_clip: `<box>#`,
 	background_origin: `<box>#`,
 	background_size: `<bg_size>#`,
-	background: `[<bg_layer>#,]?<final_bg_layer>`,
+
+	// This should be [<bg_layer># ,]?<final_bg_layer>
+	// but the current parser generator can't handle
+	// the trailing comma; This close enough solution
+	// will have to be good enough.
+	background: `<final_bg_layer>#`,
 	border_color: `<color>{1,4}`,
 	border_top_color: `<color>`,
 	border_right_color: `<color>`,
@@ -421,8 +426,8 @@ export const virtual_property_definitions = {
 
 	/*https://www.w3.org/TR/css-backgrounds-3/#property-index*/
 
-	bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
-	final_bg_layer: `<background_color>||<bg_image>||<bg_position>[ / <bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
+	//bg_layer: `<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
+	final_bg_layer: `<background_color>||<bg_image>||<bg_position>[/<bg_size>]?||<repeat_style>||<attachment>||<box>||<box>`,
 	bg_image: `<url>|<gradient>|none`,
 	repeat_style: `repeat-x|repeat-y|[repeat|space|round|no-repeat]{1,2}`,
 	background_attachment: `<attachment>#`,
