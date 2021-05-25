@@ -249,12 +249,6 @@ function checkForExtensions(l, term, productions) {
 
         switch (l.ch) {
 
-            // case "!": WTF - why is this here!?
-            //     /* https://www.w3.org/TR/CSS21/cascade.html#important-rules */
-            //     term.IMPORTANT = true;
-            //     l.next();
-            //     continue outer;
-
             case "{":
                 term = foldIntoProduction(productions, term);
                 term.r[0] = parseInt(l.next().tx);

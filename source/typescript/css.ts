@@ -15,8 +15,8 @@ import CSS_Id from "./types/id.js";
 import CSS_Shape from "./types/shape.js";
 import CSS_Number from "./types/number.js";
 import CSS_Bezier from "./types/cubic_bezier.js";
-import CSS_Gradient from "./types/gradient.js";
-import CSS_Transform2D from "./types/transform.js";
+import { CSS_Gradient } from "./types/gradient.js";
+import { CSS_Transform2D, CSS_Transform3D } from "./types/transform.js";
 import CSS_Path from "./types/path.js";
 import CSS_FontName from "./types/font_name.js";
 import CSS_Rectangle from "./types/rectangle.js";
@@ -151,6 +151,7 @@ export {
     CSS_Rectangle,
     CSS_Number,
     CSS_Transform2D,
+    CSS_Transform3D,
     terms,
     productions,
     property_definitions,

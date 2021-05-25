@@ -28,7 +28,7 @@ class Stop {
     }
 }
 
-export default class CSS_Gradient {
+export class CSS_Gradient {
 
     stops: Stop[];
 
@@ -36,45 +36,50 @@ export default class CSS_Gradient {
 
     direction: CSS_Length;
 
-    static parse(l: Lexer) {
-        let cp = l.copy();
-        try {
-            if (cp.ty == cp.types.id) {
+    static parse(l: Lexer | string) {
 
-                switch (cp.tx) {
-                    case "linear":
-                        cp.n.a("-").a("gradient").a("(");
+        if (typeof l == "string") {
+            l = new Lexer(l);
+            l.USE_EXTENDED_ID = true;
+            l.tl = 0; l.next();
+        }
+        try {
+            if (l.ty == l.types.id) {
+
+                switch (l.tx) {
+                    case "linear-gradient":
+                        l.next().a("(");
                         let dir, num, rot = null;
                         //@ts-ignore
-                        if (cp.tx == "to") {
+                        if (l.tx == "to") {
                             //@ts-ignore
-                        } else if (cp.ty == cp.types.num) {
-                            rot = CSS_Length.parse(cp);
-                            cp.a(',');
+                        } else if (l.ty == l.types.num) {
+                            rot = CSS_Length.parse(l);
+                            l.a(',');
                         }
 
                         let stops = [];
 
-                        while (!cp.END && cp.ch != ")") {
+                        while (!l.END && l.ch != ")") {
 
-                            let v = CSS_Color.parse(cp), len = null;
+                            let v = CSS_Color.parse(l), len = null;
 
-                            if (cp.ch != ",") {
-                                if (!(len = CSS_Length.parse(cp)))
-                                    len = CSS_Percentage.parse(cp);
+                            if (l.ch != ",") {
+                                if (!(len = CSS_Length.parse(l)))
+                                    len = CSS_Percentage.parse(l);
                             };
 
-                            consumeComma(cp);
+                            consumeComma(l);
 
                             stops.push(new Stop(v, len));
 
-                            if (cp.ch == ")")
+                            if (l.ch == ")")
                                 break;
                         }
-                        cp.a(")");
+                        l.a(")");
                         let grad = new CSS_Gradient(0, rot);
                         grad.stops = stops;
-                        l.sync(cp);
+                        l.sync(l);
                         return grad;
                 }
             }

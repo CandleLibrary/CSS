@@ -82,6 +82,8 @@ class JUX { /* Juxtaposition */
             if (lx.ch !== ",")
                 return false;
 
+
+
             lx.next();
         } else if (out_val)
             out_val.push(...temp_val);
@@ -90,7 +92,6 @@ class JUX { /* Juxtaposition */
     }
 
     parseLVL1(lx, out_val = [], ROOT = true) {
-
 
         if (typeof (lx) == "string")
             lx = whind(lx);
@@ -111,10 +112,12 @@ class JUX { /* Juxtaposition */
 
 
 
+
         return bool;
     }
 
     parseLevel2(lx, out_val, start, end) {
+
 
         let bool = false,
             top_copy = lx.copy(),
@@ -153,6 +156,7 @@ class JUX { /* Juxtaposition */
         }
 
         out_val.push(...temp_val);
+
         lx.sync(top_copy);
 
         return bool;
@@ -285,6 +289,7 @@ class OR extends JUX {
 
             if (!this.checkForComma(copy, out_val, temp_val, j))
                 break;
+
         }
 
         return bool;

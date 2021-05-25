@@ -7,9 +7,9 @@ import CSS_Id from "../types/id.js";
 import CSS_Shape from "../types/shape.js";
 import CSS_Number from "../types/number.js";
 import CSS_Bezier from "../types/cubic_bezier.js";
-import CSS_Gradient from "../types/gradient.js";
+import { CSS_Gradient } from "../types/gradient.js";
 import CSS_Media_handle from "../types/media.js";
-import CSS_Transform2D from "../types/transform.js";
+import { CSS_Transform2D, CSS_Transform3D } from "../types/transform.js";
 import CSS_Path from "../types/path.js";
 import CSS_FontName from "../types/font_name.js";
 import CSS_Rectangle from "../types/rectangle.js";
@@ -36,6 +36,8 @@ export const types = {
 	shape: CSS_Shape,
 	cubic_bezier: CSS_Bezier,
 	gradient: CSS_Gradient,
+	linear_gradient: CSS_Gradient,
+	transform3D: CSS_Transform3D,
 	transform2D: CSS_Transform2D,
 	path: CSS_Path,
 	rect: CSS_Rectangle,
@@ -321,6 +323,9 @@ export const property_definitions = {
 
 
 	vertical_align: `baseline|sub|super|top|text-top|middle|bottom|text-bottom|<percentage>|<length>`,
+
+	/* Transform */
+	transform: "<transform2D>|none",
 
 	/* Visual Effects */
 	visibility: `visible|hidden|collapse`,
