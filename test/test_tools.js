@@ -1,4 +1,4 @@
-import * as css from "@candlefw/css";
+import * as css from "../build/library/css.js";
 
 function checkF(f) {
     if (typeof (f) == "string")
