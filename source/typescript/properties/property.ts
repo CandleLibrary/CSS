@@ -14,7 +14,9 @@ export class CSSProperty {
 	precedence: PrecedenceFlags;
 
 	pos?: Lexer;
-
+	/**
+	 * True if the underlying property string was parsed without errors
+	 */
 	VALID: boolean;
 
 
@@ -36,7 +38,7 @@ export class CSSProperty {
 	toString(offset = 0) {
 		const off = ("    ").repeat(offset);
 		if (!this.VALID) return `${off + this.name.replace(/\_/g, "-")}:unset`;
-		return `${off + this.name.replace(/\_/g, "-")}:${this.value_string}`;
+		return `${off + this.name.replace(/\_/g, "-")}:${this.value_string}${this.IMPORTANT ? " !important" : ""}`;
 	}
 
 	setValue(...values) {
