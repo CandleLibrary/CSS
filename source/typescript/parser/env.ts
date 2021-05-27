@@ -1,4 +1,4 @@
-import { ParserEnvironment } from "@candlefw/hydrocarbon/build/library/runtime.js";
+import { ParserEnvironment } from "@candlelib/hydrocarbon/build/library/runtime.js";
 import CSS_Length from "../types/length.js";
 import CSS_URL from "../types/url.js";
 import CSS_Percentage from "../types/percentage.js";

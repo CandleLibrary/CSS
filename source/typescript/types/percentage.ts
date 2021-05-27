@@ -1,4 +1,4 @@
-import wind, { Lexer } from "@candlefw/wind";
+import wind, { Lexer } from "@candlelib/wind";
 
 export default class CSS_Percentage extends Number {
 

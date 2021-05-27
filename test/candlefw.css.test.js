@@ -1,7 +1,7 @@
 import { parse } from "../build/library/css.js";
 
 
-"@candlefw/css test spec";
+"@candlelib/css test spec";
 "PARSER"; "#";
 {
     const stylesheet = parse(`div{

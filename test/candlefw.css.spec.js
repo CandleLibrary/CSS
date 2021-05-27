@@ -5,9 +5,9 @@ import {
     parse,
     isSelectorEqual,
     doesRuleHaveMatchingSelector
-} from "@candlefw/css";
+} from "@candlelib/css";
 
-"@candlefw/css test spec";
+"@candlelib//css test spec";
 "PARSER"; "#";
 
 const stylesheet = parse(

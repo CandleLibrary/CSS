@@ -1,4 +1,4 @@
-import URL from "@candlefw/url";
+import URL from "@candlelib/url";
 
 export default class CSS_URL extends URL {
     static parse(l) {

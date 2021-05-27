@@ -1,5 +1,5 @@
 import * as css from "../source/css.js";
-import html from "@candlefw/html";
+import html from "@candlelib/html";
 
 html.polyfill();
 

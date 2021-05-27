@@ -5,7 +5,7 @@
  * https://drafts.csswg.org/css-grid-2/
  */
 
-import { parse } from "@candlefw/css";
+import { parse } from "@candlelib/css";
 import assert from "assert";
 
 //Basic grid 

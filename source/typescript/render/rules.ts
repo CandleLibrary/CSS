@@ -1,6 +1,6 @@
 import { CSSNodeType } from "../types/node_type.js";
 import { CSSNode } from "../types/node";
-import { buildRenderers, buildFormatRules, FormatRule as $ } from "@candlefw/conflagrate";
+import { buildRenderers, buildFormatRules, FormatRule as $ } from "@candlelib/conflagrate";
 import { CSSNodeTypeLU } from "../types/node_type_lu.js";
 
 export const format_rules = buildFormatRules([{

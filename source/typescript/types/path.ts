@@ -1,4 +1,4 @@
-import wind from "@candlefw/wind";
+import wind from "@candlelib/wind";
 /**
  * @brief Path Info
  * @details Path syntax information for reference

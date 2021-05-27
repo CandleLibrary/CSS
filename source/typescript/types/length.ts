@@ -1,4 +1,4 @@
-import wind from "@candlefw/wind";
+import wind from "@candlelib/wind";
 
 import CSS_Percentage from "./percentage.js";
 import CSS_Number from "./number.js";

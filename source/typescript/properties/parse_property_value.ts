@@ -1,4 +1,4 @@
-import wind from "@candlefw/wind";
+import wind from "@candlelib/wind";
 import {
     property_definitions
 } from "./property_and_type_definitions.js";

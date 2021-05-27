@@ -1,7 +1,7 @@
 import { CSSNodeType, CSSNodeFlags } from "../types/node_type.js";
 import { CSSNode, CSSRuleNode, CSSSelectorNode } from "../types/node.js";
 import { PrecedenceFlags } from "../css.js";
-import { traverse } from "@candlefw/conflagrate";
+import { traverse } from "@candlelib/conflagrate";
 
 export interface SelectionHelpers<Element> {
     hasAttribute: (ele: Element, namespace: string, name: string, value: string, sym: string, modifier: string) => boolean;

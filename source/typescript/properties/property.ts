@@ -1,5 +1,5 @@
 
-import { Lexer } from "@candlefw/wind";
+import { Lexer } from "@candlelib/wind";
 import { PrecedenceFlags } from "../types/precedence_flags.js";
 import { CSSNode } from "../types/node.js";
 export class CSSProperty {

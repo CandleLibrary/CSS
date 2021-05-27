@@ -9,7 +9,7 @@ CSS_Percentage
 import
 CSS_Length
     from "./length.js";
-import { Lexer } from "@candlefw/wind";
+import { Lexer } from "@candlelib/wind";
 import { consumeComma } from "./consume_comma.js";
 
 class Stop {

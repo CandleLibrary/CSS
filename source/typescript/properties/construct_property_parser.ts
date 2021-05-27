@@ -1,4 +1,4 @@
-import wind, { Lexer } from "@candlefw/wind";
+import wind, { Lexer } from "@candlelib/wind";
 import { JUX, AND, OR, ONE_OF } from "./productions.js";
 import { LiteralTerm, ValueTerm, SymbolTerm, FunctionTerm } from "./terms.js";
 import { virtual_property_definitions } from "./property_and_type_definitions.js";

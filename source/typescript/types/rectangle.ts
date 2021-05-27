@@ -1,4 +1,4 @@
-import { Lexer } from "@candlefw/wind";
+import { Lexer } from "@candlelib/wind";
 import CSS_Length from "./length.js";
 
 /**

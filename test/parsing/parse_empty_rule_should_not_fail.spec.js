@@ -4,7 +4,7 @@
  */
 
 
-import { rule, CSSNodeTypeLU } from "@candlefw/css";
+import { rule, CSSNodeTypeLU } from "@candlelib/css";
 
 const parsed_rule = rule(`
     #empty-prop-name {}

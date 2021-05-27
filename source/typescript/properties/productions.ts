@@ -1,4 +1,4 @@
-import whind from "@candlefw/wind";
+import whind from "@candlelib/wind";
 var step = 0;
 
 export function checkDefaults(lx) {
