@@ -1,4 +1,3 @@
-import { addModuleToCFW } from "@candlelib/candle";
 import { property_definitions, media_feature_definitions } from "./properties/property_and_type_definitions.js";
 import { getPropertyParser } from "./properties/construct_property_parser.js";
 import parsePropertyDefinitionFromHydrocarbon, { parseProperty } from "./properties/parse_property_value.js";
@@ -173,64 +172,4 @@ export {
     parseProperty,
     getPropertyParser
 };
-
-addModuleToCFW(Object.assign({
-    //types
-    CSSNodeType: CSSNodeTypeLU,
-    CSS_URL,
-    CSSProperty,
-
-    //parsers
-    parse,
-    selector,
-    rule,
-    property,
-
-    //Properties
-    getPropertyParser,
-    media_feature_definitions,
-    terms,
-    parseProperty,
-    productions,
-    property_definitions,
-    properties,
-    parseDeclaration: parsePropertyDefinitionFromHydrocarbon,
-
-    //Rule Helpers
-    addPropsToRule,
-    mergeRulesIntoOne,
-    newRule,
-    removeRule,
-    renderProps,
-
-    //Selector helpers
-    matchAll,
-    getMatchedSelectors,
-    getFirstMatchedSelector,
-    getLastRuleWithMatchingSelector,
-    isSelectorEqual,
-    doesRuleHaveMatchingSelector,
-    /* Deprecate */getMatchedRules: getArrayOfMatchedRules,
-    getArrayOfMatchedRules,
-    DOMHelpers,
-    getMatchedElements,
-    matchElements: matchElement,
-    matchAnySelector: matchAnySelector,
-}, {
-    CSS_Color,
-    CSS_Length,
-    CSS_Percentage,
-    CSS_URL,
-    CSS_Number,
-    CSS_Id,
-    CSS_String,
-    CSS_Shape,
-    CSS_Bezier,
-    CSS_Gradient,
-    CSS_Transform2D,
-    CSS_Path,
-    CSS_FontName,
-    CSS_Rectangle
-},
-    utilities), "css");
 
