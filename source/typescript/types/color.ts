@@ -219,9 +219,12 @@ export default class CSS_Color extends Float64Array {
         saturation: number,
         lightness: number
     ) {
+        saturation *= 0.01;
+        lightness *= 0.01;
+
         const
             h = (hue % 360) / 60,
-            c = (1 - Math.abs(2 * lightness - 1)) * saturation,
+            c = (1 - Math.abs(2 * lightness - 1)) * (saturation),
             x = c * (1 - Math.abs((h % 2) - 1)),
             m = lightness - 0.5 * c;
 
@@ -262,6 +265,8 @@ export default class CSS_Color extends Float64Array {
             l = wind(l);
 
         let out = { r: 0, g: 0, b: 0, a: 1 };
+
+        var tx;
 
         switch (l.ch) {
             case "#":
@@ -316,7 +321,7 @@ export default class CSS_Color extends Float64Array {
 
             case "r":
 
-                let tx = l.tx;
+                tx = l.tx;
 
                 const RGB_TYPE = tx === "rgba" ? 1 : tx === "rgb" ? 2 : 0;
 
@@ -388,7 +393,7 @@ export default class CSS_Color extends Float64Array {
                     l.next(); // , or  %
                     //@ts-ignore
                     if (l.ch == "%") {
-                        l.next(); out.r = out.r * 255 / 100;
+                        l.next();
                     }
 
 
@@ -397,7 +402,7 @@ export default class CSS_Color extends Float64Array {
                     l.next(); // , or  %
                     //@ts-ignore
                     if (l.ch == "%") {
-                        l.next(); out.g = out.g * 255 / 100;
+                        l.next();
                     }
 
 
@@ -406,7 +411,7 @@ export default class CSS_Color extends Float64Array {
                     l.next(); // , or ) or %
                     //@ts-ignore
                     if (l.ch == "%")
-                        l.next(), out.b = out.b * 255 / 100;
+                        l.next();
 
                     if (HSL_TYPE < 2) {
                         out.a = parseFloat(l.next().tx);
