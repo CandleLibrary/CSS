@@ -28,6 +28,7 @@
     "homepage": "https://github.com/candlelibrary/css#readme",
     "dependencies": {
         "@assemblyscript/loader": "^0.17.2",
+        "@candlelib/uri": "*",
         "@candlelib/conflagrate": "0.1.1",
         "@candlelib/hydrocarbon": "0.8.1-alpha-2"
     },
