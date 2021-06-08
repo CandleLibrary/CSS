@@ -14,7 +14,7 @@ if (typeof (Location) == "undefined") global.Location = class { };
 
 console.log(">= START ==============================================");
 
-describe('CandleFW CSS tests', function () {
+describe('CandleLibrary CSS tests', function () {
     const test_data =
         `.panel-success > .panel-heading + .panel-collapse > .panel-body {
   border-top-color: #d6e9c6;

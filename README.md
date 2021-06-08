@@ -1,6 +1,6 @@
-# CandleFW CSS
+# CandleLibrary CSS
 
-CandleFW CSS is a lightweight css parser, editor, and generator tool.
+CandleLibrary CSS is a lightweight css parser, editor, and generator tool.
 
 # Install
 

@@ -9,7 +9,7 @@ const fs = require("fs");
 
 if (typeof (Location) == "undefined") global.Location = class { };
 
-describe('CandleFW CSS tests', function () {
+describe('CandleLibrary CSS tests', function () {
 
     before(function () {
 

@@ -2,19 +2,19 @@
     "name": "@candlelib/css",
     "version": "0.2.8",
     "type": "module",
-    "description": "CSS Management Tools",
+    "description": "CSS Parsing & Editing Tools",
     "main": "./build/library/css.js",
     "types": "./build/types/css.d.ts",
     "scripts": {
         "prepublishOnly": "tsc -p ./tsconfig.json && yarn test",
-        "test": "cfw.test ./test/",
-        "test.watch": "cfw.test -w ./test/**",
+        "test": "candle.cure ./test/",
+        "test.watch": "candle.cure -w ./test/**",
         "compile.debug": "hydrocarbon compile --workers 10 --output_dir ./source/typescript/parser/ --recognizer_type js --annotations --debug ./source/grammar/css.hcg",
         "compile.release": "hydrocarbon compile --workers 10 --output_dir ./source/typescript/parser/ --recognizer_type wasm ./source/grammar/css.hcg"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/candlefw/css.git"
+        "url": "git+https://github.com/candlelibrary/css.git"
     },
     "keywords": [
         "CSS",
@@ -23,17 +23,16 @@
     "author": "Anthony Weathersby",
     "license": "MIT",
     "bugs": {
-        "url": "https://github.com/candlefw/css/issues"
+        "url": "https://github.com/candlelibrary/css/issues"
     },
-    "homepage": "https://github.com/candlefw/css#readme",
+    "homepage": "https://github.com/candlelibrary/css#readme",
     "dependencies": {
         "@assemblyscript/loader": "^0.17.2",
         "@candlelib/conflagrate": "0.1.1",
         "@candlelib/hydrocarbon": "0.8.1-alpha-2"
     },
     "devDependencies": {
-        "@candlelib/cure": "0.5.0",
-        "chai": "4.2.0"
+        "@candlelib/cure": "0.5.0"
     },
     "jshintConfig": {
         "esversion": 6,
