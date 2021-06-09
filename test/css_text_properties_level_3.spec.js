@@ -60,4 +60,5 @@ assert_group("CSS Level 3 Text Properties https://www.w3.org/TR/2018/WD-css-text
     assert(textSpread("hanging-punctuation", "none", "first", "force-end", "allow-end", "last", ...inherit));
 
     assert(test.value("hanging-punctuation:first allow-end last").check(["first", "allow-end", "last"]));
+
 });

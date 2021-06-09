@@ -57,7 +57,9 @@ export function checkPercentage(val) {
 
 export function checkText(val) {
     return function (prop) {
-        harness.shouldEqual(prop, val);
+        if (!harness.shouldEqual(prop, val)) {
+            throw new Error(`Expected ${prop} to equal ${val}`);
+        }
     };
 }
 
@@ -105,25 +107,27 @@ export const test = {
     only: function () {
         if (!itOnly)
             itOnly = it.only.bind(it);
-        this.ONLY = true;
+        test.ONLY = true;
     },
     value(v) {
-        this.ONLY = false;
-        this.v = v;
-        this.prop_name = v.split(":").shift().replace(/\-/g, "_");
-        return this;
+        test.ONLY = false;
+        test.v = v;
+        test.prop_name = v.split(":").shift().replace(/\-/g, "_");
+        return test;
     },
     prop() {
-        if (!this.v)
+        if (!test.v)
             throw new Error("Please provide css.CSS property value before defining a check function.");
-        return css.rule(`a{${this.v}}`).props;
+        return css.rule(`a{${test.v}}`).props;
     },
     check(f) {
-        if (!this.v)
+
+        console.log(test.v);
+        if (!test.v)
             throw new Error("Please provide css.CSS property value before defining a check function.");
 
-        const v = this.v;
-        const prop_name = this.prop_name;
+        const v = test.v;
+        const prop_name = test.prop_name;
 
         f = checkF(f);
 
@@ -136,9 +140,9 @@ export const test = {
 
         f(test_prop.value);
 
-        this.prop_name = "";
-        this.v = "";
-        return this;
+        test.prop_name = "";
+        test.v = "";
+        return test;
     }
 };
 

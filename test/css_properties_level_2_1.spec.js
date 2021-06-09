@@ -73,7 +73,7 @@ assert_group("box-model: https://www.w3.org/TR/CSS2/box.html", sequence, () => {
 assert_group("Visual Formatting: https://www.w3.org/TR/CSS2/visuren.html", sequence, () => {
 
 
-    textSpread("display",
+    assert("display", textSpread("display",
         "inline",
         "block",
         "list-item",
@@ -90,20 +90,20 @@ assert_group("Visual Formatting: https://www.w3.org/TR/CSS2/visuren.html", seque
         "table-caption",
         "none",
         "inherit"
-    );
+    ));
 
-    textSpread("position",
+    assert("position", textSpread("position",
         "static",
         "relative",
         "absolute",
         "fixed",
         "inherit"
-    );
+    ));
 
-    textSpread("top",
+    assert("top", textSpread("top",
         "auto",
         "inherit"
-    );
+    ));
 
 
     assert(test.value("top:20px").check(px(20)));
@@ -120,10 +120,10 @@ assert_group("Visual Formatting: https://www.w3.org/TR/CSS2/visuren.html", seque
     test.value("right:20%");
     assert(test.check(checkPercentage(20)));
 
-    textSpread("bottom",
+    assert("bottom", textSpread("bottom",
         "auto",
         "inherit"
-    );
+    ));
 
     test.value("bottom:20px");
     assert(test.check(px(20)));
@@ -131,10 +131,10 @@ assert_group("Visual Formatting: https://www.w3.org/TR/CSS2/visuren.html", seque
     test.value("bottom:20%");
     assert(test.check(checkPercentage(20)));
 
-    textSpread("left",
+    assert("left", textSpread("left",
         "auto",
         "inherit"
-    );
+    ));
 
     test.value("left:20px");
     assert(test.check(px(20)));
@@ -142,38 +142,38 @@ assert_group("Visual Formatting: https://www.w3.org/TR/CSS2/visuren.html", seque
     test.value("left:20%");
     assert(test.check(checkPercentage(20)));
 
-    textSpread("float",
+    assert("float", textSpread("float",
         "left",
         "right",
         "none",
         "inherit"
-    );
+    ));
 
-    textSpread("clear",
+    assert("clear", textSpread("clear",
         "left",
         "right",
         "none",
         "both",
         "inherit"
-    );
+    ));
 
-    textSpread("z-index",
+    assert("z-index", textSpread("z-index",
         "auto",
-        "inherit");
+        "inherit"));
 
     test.value("z-index:20");
     assert(test.check(checkNumber(20)));
 
-    textSpread("direction",
+    assert("direction", textSpread("direction",
         "ltr",
         "rtl",
-        "inherit");
+        "inherit"));
 
-    textSpread("unicode-bidi",
+    assert("unicode-bidi", textSpread("unicode-bidi",
         "normal",
         "embed",
         "bidi-override",
-        "inherit");
+        "inherit"));
 
     test.value("width:auto");
     assert(test.check("auto"));
@@ -253,34 +253,34 @@ assert_group("Visual Formatting: https://www.w3.org/TR/CSS2/visuren.html", seque
 
 assert_group("Visual Effect: https://www.w3.org/TR/CSS2/visufx.html", sequence, function () {
 
-    textSpread("overflow",
+    assert("overflow", textSpread("overflow",
         "visible",
         "hidden",
         "scroll",
         "auto",
         "inherit"
-    );
+    ));
 
-    textSpread("clip",
+    assert("clip", textSpread("clip",
         "auto",
         "inherit"
-    );
+    ));
 
     test.value("clip:rect(20vh,31em,auto,58)");
 
     assert(test.value("clip:rect(20vh,31em,auto,58)").check("rect(20vh,31em,100%,58)"));
 
-    textSpread("visibility",
+    assert("visibility", textSpread("visibility",
         "visible",
         "hidden",
         "collapse",
         "inherit"
-    );
+    ));
 });
 
 assert_group("Generate: https://www.w3.org/TR/CSS2/generate.html", sequence, function () {
 
-    textSpread("content",
+    assert("content", textSpread("content",
         "normal",
         "none",
         "open-quote",
@@ -288,7 +288,7 @@ assert_group("Generate: https://www.w3.org/TR/CSS2/generate.html", sequence, fun
         "no-open-quote",
         "no-close-quote",
         "inherit"
-    );
+    ));
 
     test.value("content:close-quote close-quote");
     assert(test.check(["close-quote", "close-quote"]));
@@ -305,8 +305,8 @@ assert_group("Generate: https://www.w3.org/TR/CSS2/generate.html", sequence, fun
 
     assert(textSpread("quotes", "none", "inherit"));
 
-    test.value("quotes: \"|\" \"|\" ");
-    assert(test.check(["\"|\"", "\"|\""]));
+    test.value(`quotes: "|" "|" `);
+    assert(test.check([`"|"`, `"|"`]));
 
     textSpread("counter-reset",
         "none",
@@ -348,7 +348,7 @@ assert_group("Generate: https://www.w3.org/TR/CSS2/generate.html", sequence, fun
 });
 
 assert_group("Page: https://www.w3.org/TR/CSS2/page.html", sequence, function () {
-    textSpread(
+    assert("page-break-before", textSpread(
         "page-break-before",
         "auto",
         "always",
@@ -356,9 +356,9 @@ assert_group("Page: https://www.w3.org/TR/CSS2/page.html", sequence, function ()
         "left",
         "right",
         "inherit"
-    );
+    ));
 
-    textSpread(
+    assert("page-break-after", textSpread(
         "page-break-after",
         "auto",
         "always",
@@ -366,14 +366,14 @@ assert_group("Page: https://www.w3.org/TR/CSS2/page.html", sequence, function ()
         "left",
         "right",
         "inherit"
-    );
+    ));
 
-    textSpread(
+    assert("page-break-inside", textSpread(
         "page-break-inside",
         "auto",
         "avoid",
         "inherit"
-    );
+    ));
 
     test.value("orphans:inherit");
     assert(test.check("inherit"));
@@ -388,95 +388,94 @@ assert_group("Page: https://www.w3.org/TR/CSS2/page.html", sequence, function ()
     assert(test.check(88));
 });
 
-assert_group("Colors and Backgrounds: https://www.w3.org/TR/CSS2/colors.html", sequence, function () {
-    message("color - see also CSS Level 1 Properties test");
-    textSpread("color", "inherit");
+assert_group("Colors and Backgrounds: https://www.w3.org/TR/CSS2/colors.html - see also CSS Level 1 Properties test", sequence, function () {
+    // message("color - see also CSS Level 1 Properties test");
+    assert("color", textSpread("color", "inherit"));
 
-    message("background-color - see also CSS Level 1 Properties test");
-    textSpread("background-color", "inherit");
+    //message("background-color - see also CSS Level 1 Properties test");
+    assert("background-color", textSpread("background-color", "inherit"));
 
-    message("background-image - see also CSS Level 1 Properties test");
-    textSpread("background-image", "inherit");
+    //message("background-image - see also CSS Level 1 Properties test");
+    assert("background-image", textSpread("background-image", "inherit"));
 
-    message("background-repeat - see also CSS Level 1 Properties test");
-    textSpread("background-repeat", "inherit");
+    //message("background-repeat - see also CSS Level 1 Properties test");
+    assert("background-repeat", textSpread("background-repeat", "inherit"));
 
-    message("background-attachment - see also CSS Level 1 Properties test");
-    textSpread("background-attachment", "inherit");
+    //message("background-attachment - see also CSS Level 1 Properties test");
+    assert("background-attachment", textSpread("background-attachment", "inherit"));
 
-    message("background-position - see also CSS Level 1 Properties test");
-    textSpread("background-position", "inherit");
+    //message("background-position - see also CSS Level 1 Properties test");
+    assert("background-position", textSpread("background-position", "inherit"));
 
-    message("background - see also CSS Level 1 Properties test");
-    textSpread("background", "inherit");
+    //message("background - see also CSS Level 1 Properties test");
+    assert("background", textSpread("background", "inherit"));
 });
 
 assert_group("Fonts: https://www.w3.org/TR/CSS2/fonts.html", sequence, function () {
-    message("font-family - see also CSS Level 1 Properties test");
-    textSpread("font-family", "inherit");
+    assert("font-family - see also CSS Level 1 Properties test",
+        textSpread("font-family", "inherit"));
 
-    message("font-style - see also CSS Level 1 Properties test");
-    textSpread("font-style", "inherit");
+    assert("font-style - see also CSS Level 1 Properties test",
+        textSpread("font-style", "inherit"));
 
-    message("font-variant - see also CSS Level 1 Properties test");
-    textSpread("font-variant", "inherit");
+    assert("font-variant - see also CSS Level 1 Properties test",
+        textSpread("font-variant", "inherit"));
 
-    message("font-weight - see also CSS Level 1 Properties test");
-    textSpread("font-weight", "inherit");
+    assert("font-weight - see also CSS Level 1 Properties test",
+        textSpread("font-weight", "inherit"));
 
-    message("font-size", "see CSS Level 1 Properties test");
-
-    message("font - see also CSS Level 1 Properties test");
-
-    textSpread(
-        "font",
-        "caption",
-        "icon",
-        "menu",
-        "message-box",
-        "small-caption",
-        "status-bar",
-        "inherit"
+    assert("font-size", "see CSS Level 1 Properties test", textSpread("font-size", "inherit"));
+    assert("font - see also CSS Level 1 Properties test",
+        textSpread(
+            "font",
+            "caption",
+            "icon",
+            "menu",
+            "message-box",
+            "small-caption",
+            "status-bar",
+            "inherit"
+        )
     );
 });
 
 assert_group("Text: https://www.w3.org/TR/CSS2/text.html", sequence, function () {
-    message("text-indent - see also CSS Level 1 Properties test");
-    textSpread("text-indent", "inherit");
+    assert("text-indent - see also CSS Level 1 Properties test",
+        textSpread("text-indent", "inherit"));
 
-    message("text-align - see also CSS Level 1 Properties test");
-    textSpread("text-align", "inherit");
+    assert("text-align - see also CSS Level 1 Properties test",
+        textSpread("text-align", "inherit"));
 
-    message("text-decoration - see also CSS Level 1 Properties test");
-    textSpread("text-decoration", "inherit");
+    assert("text-decoration - see also CSS Level 1 Properties test",
+        textSpread("text-decoration", "inherit"));
 
-    message("letter-spacing - see also CSS Level 1 Properties test");
-    textSpread("letter-spacing", "inherit");
+    assert("letter-spacing - see also CSS Level 1 Properties test",
+        textSpread("letter-spacing", "inherit"));
 
-    message("word-spacing - see also CSS Level 1 Properties test");
-    textSpread("word-spacing", "inherit");
+    assert("word-spacing - see also CSS Level 1 Properties test",
+        textSpread("word-spacing", "inherit"));
 
-    message("text-transform - see also CSS Level 1 Properties test");
-    textSpread("text-transform", "inherit");
+    assert("text-transform - see also CSS Level 1 Properties test",
+        textSpread("text-transform", "inherit"));
 
-    message("white-space - see also CSS Level 1 Properties test");
-    textSpread("white-space", "pre-line", "inherit");
+    assert("white-space - see also CSS Level 1 Properties test",
+        textSpread("white-space", "pre-line", "inherit"));
 });
 
 assert_group("Tables: https://www.w3.org/TR/CSS2/tables.html", sequence, function () {
-    textSpread("caption-side", "top", "bottom", "inherit");
-    textSpread("table-layout", "auto", "fixed", "inherit");
-    textSpread("border-collapse", "collapse", "separate", "inherit");
+    assert(textSpread("caption-side", "top", "bottom", "inherit"));
+    assert(textSpread("table-layout", "auto", "fixed", "inherit"));
+    assert(textSpread("border-collapse", "collapse", "separate", "inherit"));
 
-    textSpread("border-spacing", "inherit");
+    assert(textSpread("border-spacing", "inherit"));
 
     test.value("border-spacing: 12px 2em");
     assert(test.check([px(12), em(2)]));
-    textSpread("empty-cells", "show", "hide", "inherit");
+    assert(textSpread("empty-cells", "show", "hide", "inherit"));
 });
 
-assert_group(solo, "User Interface: https://www.w3.org/TR/CSS2/ui.html", sequence, function () {
-    textSpread("cursor",
+assert_group("User Interface: https://www.w3.org/TR/CSS2/ui.html", sequence, function () {
+    assert("cursor", textSpread("cursor",
         "auto",
         "crosshair",
         "default",
@@ -495,22 +494,22 @@ assert_group(solo, "User Interface: https://www.w3.org/TR/CSS2/ui.html", sequenc
         "help",
         "progress",
         "inherit"
-    );
+    ));
 
     test.value("cursor: url(my.com:80/giraffe.cur), auto");
 
     assert(test.check([url("my.com:80/giraffe.cur"), ",", "auto"]));
 
-    textSpread(
+    assert("outline-width", textSpread(
         "outline-width",
         "inherit"
-    );
+    ));
 
     test.value("outline-width: 2px");
 
     assert(test.check([checkLength(2, "px")]));
 
-    textSpread(
+    assert("outline-style", textSpread(
         "outline-style",
         "none",
         "dotted",
@@ -522,16 +521,16 @@ assert_group(solo, "User Interface: https://www.w3.org/TR/CSS2/ui.html", sequenc
         "inset",
         "outset",
         "inherit"
-    );
+    ));
 
     textSpread("outline-color", "invert", "inherit");
     test.value("outline-color: #00FF00");
     assert(test.check(color(0, 255)));
 
-    textSpread(
+    assert("outline", textSpread(
         "outline",
         "inherit"
-    );
+    ));
 
     test.value("outline: red solid 2px");
     assert(test.check([color(255), "solid", px(2)]));
