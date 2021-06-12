@@ -389,25 +389,19 @@ assert_group("Page: https://www.w3.org/TR/CSS2/page.html", sequence, function ()
 });
 
 assert_group("Colors and Backgrounds: https://www.w3.org/TR/CSS2/colors.html - see also CSS Level 1 Properties test", sequence, function () {
-    // message("color - see also CSS Level 1 Properties test");
+
     assert("color", textSpread("color", "inherit"));
 
-    //message("background-color - see also CSS Level 1 Properties test");
     assert("background-color", textSpread("background-color", "inherit"));
 
-    //message("background-image - see also CSS Level 1 Properties test");
     assert("background-image", textSpread("background-image", "inherit"));
 
-    //message("background-repeat - see also CSS Level 1 Properties test");
     assert("background-repeat", textSpread("background-repeat", "inherit"));
 
-    //message("background-attachment - see also CSS Level 1 Properties test");
     assert("background-attachment", textSpread("background-attachment", "inherit"));
 
-    //message("background-position - see also CSS Level 1 Properties test");
     assert("background-position", textSpread("background-position", "inherit"));
 
-    //message("background - see also CSS Level 1 Properties test");
     assert("background", textSpread("background", "inherit"));
 });
 
