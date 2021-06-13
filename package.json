@@ -7,7 +7,7 @@
     "types": "./build/types/css.d.ts",
     "scripts": {
         "prepublishOnly": "tsc -p ./tsconfig.json && yarn test",
-        "test": "candle.cure --reporter ci ./test/",
+        "test": "candle.cure ./test/",
         "test.watch": "candle.cure -w ./test/**",
         "compile.debug": "hydrocarbon compile --workers 10 --output_dir ./source/typescript/parser/ --recognizer_type js --annotations --debug ./source/grammar/css.hcg",
         "compile.release": "hydrocarbon compile --workers 10 --output_dir ./source/typescript/parser/ --recognizer_type wasm ./source/grammar/css.hcg"
