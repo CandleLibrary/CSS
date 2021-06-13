@@ -7,6 +7,8 @@ import {
     doesRuleHaveMatchingSelector
 } from "@candlelib/css";
 
+import spark from "@candlelib/spark";
+
 "@candlelib//css test spec";
 "PARSER"; "#";
 
@@ -42,6 +44,7 @@ const s = stylesheet.toString();
 
 "Expect parser-renderWithFormatting to match source string";
 
+await spark.sleep(100);
 
 assert(renderWithFormatting(rule(".div{color: rgb(22, 22, 22)}")) == ".div{color:#161616}");
 
