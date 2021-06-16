@@ -1,5 +1,8 @@
 import * as css from "../build/library/css.js";
+import spark from "@candlelib/spark";
 
+//Allow time for the WASM CSS parser to load
+await spark.sleep(10);
 function checkF(f) {
     if (typeof (f) == "string")
         return checkText(f);
@@ -122,7 +125,7 @@ export const test = {
     },
     check(f) {
 
-        console.log(test.v);
+
         if (!test.v)
             throw new Error("Please provide css.CSS property value before defining a check function.");
 
