@@ -20,6 +20,12 @@
         "CSS",
         "Parser"
     ],
+    "files": [
+        "/build",
+        "/README.md",
+        "/CHANGELOG.md",
+        "/LICENSE"
+    ],
     "author": "Anthony Weathersby",
     "license": "MIT",
     "bugs": {

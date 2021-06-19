@@ -1,9 +1,0 @@
-*.sublime*
-build/config/
-test/
-tests/
-doc/
-docs/
-.git/
-
-
