@@ -8,20 +8,20 @@
 
 @IMPORT default-productions as def
 
-    <> CSS > STYLE_SHEET                                                            
+<> CSS > STYLE_SHEET                                                            
 
-    <> STYLE_SHEET >  import(*) ( STYLE_RULE │ AT_RULE )(*)                         
-                                                                                    ↦r { {type:env.typ.Stylesheet, imports:$$sym1, nodes:$$sym2, pos} }
+<> STYLE_SHEET >  import(*) ( STYLE_RULE │ AT_RULE )(*)                         
+                                                                                ↦r { {type:env.typ.Stylesheet, imports:$$sym1, nodes:$$sym2, pos} }
 
-    <> STYLE_RULE > COMPLEX_SELECTOR(+\, ) { declaration_list? ;(*) }                    
-                                                                                    ↦r { {type:env.typ.Rule, selectors:$$sym1, props: new Map(($$sym3||[]).map(s=>[s.name, s])), pos, precedence: 0} }
+<> STYLE_RULE > COMPLEX_SELECTOR(+\, ) { declaration_list? ;(*) }                    
+                                                                                ↦r { {type:env.typ.Rule, selectors:$$sym1, props: new Map(($$sym3||[]).map(s=>[s.name, s])), pos, precedence: 0} }
 
-    <> GROUP_RULE_BODY > STYLE_RULE(*)
+<> GROUP_RULE_BODY > STYLE_RULE(*)
 
-    <> AT_RULE > media ;?
-        │ import ;?
-        │ keyframes ;?
-        │ supports ;?
+<> AT_RULE > media ;?
+    │ import ;?
+    │ keyframes ;?
+    │ supports ;?
 
 
 ##############################################################################################
@@ -32,241 +32,241 @@
 
 # adapted from https://www.w3.org/TR/css-cascade-4/#at-import
 
-    <> import >  \@ t:import ( string │ url ) ( t:supports \( ( supports_condition │ import_declaration ) \) )? media_query(*\, ) 
-                                                                                    ↦r { { import:"@import", type:env.typ.Import, nodes:[$$sym3, $$sym4, ...$$sym5], pos } }
+<> import >  \@ t:import ( string │ url ) ( t:supports \( ( supports_condition │ import_declaration ) \) )? media_query(*\, ) 
+                                                                                ↦r { { import:"@import", type:env.typ.Import, nodes:[$$sym3, $$sym4, ...$$sym5], pos } }
 
 <> import_declaration > declaration
 
 # adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@keyframes#Formal_syntax
 
-    <> keyframes > \@ t:keyframes keyframes_name { keyframes_blocks(+) }         
-                                                                                    ↦r { { keyframes:"@keyframes", type:env.typ.Keyframes, name:$sym3, nodes:[$$sym5], pos } }
+<> keyframes > \@ t:keyframes keyframes_name { keyframes_blocks(+) }         
+                                                                                ↦r { { keyframes:"@keyframes", type:env.typ.Keyframes, name:$sym3, nodes:[$$sym5], pos } }
 
-    <> keyframes_name > g:id │ string
+<> keyframes_name > g:id │ string
 
-    <> keyframes_blocks > keyframe_selector(+\, ) { declaration_list ;? }             
-                                                                                    ↦r { { type:env.typ.KeyframeBlock, nodes:[
-                                                                                            {type:env.type.KeyframeSelectors, nodes:$sym1, pos}, $$sym3
-                                                                                        ], pos } }
+<> keyframes_blocks > keyframe_selector(+\, ) { declaration_list ;? }             
+                                                                                ↦r { { type:env.typ.KeyframeBlock, nodes:[
+                                                                                        {type:env.type.KeyframeSelectors, nodes:$sym1, pos}, $$sym3
+                                                                                    ], pos } }
 
-    <> keyframe_selector > t:from                                                    ↦r { { type:env.typ.KeyframeSelector, val:$$sym1, pos } }
-        │ t:to                                                                       ↦r { { type:env.typ.KeyframeSelector, val:$$sym1, pos } }
-        │ percentage                                                                ↦r { { type:env.typ.KeyframeSelector, val:$$sym1, pos } }                      
-                                                                                    
+<> keyframe_selector > t:from                                                    ↦r { { type:env.typ.KeyframeSelector, val:$$sym1, pos } }
+    │ t:to                                                                       ↦r { { type:env.typ.KeyframeSelector, val:$$sym1, pos } }
+    │ percentage                                                                ↦r { { type:env.typ.KeyframeSelector, val:$$sym1, pos } }                      
+                                                                                
 
 # adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@supports#Formal_syntax
 
-    <> supports > \@ t:supports ( 
+<> supports > \@ t:supports ( 
 
-            supports_condition                                                      ↦r { { type:env.typ.SupportConditions, nodes:$$sym1, pos } }
-        
-        ) { GROUP_RULE_BODY? }               
-                                                                                    ↦r { { type:env.typ.Supports, nodes:[$sym1, $$sym3], pos } }
+        supports_condition                                                      ↦r { { type:env.typ.SupportConditions, nodes:$$sym1, pos } }
+    
+    ) { GROUP_RULE_BODY? }               
+                                                                                ↦r { { type:env.typ.Supports, nodes:[$sym1, $$sym3], pos } }
 
-    <> supports_condition > t:not supports_in_parens                                 ↦r { [{ type:env.typ.Not, nodes:[$sym2], pos }] }
-        │ supports_in_parens ( 
-            t:and supports_in_parens                                                 
-                                                                                    ↦r { { type:env.typ.And, nodes:[$sym2], pos } }
-            | t:or supports_in_parens 
-                                                                                    ↦r { { type:env.typ.Or, nodes:[$sym2], pos } }
-        )(*) 
-                                                                                    ↦r { [$sym1, ...$sym2] }
-                                                                                    
+<> supports_condition > t:not supports_in_parens                                 ↦r { [{ type:env.typ.Not, nodes:[$sym2], pos }] }
+    │ supports_in_parens ( 
+        t:and supports_in_parens                                                 
+                                                                                ↦r { { type:env.typ.And, nodes:[$sym2], pos } }
+        | t:or supports_in_parens 
+                                                                                ↦r { { type:env.typ.Or, nodes:[$sym2], pos } }
+    )(*) 
+                                                                                ↦r { [$sym1, ...$sym2] }
+                                                                                
 
-    <> supports_in_parens > \( supports_condition \)                                
-                                                                                    ↦r { { type:env.typ.Parenthesis, nodes:[$sym2], pos } }
-        │ supports_feature
-        │ general_enclosed
+<> supports_in_parens > \( supports_condition \)                                
+                                                                                ↦r { { type:env.typ.Parenthesis, nodes:[$sym2], pos } }
+    │ supports_feature
+    │ general_enclosed
 
-    <> supports_feature > supports_feature_fn 
-        │ supports_decl 
+<> supports_feature > supports_feature_fn 
+    │ supports_decl 
 
-    <> supports_decl > \( declaration \)
-    <> supports_feature_fn >  g:selector \( COMPLEX_SELECTOR \)
-                                                                                    ↦r { { type:env.typ.Function, nodes:[$sym1], pos } }
+<> supports_decl > \( declaration \)
+<> supports_feature_fn >  g:selector \( COMPLEX_SELECTOR \)
+                                                                                ↦r { { type:env.typ.Function, nodes:[$sym1], pos } }
 
 # adapted from https://developer.mozilla.org/en-US/docs/Web/CSS/@media#Formal_syntax
 
-    <> media >  \@ t:media media_queries { GROUP_RULE_BODY? }       
-                                                                                    ↦r { { media:"@media",  type:env.typ.Media, nodes:[$sym3, ...$sym5], pos } }
-    <> media_queries > ( media_query(+\, ) )                                          
-                                                                                    ↦r { { queries:true, type:env.typ.MediaQueries, nodes:$$sym1, pos } }
+<> media >  \@ t:media media_queries { GROUP_RULE_BODY? }       
+                                                                                ↦r { { media:"@media",  type:env.typ.Media, nodes:[$sym3, ...$sym5], pos } }
+<> media_queries > ( media_query(+\, ) )                                          
+                                                                                ↦r { { queries:true, type:env.typ.MediaQueries, nodes:$$sym1, pos } }
 
-    <> media_query > media_condition                                                
-                                                                                    ↦r { { type:env.typ.Query, nodes:[$sym1], pos } }                       
-        │ (t:not │ t:only )? media_type (
-                                        t:and media_condition_without_or 
-                                                                                    ↦r { { type:env.typ.And, nodes:[$sym2], pos } }
-                                        )?      
-                                                                                    ↦r { { type:env.typ.Query, condition:$sym1, nodes:[$sym2, $sym3], pos } }
-    
+<> media_query > media_condition                                                
+                                                                                ↦r { { type:env.typ.Query, nodes:[$sym1], pos } }                       
+    │ (t:not │ t:only )? media_type (
+                                    t:and media_condition_without_or 
+                                                                                ↦r { { type:env.typ.And, nodes:[$sym2], pos } }
+                                    )?      
+                                                                                ↦r { { type:env.typ.Query, condition:$sym1, nodes:[$sym2, $sym3], pos } }
 
-    <> media_condition > media_condition_without_or
-        │ media_or
 
-    <> media_condition_without_or > media_not
-        │ media_and 
-        │ media_in_parenths
+<> media_condition > media_condition_without_or
+    │ media_or
 
-    <> media_not > t:not media_in_parenths                                           ↦r { { type:env.typ.Not, nodes:[$sym2], pos } }
+<> media_condition_without_or > media_not
+    │ media_and 
+    │ media_in_parenths
 
-    <> media_and > media_in_parenths (
-                                        t:and media_in_parenths
-                                                                                    ↦r { { type:env.typ.And, nodes:[$sym2], pos } }
-                                    )(+)
-                                                                                    ↦r { [$sym1, ...$sym2] }
+<> media_not > t:not media_in_parenths                                           ↦r { { type:env.typ.Not, nodes:[$sym2], pos } }
 
-    <> media_or > media_in_parenths (
-                                        t:or media_in_parenths 
-                                                                                    ↦r { { type:env.typ.And, nodes:[$sym2], pos } }
-                                    )(+)
-                                                                                    ↦r { [$sym1, ...$sym2] }
+<> media_and > media_in_parenths (
+                                    t:and media_in_parenths
+                                                                                ↦r { { type:env.typ.And, nodes:[$sym2], pos } }
+                                )(+)
+                                                                                ↦r { [$sym1, ...$sym2] }
 
-    <> media_in_parenths > \( media_condition \)                                    ↦r { { type:env.typ.Parenthesis, nodes:[$sym2], pos } }        
-        │ media_feature
-        │ general_enclosed
+<> media_or > media_in_parenths (
+                                    t:or media_in_parenths 
+                                                                                ↦r { { type:env.typ.And, nodes:[$sym2], pos } }
+                                )(+)
+                                                                                ↦r { [$sym1, ...$sym2] }
 
-    <> media_feature > \( ( mf_plain │ mf_boolean │ mf_range ) \)                   
-                                                                                    ↦r { { type:env.typ.MediaFeature, nodes:[$sym2], pos } }
-    <> general_enclosed > identifier \( ( g:sym │ g:id  │ g:ws )(*\" ) \)                            
-                                            
-                                                                                    ↦r { { type:env.typ.MediaFunction, nodes:[$sym3], pos } }
+<> media_in_parenths > \( media_condition \)                                    ↦r { { type:env.typ.Parenthesis, nodes:[$sym2], pos } }        
+    │ media_feature
+    │ general_enclosed
 
-    <> mf_plain > mf_name \: mf_value                                              ↦r { {type:env.typ.MediaValue, key:$sym1, val:$sym3, pos } }   
+<> media_feature > \( ( mf_plain │ mf_boolean │ mf_range ) \)                   
+                                                                                ↦r { { type:env.typ.MediaFeature, nodes:[$sym2], pos } }
+<> general_enclosed > identifier \( ( g:sym │ g:id  │ g:ws )(*\" ) \)                            
+                                        
+                                                                                ↦r { { type:env.typ.MediaFunction, nodes:[$sym3], pos } }
 
-    <> mf_range > mf_name ( < │ <= │ > │ >= │ = ) mf_value                          
-                                                                                    ↦r { {type:env.typ.MediaEquality, sym:$sym2, left:$sym1, right:$sym3, pos } }  
-        │ mf_value ( < │ <= │ > │ >= │ = ) mf_name                                  
-                                                                                    ↦r { {type:env.typ.MediaEquality, sym:$sym2, left:$sym1, right:$sym3, pos } }  
-        │ mf_value ( > │ >= ) identifier ( > │ >= ) mf_value                        
-                                                                                    ↦r { {type:env.typ.MediaRangeDescending, sym:$sym2, max:$sym1, id:$sym3, min:$sym5, pos } } 
-        │ mf_value ( < │ <= ) identifier ( < │ <= ) mf_value                        
-                                                                                    ↦r { {type:env.typ.MediaRangeAscending, sym:$sym2, min:$sym1, id:$sym3, max:$sym5, pos } } 
+<> mf_plain > mf_name \: mf_value                                              ↦r { {type:env.typ.MediaValue, key:$sym1, val:$sym3, pos } }   
 
-    <> mf_value > g:num 
-        │ dimension 
-        │ mf_name 
-        │ ratio
+<> mf_range > mf_name ( < │ <= │ > │ >= │ = ) mf_value                          
+                                                                                ↦r { {type:env.typ.MediaEquality, sym:$sym2, left:$sym1, right:$sym3, pos } }  
+    │ mf_value ( < │ <= │ > │ >= │ = ) mf_name                                  
+                                                                                ↦r { {type:env.typ.MediaEquality, sym:$sym2, left:$sym1, right:$sym3, pos } }  
+    │ mf_value ( > │ >= ) identifier ( > │ >= ) mf_value                        
+                                                                                ↦r { {type:env.typ.MediaRangeDescending, sym:$sym2, max:$sym1, id:$sym3, min:$sym5, pos } } 
+    │ mf_value ( < │ <= ) identifier ( < │ <= ) mf_value                        
+                                                                                ↦r { {type:env.typ.MediaRangeAscending, sym:$sym2, min:$sym1, id:$sym3, max:$sym5, pos } } 
 
-    <> mf_boolean > t:true                                                           ↦r { { type:env.typ.Boolean, val:true, pos } }
-        | t:false                                                                    ↦r { { type:env.typ.Boolean, val:false, pos } }
-    
-    <> mf_name > identifier
+<> mf_value > g:num 
+    │ dimension 
+    │ mf_name 
+    │ ratio
 
-    <> media_type > identifier                                                      ↦r { { type:env.typ.MediaType, val:$sym1, pos } }                                                                                  
+<> mf_boolean > t:true                                                           ↦r { { type:env.typ.Boolean, val:true, pos } }
+    | t:false                                                                    ↦r { { type:env.typ.Boolean, val:false, pos } }
 
-    <> ratio > g:num / g:num                                                          
-                                                                                    ↦r { {type:"ratio", num:$sym1, den:$sym3 } }
-    
-    <> percentage > g:num %                                                          
-                                                                                    ↦r { new env.fn.percentage($sym1+$sym2) }
-    
-    <> dimension > g:num g:id                                                         
-                                                                                    ↦r { new env.fn.length($sym1+$sym2) }
+<> mf_name > identifier
 
-    <> url >  t:url \( string \)                                                     
-                                                                                    ↦r { new env.fn.url($sym3) }                                               
+<> media_type > identifier                                                      ↦r { { type:env.typ.MediaType, val:$sym1, pos } }                                                                                  
 
-    <>string > " ( g:id | g:sym | g:num | g:ws )(+\" ) " │ ' ( g:id | g:sym | g:num | g:ws )(+\" ) '
-                                                                                    ↦r { $sym2 }                                               
+<> ratio > g:num / g:num                                                          
+                                                                                ↦r { {type:"ratio", num:$sym1, den:$sym3 } }
+
+<> percentage > g:num %                                                          
+                                                                                ↦r { new env.fn.percentage($sym1+$sym2) }
+
+<> dimension > g:num g:id                                                         
+                                                                                ↦r { new env.fn.length($sym1+$sym2) }
+
+<> url >  t:url \( string \)                                                     
+                                                                                ↦r { new env.fn.url($sym3) }                                               
+
+<>string > " ( g:id | g:sym | g:num | g:ws )(+\" ) " │ ' ( g:id | g:sym | g:num | g:ws )(+\" ) '
+                                                                                ↦r { $sym2 }                                               
 
 ##############################################################################################
 #### Selectors
 #### Modified from https://drafts.csswg.org/selectors-4/#grammar
 ##############################################################################################
 
-    <> COMPLEX_SELECTOR >  COMPOUND_SELECTOR  ( (COMBINATOR ↦r{ {type:env.typ.Combinator, val:$sym1} } )? COMPOUND_SELECTOR ↦r { [$sym1, $sym2] } )(*)  
-                                                                                    ↦r { 
-                                                                                        ($$sym1 && $$sym2) ?
-                                                                                        {type:env.typ.ComplexSelector, nodes:[$sym1, ...( ($sym2).flat(2) )], pos } 
-                                                                                        : $sym1
-                                                                                    } 
+<> COMPLEX_SELECTOR >  COMPOUND_SELECTOR  ( (COMBINATOR ↦r{ {type:env.typ.Combinator, val:$sym1} } )? COMPOUND_SELECTOR ↦r { [$sym1, $sym2] } )(*)  
+                                                                                ↦r { 
+                                                                                    ($$sym1 && $$sym2) ?
+                                                                                    {type:env.typ.ComplexSelector, nodes:[$sym1, ...( ($sym2).flat(2) )], pos } 
+                                                                                    : $sym1
+                                                                                } 
+
+<> COMPOUND_SELECTOR >  [
+        TYPE_SELECTOR? 
+        ( SUBCLASS_SELECTOR )(*) 
+        ( PSEUDO_ELEMENT_SELECTOR ( (RST g:ws) PSEUDO_CLASS_SELECTOR )(*) ↦r { {type:env.typ.PseudoSelector, nodes:[$sym1, ...$sym2], pos } } )(*) 
+    ] g:ws?
+                                                                                ↦r { 
+                                                                                        ( $$sym1 && !($$sym2 || $$sym3 )) 
+                                                                                        ? $$sym1 
+                                                                                        : 
+                                                                                            ( $$sym2 && $$sym2.length == 1 && !($$sym1 || $$sym3 ))
+                                                                                            ? $$sym2[0]
+                                                                                            :  { type:env.typ.CompoundSelector, nodes:[$sym1, ...$sym2, ...$sym3], pos }
+                                                                                } 
+
+<> COMBINATOR > \>                         
+    │ \+     
+    │ \~                                 
+    │ \||                                       
+
+<> SUBCLASS_SELECTOR > ID_SELECTOR 
+    │ CLASS_SELECTOR 
+    │ ATTRIBUTE_SELECTOR 
+    │ PSEUDO_CLASS_SELECTOR
+
+<> ID_SELECTOR >\#  (RST g:ws)  identifier                                      ↦r { {type:env.typ.IdSelector, val:$sym2, pos, precedence: env.typ.B_SPECIFIER } } 
+
+<> CLASS_SELECTOR > \. (RST g:ws)  identifier                                   ↦r { {type:env.typ.ClassSelector, val:$sym2, pos,precedence: env.typ.C_SPECIFIER } } 
+
+<> PSEUDO_CLASS_SELECTOR >  \:  (RST g:ws) identifier ( \( string_value \) ↦r {$sym2} )?        
+                                                                                ↦r { {type:env.typ.PseudoClassSelector, id:$sym2, val:$sym3, pos, precedence: env.typ.C_SPECIFIER } }
+
+<>  ATTRIBUTE_SELECTOR >  \[ WQ_NAME \]                                          ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], pos, precedence: env.typ.C_SPECIFIER } } 
+    │ \[ WQ_NAME ATTR_MATCHER ( identifier │ \" string_value \" ↦r { `"` + $sym2 + `"` }   ) ATTR_MODIFIER? \] 
+                                    ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], match_type:$sym3, match_val:$sym4, mod:$sym5, pos, precedence: env.typ.C_SPECIFIER } } 
+
+<> ATTR_MATCHER > \~=                                                
+    │ \^=                                                                
+    │ \$=                                                                
+    │ \*=                                                                
+    │ =                                                                 
+
+<> ATTR_MODIFIER >  t:i 
+    │ t:s
+
+
+
+<> TYPE_SELECTOR >  WQ_NAME                                                     ↦r { {type:env.typ.TypeSelector, nodes:[$sym1], pos,  precedence: env.typ.D_SPECIFIER  } }
+    │ NS_PREFIX? \*                                                             ↦r { {type:env.typ.TypeSelector, nodes:[{type:env.typ.QualifiedName, ns:$sym1 || "", val:"*", pos, precedence: 0 }], pos } } 
+
+<> PSEUDO_ELEMENT_SELECTOR > \: (RST g:ws)  PSEUDO_CLASS_SELECTOR               
+                                                                                ↦r { $sym2.type = env.typ.PseudoElementSelector,  $sym2.precedence = env.typ.D_SPECIFIER , $sym2} 
     
-    <> COMPOUND_SELECTOR >  [
-            TYPE_SELECTOR? 
-            ( SUBCLASS_SELECTOR )(*) 
-            ( PSEUDO_ELEMENT_SELECTOR ( (RST g:ws) PSEUDO_CLASS_SELECTOR )(*) ↦r { {type:env.typ.PseudoSelector, nodes:[$sym1, ...$sym2], pos } } )(*) 
-        ] g:ws?
-                                                                                    ↦r { 
-                                                                                            ( $$sym1 && !($$sym2 || $$sym3 )) 
-                                                                                            ? $$sym1 
-                                                                                            : 
-                                                                                                ( $$sym2 && $$sym2.length == 1 && !($$sym1 || $$sym3 ))
-                                                                                                ? $$sym2[0]
-                                                                                                :  { type:env.typ.CompoundSelector, nodes:[$sym1, ...$sym2, ...$sym3], pos }
-                                                                                    } 
+<> NS_PREFIX >  (identifier │ \* )? \|                                          ↦r { $$sym1 }
 
-    <> COMBINATOR > \>                         
-        │ \+     
-        │ \~                                 
-        │ \||                                       
-
-    <> SUBCLASS_SELECTOR > ID_SELECTOR 
-        │ CLASS_SELECTOR 
-        │ ATTRIBUTE_SELECTOR 
-        │ PSEUDO_CLASS_SELECTOR
-
-    <> ID_SELECTOR >\#  (RST g:ws)  identifier                                      ↦r { {type:env.typ.IdSelector, val:$sym2, pos, precedence: env.typ.B_SPECIFIER } } 
-    
-    <> CLASS_SELECTOR > \. (RST g:ws)  identifier                                   ↦r { {type:env.typ.ClassSelector, val:$sym2, pos,precedence: env.typ.C_SPECIFIER } } 
-
-    <> PSEUDO_CLASS_SELECTOR >  \:  (RST g:ws) identifier ( \( string_value \) ↦r {$sym2} )?        
-                                                                                    ↦r { {type:env.typ.PseudoClassSelector, id:$sym2, val:$sym3, pos, precedence: env.typ.C_SPECIFIER } }
-
-    <>  ATTRIBUTE_SELECTOR >  \[ WQ_NAME \]                                          ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], pos, precedence: env.typ.C_SPECIFIER } } 
-        │ \[ WQ_NAME ATTR_MATCHER ( identifier │ \" string_value \" ↦r { `"` + $sym2 + `"` }   ) ATTR_MODIFIER? \] 
-                                        ↦r { {type:env.typ.AttributeSelector, nodes:[$sym2], match_type:$sym3, match_val:$sym4, mod:$sym5, pos, precedence: env.typ.C_SPECIFIER } } 
-
-    <> ATTR_MATCHER > \~=                                                
-        │ \^=                                                                
-        │ \$=                                                                
-        │ \*=                                                                
-        │ =                                                                 
-
-    <> ATTR_MODIFIER >  t:i 
-        │ t:s
-
-
-
-    <> TYPE_SELECTOR >  WQ_NAME                                                     ↦r { {type:env.typ.TypeSelector, nodes:[$sym1], pos,  precedence: env.typ.D_SPECIFIER  } }
-        │ NS_PREFIX? \*                                                             ↦r { {type:env.typ.TypeSelector, nodes:[{type:env.typ.QualifiedName, ns:$sym1 || "", val:"*", pos, precedence: 0 }], pos } } 
-
-    <> PSEUDO_ELEMENT_SELECTOR > \: (RST g:ws)  PSEUDO_CLASS_SELECTOR               
-                                                                                    ↦r { $sym2.type = env.typ.PseudoElementSelector,  $sym2.precedence = env.typ.D_SPECIFIER , $sym2} 
-      
-    <> NS_PREFIX >  (identifier │ \* )? \|                                          ↦r { $$sym1 }
-
-    <> WQ_NAME >  NS_PREFIX? identifier                                  ↦r { {type:env.typ.QualifiedName, ns:$sym1 || "", val:$sym2, pos } }
+<> WQ_NAME >  NS_PREFIX? identifier                                  ↦r { {type:env.typ.QualifiedName, ns:$sym1 || "", val:$sym2, pos } }
 
 
 ##############################################################################################
 #### Declarations
 ##############################################################################################
 
-    <> declaration_list >  ;(*) declaration                                         ↦r { [$sym2] }
-        | declaration_list ;(*) ( \; declaration )?                                 ↦r { $sym1.concat($sym3) }                                       
-        
-    <> declaration > declaration_id \: declaration_values ( \! t:important )?       ↦r ^parseDeclaration
+<> declaration_list >  ;(*) declaration                                         ↦r { [$sym2] }
+    | declaration_list ;(*) ( \; declaration )?                                 ↦r { $sym1.concat($sym3) }                                       
+    
+<> declaration > declaration_id \: declaration_values ( \! t:important )?       ↦r ^parseDeclaration
 
-    <> declaration_values > declaration_value 
-        | declaration_values \( declaration_values \)                               ↦r { $sym1 + $sym2 + $sym3 + $sym4 }
-        | declaration_values declaration_value                                              ↦r { $sym1 + $sym2 }
+<> declaration_values > declaration_value 
+    | declaration_values \( declaration_values \)                               ↦r { $sym1 + $sym2 + $sym3 + $sym4 }
+    | declaration_values declaration_value                                              ↦r { $sym1 + $sym2 }
 
-    <> declaration_value > ( g:id | g:sym | g:num | g:ws ) (+\" )
+<> declaration_value > ( g:id | g:sym | g:num | g:ws ) (+\" )
 
-    <> identifier > css_id_symbols                                                  ↦r { $sym1  }
+<> identifier > css_id_symbols                                                  ↦r { $sym1  }
 
-    <> css_id_symbols > css_id_symbols (RST g:ws)  g:id                              ↦r { $sym1 + $sym2 }
-        │ css_id_symbols (RST g:ws)   \_                                            ↦r { $sym1 + $sym2 }
-        │ css_id_symbols (RST g:ws)   \-                                            ↦r { $sym1 + $sym2 }
-        │ css_id_symbols (RST g:ws)   \$                                            ↦r { $sym1 + $sym2 }
-        │ css_id_symbols (RST g:ws)   g:num                                          ↦r { $sym1 + $sym2 }
-        │ \$ 
-        │ g:id
-        | \-
+<> css_id_symbols > css_id_symbols (RST g:ws)  g:id                              ↦r { $sym1 + $sym2 }
+    │ css_id_symbols (RST g:ws)   \_                                            ↦r { $sym1 + $sym2 }
+    │ css_id_symbols (RST g:ws)   \-                                            ↦r { $sym1 + $sym2 }
+    │ css_id_symbols (RST g:ws)   \$                                            ↦r { $sym1 + $sym2 }
+    │ css_id_symbols (RST g:ws)   g:num                                          ↦r { $sym1 + $sym2 }
+    │ \$ 
+    │ g:id
+    | \-
 
-    <> declaration_id > css_id_symbols
-        #| \- declaration_id                                                        ↦r { $sym1 + $sym2 }
+<> declaration_id > css_id_symbols
+    #| \- declaration_id                                                        ↦r { $sym1 + $sym2 }
 
 <> string_value >  ( g:id | g:sym | g:num | g:ws ) (+\" )
 
