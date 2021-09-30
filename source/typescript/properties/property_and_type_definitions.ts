@@ -331,6 +331,8 @@ export const property_definitions = {
 
 	/* Transform */
 	transform: "<transform2D>|none",
+	transform_origin: "[<length-percentage>|left|center|right|top|bottom]|[[<length-percentage>|left|center|right]&&[<length-percentage>|top|center|bottom]]<length>?",
+
 
 	/* Visual Effects */
 	visibility: `visible|hidden|collapse`,
