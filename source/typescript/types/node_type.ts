@@ -1,10 +1,10 @@
 import { PrecedenceFlags } from "./precedence_flags";
 
 
-export const enum CSSNodeFlags {
+export enum CSSNodeFlags {
     SELECTOR = 256
 }
-export const enum CSSNodeType {
+export enum CSSNodeType {
     Stylesheet = (257 << 23),
     Rule = (258 << 23),
     Import = (259 << 23),
