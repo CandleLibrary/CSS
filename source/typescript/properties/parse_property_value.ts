@@ -20,13 +20,12 @@ import CSS_String from "../types/string.js";
         important : boolean value indicating the presence of "important" value.
 */
 
-export default function parsePropertyDefinitionFromHydrocarbon(sym: { 0: string, 2: string, 3: boolean; length: number; }, a, b, pos): CSSProperty {
+export default function parsePropertyDefinitionFromHydrocarbon(env, sym: { 0: string, 2: string, 3: boolean; length: number; }, pos): CSSProperty {
 
     if (sym.length == 0)
         return null;
 
     let prop = null;
-
 
     const
         rule_name = sym[0],
@@ -35,8 +34,6 @@ export default function parsePropertyDefinitionFromHydrocarbon(sym: { 0: string,
         IS_VIRTUAL = { is: false };
 
     const parser = getPropertyParser(rule_name.replace(/\-/g, "_"), IS_VIRTUAL, property_definitions);
-
-
 
     if (parser && !IS_VIRTUAL.is) {
         //https://drafts.csswg.org/css-cascade/#valdef-all-unset
@@ -64,5 +61,5 @@ export default function parsePropertyDefinitionFromHydrocarbon(sym: { 0: string,
 }
 
 export function parseProperty(name: string, value: string, important: boolean): CSSProperty {
-    return parsePropertyDefinitionFromHydrocarbon([name, , value, important], undefined, undefined, undefined);
+    return parsePropertyDefinitionFromHydrocarbon(undefined, [name, , value, important], undefined);
 }
