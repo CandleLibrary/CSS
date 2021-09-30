@@ -9,8 +9,8 @@
         "prepublishOnly": "rm -rf ./build && tsc & sleep 10",
         "test": "candle.cure ./test/",
         "test.watch": "candle.cure -w ./test/**",
-        "compile.debug": "hydrocarbon compile --workers 10 --output_dir ./source/typescript/parser/ --recognizer_type js --annotations --debug ./source/grammar/css.hcg",
-        "compile.release": "hydrocarbon compile --workers 10 --output_dir ./source/typescript/parser/ --recognizer_type wasm ./source/grammar/css.hcg"
+        "compile": "hydrocarbon compile --threads 10 --out_path ./source/typescript/parser/parser.ts --recognizer wasm ./source/grammar/css.hcg",
+        "compile.debug": "hydrocarbon compile --workers 10 --output_dir ./source/typescript/parser/ --recognizer_type js --annotations --debug ./source/grammar/css.hcg"
     },
     "repository": {
         "type": "git",
@@ -38,7 +38,8 @@
         "@candlelib/hydrocarbon": "0.12.0"
     },
     "devDependencies": {
-        "@candlelib/cure": "0.5.0"
+        "@candlelib/cure": "0.5.0",
+        "@types/node": "^16.4.13"
     },
     "jshintConfig": {
         "esversion": 6,
