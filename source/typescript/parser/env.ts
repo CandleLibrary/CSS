@@ -1,11 +1,13 @@
-import { ParserEnvironment } from "@candlelib/hydrocarbon/build/library/runtime.js";
 import CSS_Length from "../types/length.js";
 import CSS_URL from "../types/url.js";
 import CSS_Percentage from "../types/percentage.js";
 import parseDeclaration from "../properties/parse_property_value.js";
 import { CSSNodeTypeLU } from "../types/node_type_lu.js";
-type CSSParserEnvironment = ParserEnvironment & {};
+
+type CSSParserEnvironment = { fn: any, functions: any; typ: any; };
+
 const env = <CSSParserEnvironment>{
+    fn: null,
     typ: CSSNodeTypeLU,
     functions: {
         parseDeclaration,
