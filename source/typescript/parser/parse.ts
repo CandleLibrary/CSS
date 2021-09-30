@@ -1,61 +1,58 @@
-import { CSSNode, CSSRuleNode } from "../types/node";
 import { CSSProperty } from "../properties/property.js";
 import { renderWithFormatting } from "../render/render.js";
+import { CSSNode } from "../types/node";
 import env from "./env.js";
-import parser from "./parser.js";
+//import loader from "./parser.js";
+import framework from "./parser_new.js";
 
+//@ts-ignore
+const { parse: css_parser, entry_points } = await framework;
 export const parse = function (string_data): CSSNode {
 
-    /*
+    const { result, err } = css_parser(string_data, env, entry_points.css);
 
+    if (err) throw err;
 
-    let lex: Lexer = null;
+    const ast = result[0];
 
-    if (typeof string_data == "string")
-        lex = new Lexer(string_data);
-    else
-        lex = string_data;
+    ast.toString = () => renderWithFormatting(ast);
 
-    const parse_result = lrParse<CSSNode>(lex, <ParserData>parser_data, env);
-
-    if (parse_result.error)
-        throw new SyntaxError(parse_result.error);
-
-    const node = parse_result.value;
-
-    node.toString = () => renderWithFormatting(node);
-
-    return parse_result.value;
-    /*/
-    const { FAILED, result, error_message } = parser(string_data, env);
-
-    if (FAILED)
-        throw new SyntaxError(error_message);
-
-    const node = result[0];
-
-    node.toString = () => renderWithFormatting(node);
-
-    return node;
+    return ast;
     //*/
 };
 
 export const properties = function (props): Map<string, CSSProperty> {
-    const css = parse(`*{${props}}`);
-    return (<CSSRuleNode>css.nodes[0]).props;
+
+    const { result, err } = css_parser(props, env, entry_points.properties);
+
+    if (err) throw err;
+
+    return result[0];
 };
 
 export const property = function (prop): CSSProperty {
-    const css = parse(`*{${prop}}`);
-    return [...(<CSSRuleNode>css.nodes[0]).props.values()][0];
+
+    const { result, err } = css_parser(prop, env, entry_points.rulez);
+
+    if (err) throw err;
+
+    return result[0];
 };
 
 export const selector = function (selector): CSSNode {
-    const css = parse(`${selector} {top:0}`);
-    return (<CSSRuleNode>css.nodes[0]).selectors[0];
+
+    const { result, err } = css_parser(selector, env, entry_points.selector);
+
+    if (err) throw err;
+
+    return result[0];
 };
 
 export const rule = function (rule: string = "*{display:block}"): CSSNode {
-    const css = parse(rule);
-    return css.nodes[0];
+
+    const { result, err } = css_parser(rule, env, entry_points.rule);
+
+    if (err) throw err;
+
+    return result[0];
 };

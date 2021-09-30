@@ -12,6 +12,7 @@
 @EXPORT declaration_list as properties
 @EXPORT declaration as property
 @EXPORT COMPLEX_SELECTOR as selector
+@EXPORT STYLE_RULE as rule
 
 
 <> CSS > STYLE_SHEET                                                            
