@@ -1,7 +1,6 @@
-import { CSSNodeType } from "../types/node_type.js";
+import { experimentalConstructRenderers, NodeMappings } from "@candlelib/conflagrate";
 import { CSSNode } from "../types/node";
-import { buildRenderers, buildFormatRules, FormatRule as $, NodeMappings } from "@candlelib/conflagrate";
-import { CSSNodeTypeLU } from "../types/node_type_lu.js";
+import { CSSNodeType } from "../types/node_type.js";
 
 export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode, "type">>{
     typename: "type",
@@ -9,19 +8,29 @@ export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode
     mappings: [
         {
             type: CSSNodeType.Stylesheet,
-            template: " i:s @nodes...[ m:n] i:e",
+            template: " i:s @nodes...[m:n] i:e",
         },
         {
             type: CSSNodeType.Rule,
-            template: "@selectors...[ \\, o:n  ] \\{ i:s i:e \\}",
+            template: "@selectors...[ \\, o:n  ] \\{ i:s @props...[\\; o:n] i:e \\}",
+            custom_render: (state, render_fn) => {
+                const new_node = {
+                    type: state.node.type,
+                    selectors: state.node.selectors,
+                    props: [...state.node.props].map(([name, val]) => val.toString())
+                };
+
+                return render_fn(state, new_node, true);
+            }
         },
+
         {
             type: CSSNodeType.Import,
-            template: "\\@import @nodes[0] @nodes[1]? @nodes...",
+            template: "\\@import @nodes[0] @nodes[1]? @nodes...[m:s]",
         },
         {
             type: CSSNodeType.Keyframes,
-            template: "\\@keyframes @name \\{ i:s   @nodes[1]   i:e \\}",
+            template: "\\@keyframes @name \\{ i:s @nodes[1] i:e \\}",
         },
         {
             type: CSSNodeType.KeyframeBlock,
@@ -69,7 +78,7 @@ export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode
         },
         {
             type: CSSNodeType.Media,
-            template: "@media @nodes[0] \\{ i:s @nodes...\n i:e \\}",
+            template: "@media @nodes[0] \\{ i:s @nodes...[m:n] i:e \\}",
         },
         {
             type: CSSNodeType.Query,
@@ -105,13 +114,11 @@ export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode
         },
         {
             type: CSSNodeType.ComplexSelector,
-            template: "@nodes... ",
+            template: "@nodes...[m:s]",
         },
         {
-            type: CSSNodeType.CompoundSelector, template: {
-                default: "@nodes... ",
-                combinator: "\\@ @nodes... "
-            }
+            type: CSSNodeType.CompoundSelector,
+            template: "@nodes..."
         },
         {
             type: CSSNodeType.Combinator,
@@ -119,7 +126,7 @@ export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode
         },
         {
             type: CSSNodeType.PseudoSelector,
-            template: "@nodes[0] @nodes... ",
+            template: "@nodes...[m:s]",
         },
         {
             type: CSSNodeType.MetaSelector,
@@ -131,7 +138,7 @@ export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode
         },
         {
             type: CSSNodeType.QualifiedName,
-            template: { ns: "@ns|@val", default: "@val" },
+            template: "{ ns: @ns | } @val",
         },
         {
             type: CSSNodeType.IdSelector,
@@ -143,7 +150,16 @@ export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode
         },
         {
             type: CSSNodeType.AttributeSelector,
-            template: "\\[ @nodes[0] @match_type? @match_val? @mod?\\]",
+            template: "\\[ @nodes[0] @match_type? @match_val? @mod? \\]",
+            custom_render: (state, render_fn) => {
+                const new_node = Object.assign({}, state.node);
+
+                if (new_node?.match_val?.includes(" "))
+                    new_node.match_val = `"${new_node.match_val.replace(/"/g, "\\\"")
+                        }"`;
+
+                return render_fn(state, new_node, true);
+            }
         },
         {
             type: CSSNodeType.PseudoClassSelector,
@@ -164,4 +180,4 @@ const lu_table = new Map(css_mappings.mappings.map((i, j) => [i.type, j]));
 
 css_mappings.type_lookup = (node, name) => lu_table.get(node.type) || -1;
 
-export const renderers = buildRenderers<CSSNode>(CSSNodeDefinitions, CSSNodeTypeLU);
+export const css_renderers = experimentalConstructRenderers(<NodeMappings<CSSNode, "type">>css_mappings);

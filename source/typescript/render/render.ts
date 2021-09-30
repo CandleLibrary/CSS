@@ -4,12 +4,14 @@ import {
     renderWithFormatting as CFLrenderWithFormatting,
     renderWithSourceMap as CFLrenderWithSourceMap,
     renderWithFormattingAndSourceMap as CFLrenderWithFormattingAndSourceMap,
-    FormatRule
+    FormatRule,
+    experimentalRender
 } from "@candlelib/conflagrate";
 
 import { CSSNodeType } from "../types/node_type.js";
 import { CSSRuleNode, CSSNode } from "../types/node";
 import { renderers, format_rules } from "../render/rules.js";
+import { css_mappings, css_renderers } from './mappings.js';
 
 type Node = CSSNode;
 
@@ -21,10 +23,8 @@ export const FormatFunction: CustomFormatFunction<Node> = (str, prop_name, node)
     return str;
 };
 
-export function renderCompressed(
-    node: Node
-) {
-    return CFLrenderCompressed<Node>(node, renderers, FormatFunction);
+export function renderCompressed(node: Node): string {
+    return experimentalRender(node, css_mappings, css_renderers);
 }
 
 export function renderWithFormatting(
@@ -45,7 +45,7 @@ export function renderWithSourceMap(
     names: Map<string, number> = null,
 ) {
 
-    return CFLrenderWithSourceMap<Node>(node, renderers, map, source_index, name, FormatFunction);
+    return CFLrenderWithSourceMap<Node>(node, renderers, map, source_index, names, FormatFunction);
 }
 
 export function renderWithFormattingAndSourceMap(

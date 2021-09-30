@@ -177,6 +177,7 @@ export class CSS_Transform2D extends Float64Array {
     }
 
     static ToString(pos: number[] | CSS_Transform2D = [0, 0], scl = [1, 1], rot = 0) {
+
         var px = 0,
             py = 0,
             sx = 1,
@@ -284,9 +285,7 @@ export class CSS_Transform2D extends Float64Array {
 
 
         if (typeof (v) == "string")
-            ParseString(v, copy);
-
-        return copy;
+            return ParseString(v, copy);
     }
 
     /**
@@ -445,12 +444,19 @@ export class CSS_Transform3D extends Float64Array {
         this[8] = sz;
     }
 
+    lerp(to, t) {
+        let out = new CSS_Transform3D();
+        for (let i = 0; i < 9; i++) out[i] = this[i] + (to[i] - this[i]) * t;
+        return out;
+    }
+
     toString() {
+
         return CSS_Transform3D.ToString(this);
     }
 
     copy(v) {
-        let copy = new CSS_Transform2D(this);
+        let copy = new CSS_Transform3D();
 
 
         if (typeof (v) == "string")
