@@ -1,5 +1,6 @@
 import wind, { Lexer } from "@candlelib/wind";
 import { consumeComma } from "./consume_comma.js";
+import { CSS_Gradient } from './gradient.js';
 
 /*
     BODY {color: black; background: white }

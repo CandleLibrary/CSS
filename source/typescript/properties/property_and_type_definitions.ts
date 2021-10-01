@@ -123,7 +123,7 @@ export const property_definitions = {
 	max_height: `<length>|<percentage>|min-content|max-content|fit-content|auto|none`,
 
 	/* https://www.w3.org/TR/2018/REC-css-color-3-20180619 */
-	color: `<color>`,
+	color: `<color>|<gradient>`,
 	opacity: `<alphavalue>`,
 
 	/* https://www.w3.org/TR/css-backgrounds-3/ */
@@ -134,7 +134,7 @@ export const property_definitions = {
 	background_position: `<background_position_x>||<background_position_y>`,
 	background_position_x: `<length_percentage>|left|center|right`,
 	background_position_y: `<length_percentage>|top|center|bottom`,
-	background_clip: `<box>#`,
+	background_clip: `<box>#|text`,
 	background_origin: `<box>#`,
 	background_size: `<bg_size>#`,
 

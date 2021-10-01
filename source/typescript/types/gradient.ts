@@ -37,7 +37,6 @@ export class CSS_Gradient {
     direction: CSS_Length;
 
     static parse(l: Lexer | string) {
-
         if (typeof l == "string") {
             l = new Lexer(l);
             l.USE_EXTENDED_ID = true;
@@ -45,8 +44,8 @@ export class CSS_Gradient {
         }
         try {
             if (l.ty == l.types.id) {
-
                 switch (l.tx) {
+
                     case "linear-gradient":
                         l.next().a("(");
                         let dir, num, rot = null;
