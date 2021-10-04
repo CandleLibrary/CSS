@@ -1,6 +1,5 @@
 import { PrecedenceFlags } from "./precedence_flags";
 
-
 export enum CSSNodeFlags {
     SELECTOR = 256
 }
