@@ -43,7 +43,7 @@
 
 # adapted from https://www.w3.org/TR/css-cascade-4/#at-import
 
-<> import >  \@import ( string f:r{ new env.fn.url($1) } | url ) ( t:supports \( ( supports_condition | import_declaration ) \) f:r{$3} )? media_query(*\, ) 
+<> import >  \@import ( string f:r{ new env.functions.url($1) } | url ) ( t:supports \( ( supports_condition | import_declaration ) \) f:r{$3} )? media_query(*\, ) 
                                                         
                                                     f:r { { import:"@import", type:env.typ.Import, nodes:[$$2, $$3, ...($$4||[])], pos } }
 
@@ -175,13 +175,13 @@
                                                                                 f:r { {type:"ratio", num:$1, den:$3 } }
 
 <> percentage > g:num %                                                          
-                                                                                f:r { new env.fn.percentage($1+$2) }
+                                                                                f:r { new env.functions.percentage($1+$2) }
 
 <> dimension > g:num g:id                                                         
-                                                                                f:r { new env.fn.length($1+$2) }
+                                                                                f:r { new env.functions.length($1+$2) }
 
 <> url >  t:url \( string \)                                                     
-                                                                                f:r { new env.fn.url($3) }                                                                                                                            
+                                                                                f:r { new env.functions.url($3) }                                                                                                                            
 
 ##############################################################################################
 #### Selectors
