@@ -8,11 +8,11 @@ export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode
     mappings: [
         {
             type: CSSNodeType.Stylesheet,
-            template: " i:s @nodes...[m:n] i:e",
+            template: "@nodes...[m:n]",
         },
         {
             type: CSSNodeType.Rule,
-            template: "@selectors...[ \\, o:n  ] \\{ i:s @props...[\\; o:n] i:e \\}",
+            template: "@selectors...[ \\, o:n  ] \\{ i:s o:n @props...[\\; o:n] i:e o:n \\}",
             custom_render: (state, render_fn) => {
                 const new_node = {
                     type: state.node.type,
@@ -23,7 +23,6 @@ export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode
                 return render_fn(state, new_node, true);
             }
         },
-
         {
             type: CSSNodeType.Import,
             template: "\\@import @nodes[0] @nodes[1]? @nodes...[m:s]",
