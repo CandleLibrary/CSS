@@ -1,0 +1,14 @@
+/**
+ * Rule decleration for JavaScript AST
+ */
+
+@IMPORT ./css.hcg as css
+
+f:r ^return_1  { $1 }
+
+f:r css::STYLE_SHEET[0] { {type:env.typ.Stylesheet, imports:$$1, nodes:$$2, pos} }
+f:r css::STYLE_SHEET[0][0] ^return_1
+
+f:r css::STYLE_RULE[0] { {type:env.typ.Stylesheet, imports:$$1, nodes:$$2, pos} }
+
+f:r css::AT_RULE[*] ^return_1
