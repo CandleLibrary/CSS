@@ -17,4 +17,6 @@ const env = <CSSParserEnvironment>{
     }
 };
 
+env.fn = env.functions;
+
 export default env;
