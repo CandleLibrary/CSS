@@ -1,6 +1,10 @@
-# CandleLibrary CSS
+<h1 align=center>CandleLibrary CSS</h1>
 
-CandleLibrary CSS is a lightweight css parser, editor, and generator tool.
+<h3 align=center>Static First Dynamic Components</h3>
+
+<p align=center> <img alt="npm (tag)" src="https://img.shields.io/npm/v/@candlelib/css?style=for-the-badge&logo=appveyor"> </p>
+
+CandleLibrary CSS is a general purpose CSS parser, editor, and generator tool.
 
 # Install
 
