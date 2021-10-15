@@ -8,7 +8,7 @@ export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode
     mappings: [
         {
             type: CSSNodeType.Stylesheet,
-            template: "@nodes...[m:n]",
+            template: "i:s o:n @nodes...[o:n o:n] i:e",
         },
         {
             type: CSSNodeType.Rule,
@@ -25,7 +25,7 @@ export const css_mappings: NodeMappings<CSSNode, "type"> = <NodeMappings<CSSNode
         },
         {
             type: CSSNodeType.Import,
-            template: "\\@import @nodes[0] @nodes[1]? @nodes...[m:s]",
+            template: "\\@import m:s @nodes...[m:s] \; ",
         },
         {
             type: CSSNodeType.Keyframes,
