@@ -44,6 +44,7 @@ import { selector, properties, parse, property, rule } from "./parser/parse.js";
 import { CSSNodeTypeLU } from "./types/node_type_lu.js";
 import { CSSNodeDefinitions } from "./render/rules.js";
 import { PrecedenceFlags } from "./types/precedence_flags.js";
+import { renderCompressed } from './render/render.js';
 export { css_mappings } from './render/mappings.js';
 export * from "./parser/parse.js";
 
@@ -86,6 +87,29 @@ export function matchAll<Element>(selector_string, ele, helpers: SelectionHelper
     return [...getMatchedElements<Element>(ele, selector_node, helpers)];
 }
 
+
+function hashString(string: string, hash: bigint = 0n): bigint {
+
+    let i = string.length - 1;
+
+    if (i < 0)
+        return hash;
+
+    do {
+        const code = BigInt(string.charCodeAt(i));
+
+        hash = (hash << 5n) - hash + code;
+
+        hash &= 0xFFFFFFFFFFFFFFn;
+
+    } while (i--);
+
+    return hash;
+}
+export function getSelectorHash(selector: CSSRuleNode, hash: bigint = 0n): bigint {
+    return hashString(renderCompressed(selector), hash);
+}
+
 /**
  * Merges properties and selectors from an array of rules into a single,
  * monolithic rule. Property collisions are resolved in a first-come::only-set
@@ -104,12 +128,30 @@ export function mergeRulesIntoOne(...rules: CSSRuleNode[]): CSSRuleNode {
         selectors: []
     };
 
-    for (const rule of rules) {
-        for (const prop of rule.props.values())
-            if (!new_rule.props.has(prop.name) || prop.IMPORTANT)
-                new_rule.props.set(prop.name, prop);
+    const selectors_set = new Set();
 
-        new_rule.selectors.push(...(rule.selectors || []));
+    const prop_set = new Set();
+
+    const props = rules.flatMap(r => [...r.props.values()])
+        .reverse()
+        .filter(prop => {
+            if (prop_set.has(prop.name) && !prop.IMPORTANT) {
+                return false;
+            }
+            prop_set.add(prop.name);
+            return true;
+        });
+    const selectors = rules.flatMap(r => r.selectors);
+
+    for (const prop of props.reverse())
+        new_rule.props.set(prop.name, prop);
+
+    for (const selector of selectors) {
+        const hash = getSelectorHash(selector);
+        if (!selectors_set.has(hash)) {
+            selectors_set.add(hash);
+            new_rule.selectors.push(selector);
+        }
     }
 
     return new_rule;
