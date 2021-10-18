@@ -1,4 +1,4 @@
-import { Lexer } from "@candlelib/wind";
+import { Token } from '@candlelib/hydrocarbon';
 import { CSSProperty } from "../properties/property.js";
 import { CSSNodeType } from "./node_type.js";
 import { PrecedenceFlags } from "./precedence_flags.js";
@@ -7,7 +7,7 @@ export interface CSSNode {
     type: CSSNodeType;
     nodes?: CSSNode[];
     selectors?: CSSNode[];
-    pos?: Lexer;
+    pos?: Token;
 
     /**
      * The calculated precedence of the node.
