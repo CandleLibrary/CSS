@@ -59,6 +59,27 @@ const newRule = function (): CSSRuleNode {
     };
 };
 
+
+const parent_types = new Set(
+    [
+        CSSNodeType.Stylesheet,
+        CSSNodeType.Keyframes,
+        CSSNodeType.Media,
+    ]
+);
+export function attachParents(node: CSSNode): CSSNode {
+    if (
+        parent_types.has(node.type)
+    ) {
+        for (const child_node of node.nodes) {
+            child_node.parent = node;
+            attachParents(child_node);
+        }
+    }
+
+    return node;
+}
+
 function removeRule(stylesheet: CSSNode, rule: CSSRuleNode) {
 
     for (let i = 0; i < stylesheet.nodes.length; i++) {
@@ -82,11 +103,82 @@ function removeRule(stylesheet: CSSNode, rule: CSSRuleNode) {
     return false;
 }
 
+function getNodeHash(node: CSSNode): string {
+    switch (node.type) {
+        case CSSNodeType.Keyframes:
+            return "@k-" + hashString(renderCompressed(node.name)).toString(16);
+        case CSSNodeType.Media:
+            return "@m-" + hashString(renderCompressed(node.nodes[0])).toString(16);
+        case CSSNodeType.Supports:
+            return "@s-" + hashString(renderCompressed(node.nodes[0])).toString(16);
+        case CSSNodeType.Rule:
+
+            let hash = 0n;
+
+            for (const sel of node.selectors)
+                hash = getSelectorHash(sel, hash);
+
+            return "#r-" + hash.toString(16);
+    }
+}
+
+export function selectMatchingRule(rule_path: string, input_node: CSSNode): CSSNode {
+    const segments = rule_path.split("/").map(s => {
+        const segment_header = s.slice(0, 3);
+        const type = segment_header[1];
+        return [{
+            "k": CSSNodeType.Keyframes,
+            "m": CSSNodeType.Media,
+            "s": CSSNodeType.Supports,
+            "r": CSSNodeType.Rule,
+        }[type], s];
+    });
+
+    let out_node = null;
+
+    outer: for (const [type, hash] of segments) {
+
+        for (const node of input_node.nodes) {
+            if (node.type == type && getNodeHash(node) == hash) {
+                out_node = node;
+                continue outer;
+            }
+        }
+
+        out_node = null;
+        break;
+    }
+
+    return out_node;
+}
+
+/**
+ * The path to a rule
+ * 
+ * //@rule/.../rule_selector_hashes
+ */
+export function createRulePath(rule: CSSRuleNode) {
+
+    const string = [];
+
+    let node = rule;
+
+    while (node) {
+        if (node.type == CSSNodeType.Stylesheet) {
+            break;
+        } else {
+            string.push(getNodeHash(node));
+        }
+        node = node.parent;
+    }
+
+    return string.reverse().join("/");
+}
+
 export function matchAll<Element>(selector_string, ele, helpers: SelectionHelpers<Element>): Element[] {
     const selector_node = selector(selector_string);
     return [...getMatchedElements<Element>(ele, selector_node, helpers)];
 }
-
 
 function hashString(string: string, hash: bigint = 0n): bigint {
 
@@ -106,6 +198,11 @@ function hashString(string: string, hash: bigint = 0n): bigint {
 
     return hash;
 }
+
+export function getAtHash(selector: CSSRuleNode, hash: bigint = 0n): bigint {
+    return hashString(renderCompressed(selector), hash);
+}
+
 export function getSelectorHash(selector: CSSRuleNode, hash: bigint = 0n): bigint {
     return hashString(renderCompressed(selector), hash);
 }

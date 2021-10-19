@@ -13,12 +13,23 @@ export interface CSSNode {
      * The calculated precedence of the node.
      */
     precedence?: PrecedenceFlags;
+
+    parent?: CSSNode;
 };
 
 export interface CSSRuleNode extends CSSNode {
+
+    //@ts-ignore
+    type: CSSNodeType.Rule;
     selectors?: CSSNode[];
     props?: Map<string, CSSProperty>;
 }
+
+export interface CSSRuleAtRuleNode extends CSSNode {
+    selectors?: CSSNode[];
+    props?: Map<string, CSSProperty>;
+}
+
 
 export interface CSSSelectorNode extends CSSNode {
     val?: string,
